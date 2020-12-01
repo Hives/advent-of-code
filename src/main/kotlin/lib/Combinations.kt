@@ -1,9 +1,9 @@
 package lib
 
-fun List<Int>.combinations(n: Int): List<List<Int>> {
+fun <T> List<T>.combinations(n: Int): List<List<T>> {
     fun addFromRemainderToSelection(
-        partialCombinations: List<PartialCombination>
-    ): List<PartialCombination> =
+        partialCombinations: List<PartialCombination<T>>
+    ): List<PartialCombination<T>> =
         partialCombinations.flatMap { (selections, remainder) ->
             remainder.mapIndexed { index, i ->
                 PartialCombination(
@@ -14,15 +14,15 @@ fun List<Int>.combinations(n: Int): List<List<Int>> {
         }
 
     tailrec fun go(
-        partialCombinations: List<PartialCombination>,
+        partialCombinations: List<PartialCombination<T>>,
         iteration: Int
-    ): List<PartialCombination> =
+    ): List<PartialCombination<T>> =
         if (iteration == 0) partialCombinations
         else go(addFromRemainderToSelection(partialCombinations), iteration - 1)
 
     return go(partialsFrom(this), n).map { it.selections }
 }
 
-private data class PartialCombination(val selections: List<Int>, val remainder: List<Int>)
+private data class PartialCombination<T> (val selections: List<T>, val remainder: List<T>)
 
-private fun partialsFrom(ints: List<Int>) = listOf(PartialCombination(emptyList(), ints))
+private fun <T> partialsFrom(list: List<T>) = listOf(PartialCombination(emptyList(), list))

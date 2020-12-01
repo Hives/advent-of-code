@@ -35,4 +35,14 @@ internal class CombinationsKtTest {
         val actual = listOf(1, 2, 3).combinations(4)
         assertThat(actual).isEmpty()
     }
+
+    @Test
+    fun `can do it with non-ints too`() {
+        val actual = listOf("one", "two", "three").combinations(2)
+        assertThat(actual).containsOnly(
+            listOf("one", "two"),
+            listOf("one", "three"),
+            listOf("two", "three")
+        )
+    }
 }
