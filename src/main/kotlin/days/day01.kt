@@ -1,13 +1,13 @@
 package days
-import lib.findThreeNumbersThatAddTo
-import lib.findTwoNumbersThatAddTo
+import lib.combinations
 
 fun main() {
     listOf(
-        input.findTwoNumbersThatAddTo(2020),
-        input.findThreeNumbersThatAddTo(2020)
+        input.combinations(2).first { it.sum() == 2020 },
+        input.combinations(3).first { it.sum() == 2020 }
     ).forEach {
-        println(it.reduce { a, b -> a * b })
+        println(it.joinToString(separator = " + ", postfix = " = ") + it.sum())
+        println(it.joinToString(separator = " * ", postfix = " = ") + it.reduce { a, b -> a * b })
     }
 }
 
