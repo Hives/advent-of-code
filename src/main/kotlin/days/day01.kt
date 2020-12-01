@@ -7,7 +7,7 @@ fun main() {
         input.findTwoNumbersThatAddTo(2020),
         input.findThreeNumbersThatAddTo(2020)
     ).forEach {
-        println(it.fold(1) { a, b -> a * b })
+        println(it.reduce { a, b -> a * b })
     }
 }
 
