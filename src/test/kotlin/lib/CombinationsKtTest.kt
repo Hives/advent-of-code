@@ -25,7 +25,7 @@ internal class CombinationsKtTest {
     }
 
     @Test
-    fun `duplicates`() {
+    fun `list with duplicates`() {
         val actual = listOf(1, 2, 2).combinations(2)
         assertThat(actual).containsOnly(listOf(1, 2), listOf(1, 2), listOf(2, 2))
     }
