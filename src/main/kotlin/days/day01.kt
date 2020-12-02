@@ -4,7 +4,7 @@ import lib.Reader
 import lib.combinations
 
 fun main() {
-    val input = Reader("day01.txt").listOfInts()
+    val input = Reader("day01.txt").ints()
 
     println("input length = ${input.size}")
     listOf(
