@@ -6,31 +6,31 @@ import assertk.assertions.isTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-internal class PasswordValidatorKtTest {
+internal class PasswordDetailsKtTest {
     @Nested
     inner class NewValidationMethod {
         @Test
         fun `neither position matches`() {
             val details = PasswordDetails("password", 'd', 0, 1)
-            assertThat(validatePassword(details)).isFalse()
+            assertThat(details.isValid).isFalse()
         }
 
         @Test
         fun `both positions match`() {
             val details = PasswordDetails("password", 's', 2, 3)
-            assertThat(validatePassword(details)).isFalse()
+            assertThat(details.isValid).isFalse()
         }
 
         @Test
         fun `first position matches`() {
             val details = PasswordDetails("password", 'a', 1, 3)
-            assertThat(validatePassword(details)).isTrue()
+            assertThat(details.isValid).isTrue()
         }
 
         @Test
         fun `second position matches`() {
             val details = PasswordDetails("password", 's', 1, 3)
-            assertThat(validatePassword(details)).isTrue()
+            assertThat(details.isValid).isTrue()
         }
     }
 
@@ -39,13 +39,13 @@ internal class PasswordValidatorKtTest {
         @Test
         fun `too few of character`() {
             val details = OldPasswordDetails("password", 'a', 2, 99)
-            assertThat(validateOldPassword(details)).isFalse()
+            assertThat(details.isValid).isFalse()
         }
 
         @Test
         fun `too many of character`() {
             val details = OldPasswordDetails("password", 's', 1, 1)
-            assertThat(validateOldPassword(details)).isFalse()
+            assertThat(details.isValid).isFalse()
         }
     }
 }
