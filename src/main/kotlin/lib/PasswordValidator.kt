@@ -3,6 +3,7 @@ package lib
 fun validatePassword(details: PasswordDetails): Boolean {
     val (password, requiredChar, pos1, pos2) = details
 
+    // positions are not 0-indexed...
     val c1 = password[pos1 - 1]
     val c2 = password[pos2 - 1]
 
