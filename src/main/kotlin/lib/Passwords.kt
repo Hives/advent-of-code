@@ -2,13 +2,25 @@ package lib
 
 fun String.extractPassword(): String = this.split(": ").last()
 
-fun String.extractOldCriteria() = this
-    .extractCriteriaParts()
-    .let { OldCriteria(it[2].single(), it[0].toInt(), it[1].toInt()) }
+fun String.extractOldCriteria() =
+    this.extractCriteriaParts()
+        .let {
+            OldCriteria(
+                char = it[2].single(),
+                min = it[0].toInt(),
+                max = it[1].toInt()
+            )
+        }
 
-fun String.extractNewCriteria() = this
-    .extractCriteriaParts()
-    .let { NewCriteria(it[2].single(), it[0].toInt() - 1, it[1].toInt() - 1) }
+fun String.extractNewCriteria() =
+    this.extractCriteriaParts()
+        .let {
+            NewCriteria(
+                char = it[2].single(),
+                pos1 = it[0].toInt() - 1,
+                pos2 = it[1].toInt() - 1
+            )
+        }
 
 private fun String.extractCriteriaParts() =
     this.split(": ").first().split("-", " ")
