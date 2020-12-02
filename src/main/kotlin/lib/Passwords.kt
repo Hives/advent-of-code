@@ -1,8 +1,17 @@
 package lib
 
-data class PasswordAndCriteria(private val password: String, private val criteria: Criteria) {
-    fun validate() = criteria.validate(password)
-}
+fun String.extractPassword(): String = this.split(": ").last()
+
+fun String.extractOldCriteria(): Criteria = this
+    .extractCriteriaParts()
+    .let { OldCriteria(it[2].single(), it[0].toInt(), it[1].toInt()) }
+
+fun String.extractNewCriteria(): Criteria = this
+    .extractCriteriaParts()
+    .let { NewCriteria(it[2].single(), it[0].toInt() - 1, it[1].toInt() - 1) }
+
+private fun String.extractCriteriaParts() =
+    this.split(": ").first().split("-", " ")
 
 sealed class Criteria {
     abstract fun validate(password: String): Boolean
