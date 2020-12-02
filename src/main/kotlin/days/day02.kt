@@ -5,8 +5,9 @@ import lib.oldValidatePassword
 import lib.validatePassword
 
 fun main() {
-    val input = Reader("day02.txt").listOfPasswords()
+    val input1 = Reader("day02.txt").listOfOldPasswordDetails()
+    println("Number of valid passwords by old method: ${input1.count { oldValidatePassword(it) }}")
 
-    println("Number of valid passwords by old method: ${input.count { oldValidatePassword(it) }}")
-    println("Number of valid passwords by new method: ${input.count { validatePassword(it) }}")
+    val input2 = Reader("day02.txt").listOfPasswordDetails()
+    println("Number of valid passwords by new method: ${input2.count { validatePassword(it) }}")
 }

@@ -2,6 +2,7 @@ package lib
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class ReaderTest {
@@ -11,12 +12,24 @@ internal class ReaderTest {
         assertThat(actual).isEqualTo(listOf(1, 2, 3))
     }
 
-    @Test
-    fun `can read a file which is a list of passwords and policies (day 2)`() {
-        val actual = Reader("list-of-passwords.txt").listOfPasswords()
-        assertThat(actual).isEqualTo(listOf(
-            PasswordDetails("password", 'z', 1, 2),
-            PasswordDetails("anotherone", 'a', 3, 4),
-        ))
+    @Nested
+    inner class Passwords {
+        @Test
+        fun `decrements position by 1 to be zero-indexed`() {
+            val actual = Reader("list-of-passwords.txt").listOfPasswordDetails()
+            assertThat(actual).isEqualTo(listOf(
+                PasswordDetails("password", 'z', 0, 1),
+                PasswordDetails("anotherone", 'a', 2, 3),
+            ))
+        }
+
+        @Test
+        fun `for old-style password, leaves min + max values as they are`() {
+            val actual = Reader("list-of-passwords.txt").listOfOldPasswordDetails()
+            assertThat(actual).isEqualTo(listOf(
+                OldPasswordDetails("password", 'z', 1, 2),
+                OldPasswordDetails("anotherone", 'a', 3, 4),
+            ))
+        }
     }
 }
