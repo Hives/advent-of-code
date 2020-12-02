@@ -1,15 +1,15 @@
 package days
 
 import lib.Reader
-import lib.combinations
+import lib.findThreeNumbersThatAddTo
+import lib.findTwoNumbersThatAddTo
 
 fun main() {
     val input = Reader("day01.txt").ints()
 
-    println("input length = ${input.size}")
     listOf(
-        input.combinations(2).first { it.sum() == 2020 },
-        input.combinations(3).first { it.sum() == 2020 },
+        input.findTwoNumbersThatAddTo(2020),
+        input.findThreeNumbersThatAddTo(2020)
     ).forEach {
         println(it.joinToString(separator = " + ", postfix = " = ") + it.sum())
         println(it.joinToString(separator = " * ", postfix = " = ") + it.reduce { a, b -> a * b })
