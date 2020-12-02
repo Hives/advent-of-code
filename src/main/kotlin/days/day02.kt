@@ -3,9 +3,11 @@ package days
 import lib.Reader
 
 fun main() {
-    val input1 = Reader("day02.txt").listOfOldPasswordDetails()
-    println("Number of valid passwords by old method: ${input1.count { it.isValid }}")
+    val input = Reader("day02.txt")
 
-    val input2 = Reader("day02.txt").listOfPasswordDetails()
-    println("Number of valid passwords by new method: ${input2.count { it.isValid }}")
+    val oldPasswordDetails = input.listOfOldPasswordDetails()
+    println("Number of valid passwords by old method: ${oldPasswordDetails.count { it.isValid }}")
+
+    val passwordDetails = input.listOfPasswordDetails()
+    println("Number of valid passwords by new method: ${passwordDetails.count { it.isValid }}")
 }
