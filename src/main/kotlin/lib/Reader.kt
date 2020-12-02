@@ -8,8 +8,8 @@ class Reader(private val file: String) {
            PasswordDetails(
                password = it[3],
                requiredChar = it[2].single(),
-               min = it[0].toInt(),
-               max = it[1].toInt()
+               pos1 = it[0].toInt(),
+               pos2 = it[1].toInt()
            )
        }
     }
