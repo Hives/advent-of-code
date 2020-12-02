@@ -3,7 +3,7 @@ package lib
 class Reader(private val file: String) {
     fun listOfInts() = read().lines().map { it.toInt() }
 
-    fun listOfOldPasswordDetails() = splitPasswordDetails().map {
+    fun listOfOldPasswordDetails() = getSplitPasswordDetails().map {
         OldPasswordDetails(
             password = it[3],
             requiredChar = it[2].single(),
@@ -12,7 +12,7 @@ class Reader(private val file: String) {
         )
     }
 
-    fun listOfPasswordDetails() = splitPasswordDetails().map {
+    fun listOfPasswordDetails() = getSplitPasswordDetails().map {
         PasswordDetails(
             password = it[3],
             requiredChar = it[2].single(),
@@ -21,7 +21,7 @@ class Reader(private val file: String) {
         )
     }
 
-    private fun splitPasswordDetails() = read().lines().map { it.split("-", ": ", " ") }
+    private fun getSplitPasswordDetails() = read().lines().map { it.split("-", ": ", " ") }
 
     private fun read() = javaClass.getResource("/$file").readText()
 }
