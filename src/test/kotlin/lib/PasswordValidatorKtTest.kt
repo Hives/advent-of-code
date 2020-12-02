@@ -39,13 +39,13 @@ internal class PasswordValidatorKtTest {
         @Test
         fun `too few of character`() {
             val details = OldPasswordDetails("password", 'a', 2, 99)
-            assertThat(oldValidatePassword(details)).isFalse()
+            assertThat(validateOldPassword(details)).isFalse()
         }
 
         @Test
         fun `too many of character`() {
             val details = OldPasswordDetails("password", 's', 1, 1)
-            assertThat(oldValidatePassword(details)).isFalse()
+            assertThat(validateOldPassword(details)).isFalse()
         }
     }
 }

@@ -16,7 +16,7 @@ internal class ReaderTest {
     @Nested
     inner class Passwords {
         @Test
-        fun `decrements position by 1 to be zero-indexed`() {
+        fun `for new-style passwords, decrements position by 1 to be zero-indexed`() {
             val actual = Reader("list-of-passwords.txt").listOfPasswordDetails()
             assertThat(actual).isEqualTo(listOf(
                 PasswordDetails("password", 'z', 0, 1),
@@ -25,7 +25,7 @@ internal class ReaderTest {
         }
 
         @Test
-        fun `for old-style password, leaves min + max values as they are`() {
+        fun `for old-style passwords, leaves min + max values as they are`() {
             val actual = Reader("list-of-passwords.txt").listOfOldPasswordDetails()
             assertThat(actual).isEqualTo(listOf(
                 OldPasswordDetails("password", 'z', 1, 2),

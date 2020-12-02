@@ -6,7 +6,7 @@ fun validatePassword(details: PasswordDetails): Boolean =
         return false
     }
 
-fun oldValidatePassword(details: OldPasswordDetails): Boolean =
+fun validateOldPassword(details: OldPasswordDetails): Boolean =
     with(details) {
         if (password.count { it == requiredChar } < min) return false
         if (password.count { it == requiredChar } > max) return false
