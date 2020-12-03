@@ -25,7 +25,7 @@ fun String.extractNewCriteria() =
 private fun String.extractCriteriaParts() =
     this.split(": ").first().split("-", " ")
 
-class OldCriteria(
+data class OldCriteria(
     val char: Char,
     val min: Int,
     val max: Int
@@ -33,7 +33,7 @@ class OldCriteria(
     fun validate(password: String) = password.count { it == char } in min..max
 }
 
-class NewCriteria(
+data class NewCriteria(
     val char: Char,
     val pos1: Int,
     val pos2: Int
