@@ -1,6 +1,6 @@
 package lib
 
-class Toboggan(private val terrain: List<String>, private val slopeR: Int, private val slopeD: Int) {
+class Toboggan(private val terrain: List<String>, private val slope: Slope) {
     var x: Int = 0
         private set
     var y: Int = 0
@@ -21,8 +21,8 @@ class Toboggan(private val terrain: List<String>, private val slopeR: Int, priva
     }
 
     fun move(): Toboggan {
-        x = (x + slopeR) % width
-        y += slopeD
+        x = (x + slope.x) % width
+        y += slope.y
         addPosToPath()
         return this
     }
@@ -36,3 +36,5 @@ class Toboggan(private val terrain: List<String>, private val slopeR: Int, priva
         path += terrain[y][x]
     }
 }
+
+data class Slope(val x: Int, val y: Int)
