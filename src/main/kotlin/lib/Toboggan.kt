@@ -1,12 +1,18 @@
 package lib
 
-class Toboggan(private val terrain: List<String>, private val slopeR: Int, private val slopeL: Int) {
+class Toboggan(private val terrain: List<String>, private val slopeR: Int, private val slopeD: Int) {
     var x: Int = 0
+        private set
     var y: Int = 0
+        private set
     var path: String = ""
+        private set
 
     val isFinished: Boolean
         get() = y >= terrain.size - 1
+
+    val trees: Int
+        get() = path.filter { it == '#' }.count()
 
     private val width = terrain.first().length
 
@@ -16,16 +22,14 @@ class Toboggan(private val terrain: List<String>, private val slopeR: Int, priva
 
     fun move(): Toboggan {
         x = (x + slopeR) % width
-        y += slopeL
+        y += slopeD
         addPosToPath()
         return this
     }
 
-    fun go(): String {
-        while (!isFinished) {
-            move()
-        }
-        return path
+    fun go(): Toboggan {
+        while (!isFinished) move()
+        return this
     }
 
     private fun addPosToPath() {

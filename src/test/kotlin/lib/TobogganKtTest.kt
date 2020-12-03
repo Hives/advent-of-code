@@ -7,7 +7,7 @@ import assertk.assertions.isTrue
 import org.junit.jupiter.api.Test
 
 internal class TobogganKtTest {
-    private val terrain = Reader("day-3-toboggan-terrain.txt").strings()
+    private val terrain = Reader("day-3-example.txt").strings()
 
     private fun createToboggan() = Toboggan(terrain, 3, 1)
 
@@ -17,6 +17,7 @@ internal class TobogganKtTest {
         assertThat(t.x).isEqualTo(0)
         assertThat(t.y).isEqualTo(0)
         assertThat(t.path).isEqualTo(".")
+        assertThat(t.trees).isEqualTo(0)
     }
 
     @Test
@@ -25,6 +26,7 @@ internal class TobogganKtTest {
         assertThat(t.x).isEqualTo(3)
         assertThat(t.y).isEqualTo(1)
         assertThat(t.path).isEqualTo("..")
+        assertThat(t.trees).isEqualTo(0)
     }
 
     @Test
@@ -33,6 +35,7 @@ internal class TobogganKtTest {
         assertThat(t.x).isEqualTo(6)
         assertThat(t.y).isEqualTo(2)
         assertThat(t.path).isEqualTo("..#")
+        assertThat(t.trees).isEqualTo(1)
     }
 
     @Test
@@ -41,6 +44,7 @@ internal class TobogganKtTest {
         assertThat(t.x).isEqualTo(9)
         assertThat(t.y).isEqualTo(3)
         assertThat(t.path).isEqualTo("..#.")
+        assertThat(t.trees).isEqualTo(1)
     }
 
     @Test
@@ -49,6 +53,7 @@ internal class TobogganKtTest {
         assertThat(t.x).isEqualTo(1)
         assertThat(t.y).isEqualTo(4)
         assertThat(t.path).isEqualTo("..#.#")
+        assertThat(t.trees).isEqualTo(2)
     }
 
     @Test
@@ -62,7 +67,8 @@ internal class TobogganKtTest {
 
     @Test
     fun `can run the whole trip`() {
-        val t = createToboggan()
-        assertThat(t.go()).isEqualTo("..#.##.####")
+        val t = createToboggan().go()
+        assertThat(t.path).isEqualTo("..#.##.####")
+        assertThat(t.trees).isEqualTo(7)
     }
 }
