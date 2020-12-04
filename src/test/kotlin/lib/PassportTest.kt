@@ -30,7 +30,7 @@ internal class PassportTest {
 
     @Test
     fun `values are null if not provided`() {
-        val passport = Passport.from("")
+        val passport = Passport.from("foo:bar")
         assertThat(passport).isEqualTo(
             Passport(
                 birthYear = null,
