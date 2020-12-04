@@ -34,7 +34,7 @@ data class Passport(
                 hairColor.isNullOrBlank() -> false
                 !hairColor.startsWith("#") -> false
                 hairColor.length != 7 -> false
-                hairColor.count { !"#1234567890abcdef".contains(it) } > 0 -> false
+                hairColor.drop(1).count { !"1234567890abcdef".contains(it) } > 0 -> false
                 else -> true
             },
             eyeColor?.let {listOf("amb", "blu", "brn", "gry", "grn", "hzl", "oth").contains(it) } ?: false,

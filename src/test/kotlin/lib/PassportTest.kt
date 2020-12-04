@@ -182,6 +182,7 @@ internal class PassportTest {
         fun `hair colour`() {
             val noHashAtStart = allPropsPassport.copy(hairColor = "123abc")
             val invalidCharacter = allPropsPassport.copy(hairColor = "#123abz")
+            val hashInMiddle = allPropsPassport.copy(hairColor = "#fff#ff")
             val tooLong = allPropsPassport.copy(hairColor = "#fffffff")
             val tooShort = allPropsPassport.copy(hairColor = "#fffff")
             val notSet = allPropsPassport.copy(hairColor = null)
@@ -189,6 +190,7 @@ internal class PassportTest {
 
             assertThat(noHashAtStart.isValid2).isFalse()
             assertThat(invalidCharacter.isValid2).isFalse()
+            assertThat(hashInMiddle.isValid2).isFalse()
             assertThat(tooLong.isValid2).isFalse()
             assertThat(tooShort.isValid2).isFalse()
             assertThat(notSet.isValid2).isFalse()
