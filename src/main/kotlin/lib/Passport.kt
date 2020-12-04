@@ -61,12 +61,6 @@ data class Passport(
     }
 }
 
-fun List<String>.mapToPassportData(): List<String> {
-    val output = mutableListOf(emptyList<String>())
-    forEach { line ->
-        if (line.isEmpty()) output.add(emptyList())
-        else output[output.size - 1] = (output[output.size - 1] + line)
-    }
-    return output.toList().map { it.joinToString(" ") }
-}
+fun String.mapToPassportData(): List<String> =
+    this.split("\n\n").map { it.replace("\n", " ") }
 

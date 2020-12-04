@@ -5,7 +5,7 @@ import lib.Reader
 import lib.mapToPassportData
 
 fun main() {
-    val passportData = Reader("day04.txt").strings().mapToPassportData()
+    val passportData = Reader("day04.txt").string().mapToPassportData()
     val passports = passportData.map { Passport.from(it) }
     println(passports.count { it.isValid })
     println(passports.count { it.isValid2 })

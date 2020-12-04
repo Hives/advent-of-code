@@ -234,16 +234,17 @@ internal class PassportTest {
     inner class InputMapper {
         @Test
         fun `can map passport data spread over multiple lines`() {
-           val input = listOf(
-               "hgt:163cm",
-               "hcl:#623a2f",
-               "",
-               "byr:1920 eyr:2023 cid:146 pid:890112986 hgt:171cm hcl:#b6652a iyr:2017 ecl:hzl"
-           )
+           val input = "iyr:2013 ecl:amb cid:350 eyr:2023 pid:028048884\n" +
+                   "hcl:#cfa07d byr:1929\n" +
+                   "\n" +
+                   "hcl:#ae17e1 iyr:2013\n" +
+                   "eyr:2024\n" +
+                   "ecl:brn pid:760753108 byr:1931\n" +
+                   "hgt:179cm"
 
             val expectedOutput = listOf(
-                "hgt:163cm hcl:#623a2f",
-                "byr:1920 eyr:2023 cid:146 pid:890112986 hgt:171cm hcl:#b6652a iyr:2017 ecl:hzl"
+                "iyr:2013 ecl:amb cid:350 eyr:2023 pid:028048884 hcl:#cfa07d byr:1929",
+                "hcl:#ae17e1 iyr:2013 eyr:2024 ecl:brn pid:760753108 byr:1931 hgt:179cm"
             )
 
             assertThat(input.mapToPassportData()).isEqualTo(expectedOutput)
