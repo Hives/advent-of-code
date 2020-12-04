@@ -139,9 +139,11 @@ internal class PassportTest {
                 val lowerBound = allPropsPassport.copy(height = "150cm")
                 val upperBound = allPropsPassport.copy(height = "193cm")
                 val tooHigh = allPropsPassport.copy(height = "194cm")
+                val malformed = allPropsPassport.copy(height = "WTFcm")
 
                 assertThat(tooLow.isValid2).isFalse()
                 assertThat(tooHigh.isValid2).isFalse()
+                assertThat(malformed.isValid2).isFalse()
 
                 assertThat(lowerBound.isValid2).isTrue()
                 assertThat(upperBound.isValid2).isTrue()
@@ -153,9 +155,11 @@ internal class PassportTest {
                 val lowerBound = allPropsPassport.copy(height = "59in")
                 val upperBound = allPropsPassport.copy(height = "76in")
                 val tooHigh = allPropsPassport.copy(height = "77in")
+                val malformed = allPropsPassport.copy(height = "WTFin")
 
                 assertThat(tooLow.isValid2).isFalse()
                 assertThat(tooHigh.isValid2).isFalse()
+                assertThat(malformed.isValid2).isFalse()
 
                 assertThat(lowerBound.isValid2).isTrue()
                 assertThat(upperBound.isValid2).isTrue()

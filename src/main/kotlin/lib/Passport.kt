@@ -24,9 +24,9 @@ data class Passport(
                 height.isNullOrBlank() -> false
                 else -> when {
                     height.endsWith("cm") ->
-                        height.replace("cm", "").toInt().let { it in 150..193 }
+                        height.replace("cm", "").toIntOrNull().let { it in 150..193 }
                     height.endsWith("in") ->
-                        height.replace("in", "").toInt().let { it in 59..76 }
+                        height.replace("in", "").toIntOrNull().let { it in 59..76 }
                     else -> false
                 }
             },
