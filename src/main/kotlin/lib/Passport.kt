@@ -36,7 +36,7 @@ data class Passport(
                 !hairColor.startsWith("#") -> false
                 else -> hairColor.drop(1).all { "1234567890abcdef".contains(it) }
             },
-            eyeColor?.let {listOf("amb", "blu", "brn", "gry", "grn", "hzl", "oth").contains(it) } ?: false,
+            eyeColor?.let { listOf("amb", "blu", "brn", "gry", "grn", "hzl", "oth").contains(it) } ?: false,
             passportId?.let { it.length == 9 && it.toIntOrNull() != null } ?: false
         ).all { it }
 
