@@ -1,8 +1,6 @@
-package days
+package days.day04
 
-import lib.Passport
 import lib.Reader
-import lib.mapToPassportData
 
 fun main() {
     val passportData = Reader("day04.txt").string().mapToPassportData()

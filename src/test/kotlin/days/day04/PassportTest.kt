@@ -1,12 +1,14 @@
-package lib
+package days.day04
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isTrue
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
+@DisplayName("Day 4: validating passwords")
 internal class PassportTest {
     @Test
     fun `can get a passport with all fields`() {

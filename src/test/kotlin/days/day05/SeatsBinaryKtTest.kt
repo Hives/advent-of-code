@@ -1,10 +1,12 @@
-package lib
+package days.day05
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-internal class SeatsKtTest {
+@DisplayName("Day 5: airplane seats (binary)")
+internal class SeatsBinaryKtTest {
     @Test
     fun `examples`() {
         listOf(
@@ -13,7 +15,8 @@ internal class SeatsKtTest {
             Pair("FFFBBBFRRR", 119),
             Pair("BBFFBBFRLL", 820)
         ).forEach { (input, expectedSeatId) ->
-            assertThat(findSeat(input).id).isEqualTo(expectedSeatId)
+            println(input)
+            assertThat(findSeatUsingBinaryStrings(input)).isEqualTo(expectedSeatId)
         }
     }
 }

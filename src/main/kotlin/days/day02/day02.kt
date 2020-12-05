@@ -1,9 +1,6 @@
-package days
+package days.day02
 
 import lib.Reader
-import lib.extractNewCriteria
-import lib.extractOldCriteria
-import lib.extractPassword
 
 fun main() {
     val input = Reader("day02.txt").strings()

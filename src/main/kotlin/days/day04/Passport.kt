@@ -1,4 +1,4 @@
-package lib
+package days.day04
 
 data class Passport(
     val birthYear: String? = null,

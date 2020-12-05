@@ -1,8 +1,6 @@
-package days
+package days.day01
 
 import lib.Reader
-import lib.findThreeNumbersThatAddTo
-import lib.findTwoNumbersThatAddTo
 
 fun main() {
     val input = Reader("day01.txt").ints()

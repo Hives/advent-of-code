@@ -1,11 +1,14 @@
-package lib
+package days.day03
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isTrue
+import lib.Reader
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
+@DisplayName("Day 3: tobogganing")
 internal class TobogganKtTest {
     private val terrain = Reader("day-3-example.txt").strings()
 

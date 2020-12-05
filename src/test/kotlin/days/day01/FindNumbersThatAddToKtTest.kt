@@ -1,10 +1,12 @@
-package lib
+package days.day01
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
+@DisplayName("Day 1: find numbers that add up to")
 internal class FindNumbersThatAddToKtTest {
     @Nested
     inner class FindTwoNumbersThatAddTo {

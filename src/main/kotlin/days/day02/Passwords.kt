@@ -1,4 +1,4 @@
-package lib
+package days.day02
 
 fun String.extractPassword(): String = this.split(": ").last()
 

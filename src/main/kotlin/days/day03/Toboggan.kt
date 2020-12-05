@@ -1,4 +1,4 @@
-package lib
+package days.day03
 
 class Toboggan(private val terrain: List<String>, private val slope: Slope) {
     var x: Int = 0

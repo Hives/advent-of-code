@@ -1,9 +1,6 @@
-package days
+package days.day03
 
 import lib.Reader
-import lib.Slope
-import lib.Toboggan
-import lib.time
 
 fun main() {
     val terrain = Reader("day03.txt").strings()

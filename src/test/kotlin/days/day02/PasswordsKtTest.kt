@@ -1,12 +1,15 @@
-package lib
+package days.day02
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isTrue
+import days.day02.*
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
+@DisplayName("Day 2: validating passwords")
 internal class PasswordsKtTest {
     @Nested
     inner class ExtractingPasswordDetails {

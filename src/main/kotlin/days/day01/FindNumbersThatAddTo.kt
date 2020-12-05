@@ -1,4 +1,4 @@
-package lib
+package days.day01
 
 fun List<Int>.findTwoNumbersThatAddTo(total: Int): Set<Int> {
     for (i in this.indices) {
