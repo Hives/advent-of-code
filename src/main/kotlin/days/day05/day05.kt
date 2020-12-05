@@ -7,7 +7,7 @@ fun main() {
 
     listOf(
         Pair("recursive split method", ::findSeatUsingRecursiveSplit),
-        Pair("binary string method", ::findSeatUsingBinaryStrings)
+        Pair("binary string method", ::findSeatUsingBinaryStrings),
     ).forEach { (description, findSeat) ->
         val seatIds = input.map { findSeat(it) }
 
