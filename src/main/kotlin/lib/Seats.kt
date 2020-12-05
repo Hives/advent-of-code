@@ -1,32 +1,30 @@
 package lib
 
-import kotlin.math.pow
-
 data class Seat(val row: Int, val col: Int) {
     val id: Int
         get() = 8 * row + col
 }
 
-fun findSeat(input: String): Seat {
-    val rowString = input.substring(0..6)
-    val colString = input.reversed().substring(0..2).reversed()
+fun findSeat(input: String): Seat =
+    Seat(
+        binarySearch(input.substring(0..6), 0..127),
+        binarySearch(input.substring(7..9), 0..7)
+    )
 
-    return Seat(go(rowString, 0..127, 'F'), go(colString, 0..7, 'L'))
-}
-
-private tailrec fun go(input: String, range: IntRange, downChar: Char): Int =
+private tailrec fun binarySearch(input: String, range: IntRange): Int =
     if (input.length == 0) range.first
     else {
-        val nextInput = input.drop(1)
-        val sizeOfNextRange = 2.0.pow(nextInput.length).toInt()
+        val sizeOfNextRange = (range.last - range.first + 1) / 2
 
-        if (input[0] == downChar) {
+        val nextRange = if (input[0] == 'F' || input[0] == 'L') {
             val lower = range.first
             val upper = range.first + sizeOfNextRange - 1
-            go(nextInput, lower..upper, downChar)
+            lower..upper
         } else {
             val lower = range.last - sizeOfNextRange + 1
             val upper = range.last
-            go(nextInput, lower..upper, downChar)
+            lower..upper
         }
+
+        binarySearch(input.drop(1), nextRange)
     }
