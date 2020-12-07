@@ -6,4 +6,4 @@ fun findSeatUsingBinaryStrings(input: String): Int =
         .replace('B', '1')
         .replace('L', '0')
         .replace('R', '1')
-        .let { Integer.parseInt(it, 2) }
+        .let { it.toInt(2) }
