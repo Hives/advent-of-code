@@ -185,7 +185,8 @@ internal class PassportTest {
             val noHashAtStart = allPropsPassport.copy(hairColor = "123abc")
             val invalidCharacter = allPropsPassport.copy(hairColor = "#123abz")
             val hashInMiddle = allPropsPassport.copy(hairColor = "#fff#ff")
-            val tooLong = allPropsPassport.copy(hairColor = "#fffffff")
+            val extraCharacterAtBeginning = allPropsPassport.copy(hairColor = "f#abc123")
+            val extraCharacterAtEnd = allPropsPassport.copy(hairColor = "#abc123f")
             val tooShort = allPropsPassport.copy(hairColor = "#fffff")
             val notSet = allPropsPassport.copy(hairColor = null)
             val valid = allPropsPassport.copy(hairColor = "#123abc")
@@ -193,7 +194,8 @@ internal class PassportTest {
             assertThat(noHashAtStart.isValid2).isFalse()
             assertThat(invalidCharacter.isValid2).isFalse()
             assertThat(hashInMiddle.isValid2).isFalse()
-            assertThat(tooLong.isValid2).isFalse()
+            assertThat(extraCharacterAtBeginning.isValid2).isFalse()
+            assertThat(extraCharacterAtEnd.isValid2).isFalse()
             assertThat(tooShort.isValid2).isFalse()
             assertThat(notSet.isValid2).isFalse()
 
@@ -204,9 +206,13 @@ internal class PassportTest {
         fun `eye color`() {
             val notSet = allPropsPassport.copy(eyeColor = null)
             val invalidEyeColor = allPropsPassport.copy(eyeColor = "wtf")
+            val extraCharacterAtBeginning = allPropsPassport.copy(eyeColor = "aamb")
+            val extraCharacterAtEnd = allPropsPassport.copy(eyeColor = "ambb")
 
             assertThat(notSet.isValid2).isFalse()
             assertThat(invalidEyeColor.isValid2).isFalse()
+            assertThat(extraCharacterAtBeginning.isValid2).isFalse()
+            assertThat(extraCharacterAtEnd.isValid2).isFalse()
 
             val validEyeColors = listOf("amb", "blu", "brn", "gry", "grn", "hzl", "oth")
             validEyeColors.forEach { validEyeColor ->
