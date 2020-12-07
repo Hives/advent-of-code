@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 
 @DisplayName("Day 3: tobogganing")
 internal class TobogganKtTest {
-    private val terrain = Reader("day-3-example.txt").strings()
+    private val terrain = Reader("day03-example.txt").strings()
 
     private fun createToboggan() = Toboggan(terrain, Slope(3, 1))
 

@@ -12,7 +12,7 @@ internal class ReaderTest {
     }
 
     @Test
-    fun `can get lines of file as single string`() {
+    fun `can get lines of file as single string, removing trailing newline`() {
         val actual = Reader("list-of-ints.txt").string()
         assertThat(actual).isEqualTo("1\n2\n3")
     }

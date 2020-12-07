@@ -13,13 +13,11 @@ fun main() {
 
     println(part1)
 
-    val letters = "abcdefghijklmnopqrstuvwxyz"
-
     val part2 = input
             .split("\n\n")
             .map { it.split("\n") }
             .map { group ->
-                letters.count { letter ->
+                ('a'..'z').count { letter ->
                     group.all { it.contains(letter) }
                 }
             }.sum()
