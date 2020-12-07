@@ -28,11 +28,11 @@ private fun String.parseBagRule(): BagMap =
     }
 
 fun String.countContents(bagMap: BagMap): Int {
-    val children = bagMap[this]
-    val childrenCount = children?.map { (bag, multiple) -> multiple }?.sum() ?: 0
-    val grandchildrenCount =
-        children?.map { (bag, multiple) -> multiple * bag.countContents(bagMap) }?.sum() ?: 0
-    return childrenCount + grandchildrenCount
+    val immediateChildren = bagMap[this]
+    val immediateChildrenCount = immediateChildren?.map { (_, howMany) -> howMany }?.sum() ?: throw UnknownError("Tried to find a bag that wasn't in the rules!")
+    val grandchildrenEtcCount =
+        immediateChildren.map { (bag, howMany) -> howMany * bag.countContents(bagMap) }.sum()
+    return immediateChildrenCount + grandchildrenEtcCount
 }
 
 fun String.getAllContainers(map: BagMap): Collection<String> {

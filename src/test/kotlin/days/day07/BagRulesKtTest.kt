@@ -55,7 +55,7 @@ internal class BagRulesKtTest {
         fun `parse multiple lines`() {
             val actual = ("dark olive bags contain 3 faded blue bags, 4 dotted black bags.\n" +
                     "vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.\n" +
-                    "faded blue bags contain no other bags.\n").parseBagRules()
+                    "faded blue bags contain no other bags.").parseBagRules()
 
             assertThat(actual).isEqualTo(
                 mapOf(
