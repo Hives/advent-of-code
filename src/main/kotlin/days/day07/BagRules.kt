@@ -29,9 +29,14 @@ private fun String.parseBagRule(): BagMap =
 
 fun String.countContents(bagMap: BagMap): Int {
     val immediateChildren = bagMap[this]
-    val immediateChildrenCount = immediateChildren?.map { (_, howMany) -> howMany }?.sum() ?: throw UnknownError("Tried to find a bag that wasn't in the rules!")
+
+    val immediateChildrenCount =
+        immediateChildren?.map { (_, howMany) -> howMany }?.sum()
+            ?: throw UnknownError("Tried to find a bag that wasn't in the rules!")
+
     val grandchildrenEtcCount =
         immediateChildren.map { (bag, howMany) -> howMany * bag.countContents(bagMap) }.sum()
+
     return immediateChildrenCount + grandchildrenEtcCount
 }
 
