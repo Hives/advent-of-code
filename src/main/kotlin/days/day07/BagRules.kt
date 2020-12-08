@@ -3,29 +3,22 @@ package days.day07
 typealias BagMap = Map<String, List<Pair<String, Int>>>
 
 fun String.parseBagRules(): BagMap =
-    this.lines().map { it.parseBagRule() }
-        .reduce { acc, map -> (acc.toList() + map.toList()).toMap() }
+    this.lines().map { it.parseBagRule() }.toMap()
 
-private fun String.parseBagRule(): BagMap =
-    this.split("contain").let {
-        mapOf(
-            it[0].replace("bags", "").trim() to it[1].split(",")
-                .let {
-                    if (it.singleOrNull()?.contains("no other bags") == true) emptyList()
-                    else
-                        it.map {
-                            it.replace("bags", "").replace("bag", "").replace(".", "").trim()
-                                .split(" ")
-                                .let {
-                                    Pair(
-                                        it.subList(1, it.size).joinToString(" "),
-                                        it[0].toInt()
-                                    )
-                                }
-                        }
-                }
-        )
+private fun String.parseBagRule(): Pair<String, List<Pair<String, Int>>> {
+    val (bag, contentsDescription) = this.split(" bags contain ")
+
+    return if (contentsDescription.contains("no other bags")) {
+        bag to emptyList()
+    } else {
+        val contents = contentsDescription
+            .split(",")
+            .map { """(\d+) (.+) bags?""".toRegex().find(it)!!.destructured }
+            .map { (howMany, innerBag) -> Pair(innerBag, howMany.toInt()) }
+
+        bag to contents
     }
+}
 
 fun String.countContents(bagMap: BagMap): Int {
     val immediateChildren = bagMap[this]
