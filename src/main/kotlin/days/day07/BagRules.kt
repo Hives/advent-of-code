@@ -24,7 +24,7 @@ fun String.countContents(bagMap: BagMap): Int {
     val immediateChildren = bagMap[this]
 
     val immediateChildrenCount =
-        immediateChildren?.map { (_, howMany) -> howMany }?.sum()
+        immediateChildren?.sumBy { (_, howMany) -> howMany }
             ?: throw UnknownError("Tried to find a bag that wasn't in the rules!")
 
     val grandchildrenEtcCount =
