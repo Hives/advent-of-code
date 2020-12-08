@@ -2,8 +2,8 @@ package days.day07
 
 typealias BagMap = Map<String, List<Pair<String, Int>>>
 
-fun String.parseBagRules(): BagMap =
-    this.lines().map { it.parseBagRule() }.toMap()
+fun List<String>.parseBagRules(): BagMap =
+    this.map { it.parseBagRule() }.toMap()
 
 private fun String.parseBagRule(): Pair<String, List<Pair<String, Int>>> {
     val (bag, contentsDescription) = this.split(" bags contain ")

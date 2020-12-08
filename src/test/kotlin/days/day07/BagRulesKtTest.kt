@@ -12,7 +12,7 @@ internal class BagRulesKtTest {
     inner class Parsing {
         @Test
         fun `parse a string`() {
-            val actual = "dark orange bags contain 1 bright white bag, 4 muted yellow bags.".parseBagRules()
+            val actual = listOf("dark orange bags contain 1 bright white bag, 4 muted yellow bags.").parseBagRules()
 
             assertThat(actual).isEqualTo(
                 mapOf(
@@ -27,7 +27,7 @@ internal class BagRulesKtTest {
         @Test
         fun `parse a longer string`() {
             val actual =
-                "dark maroon bags contain 2 striped silver bags, 4 mirrored maroon bags, 5 shiny gold bags, 1 dotted gold bag."
+                listOf("dark maroon bags contain 2 striped silver bags, 4 mirrored maroon bags, 5 shiny gold bags, 1 dotted gold bag.")
                     .parseBagRules()
 
             assertThat(actual).isEqualTo(
@@ -44,18 +44,20 @@ internal class BagRulesKtTest {
 
         @Test
         fun `parse a bag that contains no other bags`() {
-            val actual = "faded blue bags contain no other bags.".parseBagRules()
+            val actual = listOf("faded blue bags contain no other bags.").parseBagRules()
 
             assertThat(actual).isEqualTo(
-                mapOf("faded blue" to emptyList<Pair<String, Int>>())
+                mapOf("faded blue" to emptyList())
             )
         }
 
         @Test
         fun `parse multiple lines`() {
-            val actual = ("dark olive bags contain 3 faded blue bags, 4 dotted black bags.\n" +
-                    "vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.\n" +
-                    "faded blue bags contain no other bags.").parseBagRules()
+            val actual = listOf(
+                "dark olive bags contain 3 faded blue bags, 4 dotted black bags.",
+                "vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.",
+                "faded blue bags contain no other bags."
+            ).parseBagRules()
 
             assertThat(actual).isEqualTo(
                 mapOf(
@@ -75,7 +77,7 @@ internal class BagRulesKtTest {
 
     @Nested
     inner class GetContainers {
-        private val bagMap = Reader("day07-example.txt").string().parseBagRules()
+        private val bagMap = Reader("day07-example.txt").strings().parseBagRules()
 
         @Test
         fun `get immediate containers`() {

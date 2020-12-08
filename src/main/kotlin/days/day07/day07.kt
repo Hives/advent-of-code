@@ -3,7 +3,7 @@ package days.day07
 import lib.Reader
 
 fun main() {
-    val input = Reader("day07.txt").string()
+    val input = Reader("day07.txt").strings()
     val bagRules = input.parseBagRules()
     val myBag = "shiny gold"
 
