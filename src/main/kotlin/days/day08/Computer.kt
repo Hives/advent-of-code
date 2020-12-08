@@ -19,38 +19,42 @@ private tailrec fun iterate(
     }
 }
 
-fun computeNextState(state: State, program: List<String>): State {
-    val (operation, argument) = parseInstruction(program[state.pointer])
-    return operation.operate(argument, state)
-}
+fun computeNextState(state: State, program: List<String>) =
+    Operation.from(program[state.pointer]).operate(state)
 
-private fun parseInstruction(input: String): Pair<Operation, Int> {
-    val (operation, argument) = input.split(" ")
+private abstract class Operation {
+    abstract fun operate(state: State): State
 
-    return Pair(
-        Operation.valueOf(operation.toUpperCase()),
-        argument.toInt()
-    )
-}
-
-private enum class Operation {
-    NOP {
-        override fun operate(argument: Int, state: State) =
+    object NoOp : Operation() {
+        override fun operate(state: State) =
             state.copy(pointer = state.pointer + 1)
-    },
-    JMP {
-        override fun operate(argument: Int, state: State) =
+    }
+
+    class Jump(val argument: Int) : Operation() {
+        override fun operate(state: State) =
             state.copy(pointer = state.pointer + argument)
-    },
-    ACC {
-        override fun operate(argument: Int, state: State) =
+    }
+
+    class Accumulate(val argument: Int) : Operation() {
+        override fun operate(state: State) =
             State(
                 pointer = state.pointer + 1,
                 accumulator = state.accumulator + argument
             )
-    };
+    }
 
-    abstract fun operate(argument: Int, state: State): State
+    companion object {
+        fun from(input: String): Operation {
+            val (operation, argument) = input.split(" ")
+
+            return when(operation) {
+                "nop" -> NoOp
+                "jmp" -> Jump(argument.toInt())
+                "acc" -> Accumulate(argument.toInt())
+                else -> throw Exception("Unrecognised operation")
+            }
+        }
+    }
 }
 
 enum class FinalStatus {
