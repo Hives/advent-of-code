@@ -2,68 +2,44 @@ package days.day08
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import days.day08.Status.FINISHED
-import days.day08.Status.INFINITE_LOOP
+import days.day08.FinalStatus.FINITO
+import days.day08.FinalStatus.INFINITE_LOOP
 import org.junit.jupiter.api.Test
 
 internal class ComputerKtTest {
     @Test
-    fun `new history`() {
-        assertThat(History.new()).isEqualTo(History(listOf(0), listOf(0)))
-    }
-
-    @Test
-    fun `nop`() {
-        val program = listOf("nop +0")
-        val output = compute(program, History.new())
-        assertThat(output.size == 2)
-        assertThat(output.pointer.last()).isEqualTo(1)
-        assertThat(output.acc.last()).isEqualTo(0)
+    fun nop() {
+        val program = listOf("nop +99")
+        val output = computeNextState(State.INITIAL, program)
+        assertThat(output).isEqualTo(State(1, 0))
     }
 
     @Test
     fun `jmp positive`() {
         val program = listOf("jmp +27")
-        val output = compute(program, History.new())
-        assertThat(output.size == 2)
-        assertThat(output.pointer.last()).isEqualTo(27)
-        assertThat(output.acc.last()).isEqualTo(0)
+        val output = computeNextState(State.INITIAL, program)
+        assertThat(output).isEqualTo(State(27, 0))
     }
 
     @Test
     fun `jmp negative`() {
         val program = listOf("jmp -27")
-        val output = compute(program, History.new())
-        assertThat(output.size == 2)
-        assertThat(output.pointer.last()).isEqualTo(-27)
-        assertThat(output.acc.last()).isEqualTo(0)
+        val output = computeNextState(State.INITIAL, program)
+        assertThat(output).isEqualTo(State(-27, 0))
     }
 
     @Test
     fun `acc positive`() {
         val program = listOf("acc +27")
-        val output = compute(program, History.new())
-        assertThat(output.size == 2)
-        assertThat(output.pointer.last()).isEqualTo(1)
-        assertThat(output.acc.last()).isEqualTo(27)
+        val output = computeNextState(State.INITIAL, program)
+        assertThat(output).isEqualTo(State(1, 27))
     }
 
     @Test
     fun `acc negative`() {
         val program = listOf("acc -27")
-        val output = compute(program, History.new())
-        assertThat(output.size == 2)
-        assertThat(output.pointer.last()).isEqualTo(1)
-        assertThat(output.acc.last()).isEqualTo(-27)
-    }
-
-    @Test
-    fun `two lines`() {
-        val program = listOf("nop +0", "acc +10")
-        val output = compute(program, compute(program, History.new()))
-        assertThat(output.size == 3)
-        assertThat(output.pointer).isEqualTo(listOf(0, 1, 2))
-        assertThat(output.acc).isEqualTo(listOf(0, 0, 10))
+        val output = computeNextState(State.INITIAL, program)
+        assertThat(output).isEqualTo(State(1, -27))
     }
 
     @Test
@@ -77,8 +53,8 @@ internal class ComputerKtTest {
                 "acc +1\n" +
                 "jmp -4\n" +
                 "acc +6\n").trim().lines()
-        val (output, status) = execute(program)
-        assertThat(output.acc[output.acc.size - 2]).isEqualTo(5)
+        val (state, status) = execute(program)
+        assertThat(state.accumulator).isEqualTo(5)
         assertThat(status).isEqualTo(INFINITE_LOOP)
     }
 
@@ -93,9 +69,9 @@ internal class ComputerKtTest {
                 "acc +1\n" +
                 "nop -4\n" +
                 "acc +6\n").trim().lines()
-        val (output, status) = execute(program)
-        assertThat(output.acc.last()).isEqualTo(8)
-        assertThat(status).isEqualTo(FINISHED)
+        val (state, status) = execute(program)
+        assertThat(state.accumulator).isEqualTo(8)
+        assertThat(status).isEqualTo(FINITO)
     }
 
     @Test

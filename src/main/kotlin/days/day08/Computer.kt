@@ -1,78 +1,74 @@
 package days.day08
 
-import days.day08.Operation.*
-import days.day08.Status.FINISHED
-import days.day08.Status.INFINITE_LOOP
+import days.day08.FinalStatus.FINITO
+import days.day08.FinalStatus.INFINITE_LOOP
 
-fun compute(program: List<String>, history: History): History {
-    val currentPointer = history.pointer.last()
-    val currentAcc = history.acc.last()
+fun execute(program: List<String>) = iterate(program, State.INITIAL, emptyList())
 
-    val (operation, argument) = parseCode(program[currentPointer])
-
-    return when (operation) {
-        NOP -> History(
-            pointer = history.pointer + (currentPointer + 1),
-            acc = history.acc + currentAcc
-        )
-        JMP -> History(
-            pointer = history.pointer + (currentPointer + argument),
-            acc = history.acc + currentAcc
-        )
-        ACC -> History(
-            pointer = history.pointer + (currentPointer + 1),
-            acc = history.acc + (currentAcc + argument)
-        )
-    }
-}
-
-tailrec fun execute(program: List<String>, initial: History = History(listOf(0), listOf(0))): Pair<History, Status> {
-    val new = compute(program, initial)
+private tailrec fun iterate(
+    program: List<String>,
+    state: State,
+    pointerHistory: List<Int>
+): Pair<State, FinalStatus> {
+    val newState = computeNextState(state, program)
 
     return when {
-        new.isInLoop() -> Pair(new, INFINITE_LOOP)
-        new.isFinished(program) -> Pair(new, FINISHED)
-        else -> execute(program, new)
+        newState.pointer >= program.size -> Pair(newState, FINITO)
+        pointerHistory.contains(newState.pointer) -> Pair(newState, INFINITE_LOOP)
+        else -> iterate(program, newState, pointerHistory + newState.pointer)
     }
 }
 
-private val instructionRegex = """(\w{3}) ([-+])(\d+)""".toRegex()
-
-private enum class Operation {
-    NOP, JMP, ACC
+fun computeNextState(state: State, program: List<String>): State {
+    val (operation, argument) = parseInstruction(program[state.pointer])
+    return operation.operate(argument, state)
 }
 
-enum class Status {
-    INFINITE_LOOP, FINISHED
-}
-
-private fun parseCode(input: String): Pair<Operation, Int> {
-    val (operation, sign, argument) = instructionRegex.find(input)!!.destructured
+private fun parseInstruction(input: String): Pair<Operation, Int> {
+    val (operation, argument) = input.split(" ")
 
     return Pair(
         Operation.valueOf(operation.toUpperCase()),
-        argument.toInt().let { if (sign == "-") it * -1 else it }
+        argument.toInt()
     )
 }
 
-fun switchJmpAndNop(line: String): String =
-    when (line.take(3)) {
-        "jmp" -> "nop" + line.drop(3)
-        "nop" -> "jmp" + line.drop(3)
-        else -> line
+private enum class Operation {
+    NOP {
+        override fun operate(argument: Int, state: State) =
+            state.copy(pointer = state.pointer + 1)
+    },
+    JMP {
+        override fun operate(argument: Int, state: State) =
+            state.copy(pointer = state.pointer + argument)
+    },
+    ACC {
+        override fun operate(argument: Int, state: State) =
+            State(
+                pointer = state.pointer + 1,
+                accumulator = state.accumulator + argument
+            )
+    };
+
+    abstract fun operate(argument: Int, state: State): State
+}
+
+enum class FinalStatus {
+    INFINITE_LOOP, FINITO
+}
+
+fun switchJmpAndNop(instruction: String): String =
+    when (instruction.take(3)) {
+        "jmp" -> "nop" + instruction.drop(3)
+        "nop" -> "jmp" + instruction.drop(3)
+        else -> instruction
     }
 
 fun <T> List<T>.replace(n: Int, value: T): List<T> =
     this.subList(0, n) + value + this.subList(n + 1, this.size)
 
-data class History(val pointer: List<Int>, val acc: List<Int>) {
-    val size: Int
-        get() = pointer.size
-
-    fun isInLoop() = pointer.subList(0, pointer.size - 1).contains(pointer.last())
-    fun isFinished(program: List<String>) = pointer.last() >= program.size
-
+data class State(val pointer: Int, val accumulator: Int) {
     companion object {
-        fun new() = History(listOf(0), listOf(0))
+        val INITIAL = State(0, 0)
     }
 }
