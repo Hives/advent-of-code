@@ -22,4 +22,16 @@ internal class ReaderTest {
         val actual = Reader("list-of-ints.txt").ints()
         assertThat(actual).isEqualTo(listOf(1, 2, 3))
     }
+
+    @Test
+    fun `can read a file which is a list of longs`() {
+        val actual = Reader("list-of-longs.txt").longs()
+        assertThat(actual).isEqualTo(
+            listOf(
+                112642059017419L,
+                78751414382848L,
+                97978258820179L,
+            )
+        )
+    }
 }

@@ -2,7 +2,7 @@ package lib
 
 import kotlin.system.measureNanoTime
 
-fun time(message: String? = null, iterations: Int = 1000, warmUpIterations: Int = 10, f: () -> Any) {
+fun time(message: String? = null, iterations: Int = 1000, warmUpIterations: Int = 10, f: () -> Any?) {
     println()
 
     repeat(warmUpIterations) { f() }
