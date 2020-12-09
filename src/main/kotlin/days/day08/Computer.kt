@@ -13,8 +13,8 @@ private tailrec fun iterate(
     val newState = computeNextState(state, program)
 
     return when {
-        newState.pointer >= program.size -> Pair(newState, FINITO)
-        pointerHistory.contains(newState.pointer) -> Pair(newState, INFINITE_LOOP)
+        programIsComplete(program, newState) -> Pair(newState, FINITO)
+        programIsLooping(newState, pointerHistory) -> Pair(newState, INFINITE_LOOP)
         else -> iterate(program, newState, pointerHistory + newState.pointer)
     }
 }
@@ -56,6 +56,16 @@ private abstract class Operation {
         }
     }
 }
+
+private fun programIsLooping(
+    newState: State,
+    pointerHistory: List<Int>
+) = pointerHistory.contains(newState.pointer)
+
+private fun programIsComplete(
+    program: List<String>,
+    newState: State
+) = newState.pointer >= program.size
 
 enum class FinalStatus {
     INFINITE_LOOP, FINITO
