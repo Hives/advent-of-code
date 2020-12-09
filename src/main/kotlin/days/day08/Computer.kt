@@ -19,8 +19,28 @@ private tailrec fun iterate(
     }
 }
 
+data class State(val pointer: Int, val accumulator: Int) {
+    companion object {
+        val INITIAL = State(0, 0)
+    }
+}
+
 fun computeNextState(state: State, program: List<String>) =
     Operation.from(program[state.pointer]).operate(state)
+
+private fun programIsComplete(
+    program: List<String>,
+    newState: State
+) = newState.pointer >= program.size
+
+private fun programIsLooping(
+    newState: State,
+    pointerHistory: List<Int>
+) = pointerHistory.contains(newState.pointer)
+
+enum class FinalStatus {
+    INFINITE_LOOP, FINITO
+}
 
 private abstract class Operation {
     abstract fun operate(state: State): State
@@ -57,20 +77,6 @@ private abstract class Operation {
     }
 }
 
-private fun programIsLooping(
-    newState: State,
-    pointerHistory: List<Int>
-) = pointerHistory.contains(newState.pointer)
-
-private fun programIsComplete(
-    program: List<String>,
-    newState: State
-) = newState.pointer >= program.size
-
-enum class FinalStatus {
-    INFINITE_LOOP, FINITO
-}
-
 fun switchJmpAndNop(instruction: String): String =
     when (instruction.take(3)) {
         "jmp" -> "nop" + instruction.drop(3)
@@ -80,9 +86,3 @@ fun switchJmpAndNop(instruction: String): String =
 
 fun <T> List<T>.replace(n: Int, value: T): List<T> =
     this.subList(0, n) + value + this.subList(n + 1, this.size)
-
-data class State(val pointer: Int, val accumulator: Int) {
-    companion object {
-        val INITIAL = State(0, 0)
-    }
-}
