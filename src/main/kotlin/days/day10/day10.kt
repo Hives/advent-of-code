@@ -113,8 +113,9 @@ fun main() {
         val pathsToJolt = mutableMapOf(wallSocket to 1L)
 
         jolts.forEach { jolt ->
-            val pathsToHere = (pathsToJolt[jolt - 1] ?: 0) + (pathsToJolt[jolt - 2] ?: 0) + (pathsToJolt[jolt - 3] ?: 0)
-            pathsToJolt[jolt] = pathsToHere
+            pathsToJolt[jolt] = pathsToJolt.getOrDefault(jolt - 1, 0) +
+                        pathsToJolt.getOrDefault(jolt - 2, 0) +
+                        pathsToJolt.getOrDefault(jolt - 3, 0)
         }
 
         return pathsToJolt[device] ?: 0
