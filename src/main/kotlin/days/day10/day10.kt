@@ -80,20 +80,16 @@ fun main() {
             else iterate(new)
         }
 
-        println(iterate(start).size)
-
-        return 0
+        return iterate(start).size
     }
+
+    time("part2VeryIneffecient, example2", 100) { part2VeryInefficient(example2) }
 
     fun part2AlsoInefficient(input: List<Int>): Long {
         val device = input.maxOrNull()!! + 3
         val jolts = (input + 0 + device).sorted()
 
         val map = jolts.map { start -> start to jolts.filter { end -> end > start && end <= start + 3 } }.toMap()
-
-        println(map)
-
-        var pathCount = 0L
 
         fun countPaths(start: Int, end: Int): Long {
             return if (start == end) 1
@@ -107,6 +103,8 @@ fun main() {
         return countPaths(0, device)
     }
 
+    time("part2AlsoInefficient example2") { part2AlsoInefficient(example2) }
+
     fun part2(input: List<Int>): Long {
         val wallSocket = 0
         val device = input.maxOrNull()!! + 3
@@ -115,16 +113,16 @@ fun main() {
         val pathsToJolt = mutableMapOf(wallSocket to 1L)
 
         jolts.forEach { jolt ->
-            val pathsToHere = (pathsToJolt[jolt - 1] ?: 0L) + (pathsToJolt[jolt - 2] ?: 0L) + (pathsToJolt[jolt - 3] ?: 0L)
+            val pathsToHere = (pathsToJolt[jolt - 1] ?: 0) + (pathsToJolt[jolt - 2] ?: 0) + (pathsToJolt[jolt - 3] ?: 0)
             pathsToJolt[jolt] = pathsToHere
         }
 
         return pathsToJolt[device] ?: 0
     }
 
-    println(part2(input))
+    time("part 2 efficient, example2") { part2(example2) }
 
-    time("part 2", 10, 2) { part2(input)}
+    time("part 2", 10_000, 100) { part2(input) }
 
 }
 
