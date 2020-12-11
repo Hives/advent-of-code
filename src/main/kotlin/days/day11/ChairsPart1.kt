@@ -6,26 +6,26 @@ tailrec fun run(chairs: List<String>): List<String> {
     else run(newChairs)
 }
 
-fun newChairs(chairs: List<String>): List<String> =
-    chairs.mapIndexed { y, row ->
-        row.mapIndexed { x, chair ->
-            val neighbours = getNeighbours(x, y, chairs)
+fun newChairs(floor: List<String>): List<String> =
+    floor.mapIndexed { y, row ->
+        row.mapIndexed { x, location ->
+            val neighbours = getNeighbours(x, y, floor)
             when {
-                chair == 'L' && neighbours.count { it == '#' } == 0 -> '#'
-                chair == '#' && neighbours.count { it == '#' } >= 4 -> 'L'
-                else -> chair
+                location == 'L' && neighbours.count { it == '#' } == 0 -> '#'
+                location == '#' && neighbours.count { it == '#' } >= 4 -> 'L'
+                else -> location
             }
         }.joinToString("")
     }
 
 private fun getNeighbours(x: Int, y: Int, chairs: List<String>): List<Char?> =
     listOf(
-        Pair(x - 1, y - 1),
-        Pair(x, y - 1),
-        Pair(x + 1, y - 1),
-        Pair(x - 1, y),
-        Pair(x + 1, y),
-        Pair(x - 1, y + 1),
-        Pair(x, y + 1),
-        Pair(x + 1, y + 1),
-    ).map { chairs.getOrNull(it.second)?.getOrNull(it.first) }
+        Pair(-1, -1),
+        Pair(0, -1),
+        Pair(1, -1),
+        Pair(-1, 0),
+        Pair(1, 0),
+        Pair(-1, 1),
+        Pair(0, 1),
+        Pair(1, 1),
+    ).map { chairs.getOrNull(y + it.second)?.getOrNull(x + it.first) }

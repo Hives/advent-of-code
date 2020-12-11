@@ -6,19 +6,19 @@ tailrec fun run2(chairs: List<String>): List<String> {
     else run2(newChairs)
 }
 
-fun newChairs2(chairs: List<String>): List<String> =
-    chairs.mapIndexed { y, row ->
-        row.mapIndexed { x, chair ->
-            val visibleSeats = getVisibleSeats(x, y, chairs)
+fun newChairs2(floor: List<String>): List<String> =
+    floor.mapIndexed { y, row ->
+        row.mapIndexed { x, location ->
+            val visibleChairs = getVisibleChairs(x, y, floor)
             when {
-                chair == 'L' && visibleSeats.count { it == '#' } == 0 -> '#'
-                chair == '#' && visibleSeats.count { it == '#' } >= 5 -> 'L'
-                else -> chair
+                location == 'L' && visibleChairs.count { it == '#' } == 0 -> '#'
+                location == '#' && visibleChairs.count { it == '#' } >= 5 -> 'L'
+                else -> location
             }
         }.joinToString("")
     }
 
-fun getVisibleSeats(x: Int, y: Int, chairs: List<String>): List<Char?> =
+fun getVisibleChairs(x: Int, y: Int, floor: List<String>): List<Char?> =
     listOf(
         Pair(-1, -1),
         Pair(0, -1),
@@ -29,11 +29,11 @@ fun getVisibleSeats(x: Int, y: Int, chairs: List<String>): List<Char?> =
         Pair(0, 1),
         Pair(1, 1),
     ).map {
-        var chair: Char?
-        var i = 0
+        var location: Char?
+        var r = 0
         do {
-            i++
-            chair = chairs.getOrNull(y + (it.second * i))?.getOrNull(x + (it.first * i))
-        } while (chair == '.')
-        chair
+            r++
+            location = floor.getOrNull(y + (it.second * r))?.getOrNull(x + (it.first * r))
+        } while (location == '.')
+        location
     }

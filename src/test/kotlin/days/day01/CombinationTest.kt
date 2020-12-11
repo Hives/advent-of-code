@@ -32,10 +32,4 @@ internal class CombinationTest {
         val fourth = c.asSequence().take(4).toList().last()
         assertThat(fourth).isEqualTo(listOf('a', 'c', 'd'))
     }
-
-    @Test
-    fun `foobar`() {
-        val c = Combination(listOf('a', 'b', 'c', 'd', 'e'), 3)
-        c.asSequence().toList().forEach { println(it) }
-    }
 }

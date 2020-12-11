@@ -18,7 +18,7 @@ internal class ChairsPart2KtTest {
             "#........",
             "...#....."
         )
-        assertThat(getVisibleSeats(3, 4, example1)).isEqualTo(listOf('#', '#', '#', '#', '#', '#', '#', '#'))
+        assertThat(getVisibleChairs(3, 4, example1)).isEqualTo(listOf('#', '#', '#', '#', '#', '#', '#', '#'))
     }
 
     @Test
@@ -26,7 +26,6 @@ internal class ChairsPart2KtTest {
         var chairs = example
         expectedSequence.forEachIndexed { index, expected ->
             chairs = newChairs2(chairs)
-            println(index)
             assertThat(chairs).isEqualTo(expected)
         }
 

@@ -15,7 +15,6 @@ internal class SeatsBinaryKtTest {
             Pair("FFFBBBFRRR", 119),
             Pair("BBFFBBFRLL", 820)
         ).forEach { (input, expectedSeatId) ->
-            println(input)
             assertThat(findSeatUsingBinaryStrings(input)).isEqualTo(expectedSeatId)
         }
     }
