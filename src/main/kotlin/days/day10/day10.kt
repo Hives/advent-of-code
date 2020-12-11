@@ -118,7 +118,7 @@ fun main() {
                         pathsToJolt.getOrDefault(jolt - 3, 0)
         }
 
-        return pathsToJolt[device] ?: 0
+        return pathsToJolt.getOrDefault(device, 0)
     }
 
     time("part 2 efficient, example2") { part2(example2) }
