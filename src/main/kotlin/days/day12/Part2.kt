@@ -1,26 +1,28 @@
 package days.day12
 
+import java.lang.Math.floorMod
 import kotlin.math.abs
 
-fun doItPart2(input: List<String>, initial: State): State =
-    input.fold(initial) { acc, s -> updateState(acc, s) }
+fun doItPart2(instructions: List<String>, initial: State): State =
+    instructions.fold(initial) { acc, instruction -> updateState(acc, instruction) }
 
 fun updateState(state: State, input: String): State {
-    val (action, value) = Pair(input.take(1), input.drop(1).toInt())
     val (location, waypoint) = state
+    val action = input.take(1)
+    val value = input.drop(1).toInt()
 
     return when (action) {
         in "NESW" -> State(
             location = location,
-            waypoint = waypoint + (Direction.valueOf(action).vector * value)
+            waypoint = waypoint + (UnitVector.valueOf(action).vector * value)
         )
         "R" -> State(
             location = location,
-            waypoint = waypoint.rotateQuarterTurnsRight(Math.floorMod(value, 360) / 90)
+            waypoint = waypoint.rotateQuarterTurnsRight(floorMod(value, 360) / 90)
         )
         "L" -> State(
             location = location,
-            waypoint = waypoint.rotateQuarterTurnsRight(Math.floorMod(-value, 360) / 90)
+            waypoint = waypoint.rotateQuarterTurnsRight(floorMod(-value, 360) / 90)
         )
         "F" -> State(
             location = location + (waypoint * value),
@@ -30,7 +32,7 @@ fun updateState(state: State, input: String): State {
     }
 }
 
-enum class Direction(val vector: Vector) {
+enum class UnitVector(val vector: Vector) {
     N(Vector(0, 1)),
     S(Vector(0, -1)),
     E(Vector(1, 0)),

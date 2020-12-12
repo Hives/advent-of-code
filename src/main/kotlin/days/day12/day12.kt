@@ -21,7 +21,10 @@ fun main() {
     time("part 1") { part1() }
 
     fun part2(): Int {
-        val initial = State(Vector(0, 0), Vector(10, 1))
+        val initial = State(
+            location = Vector(0, 0),
+            waypoint = Vector(10, 1)
+        )
         return doItPart2(input, initial).location.manhattanDistance
     }
 
