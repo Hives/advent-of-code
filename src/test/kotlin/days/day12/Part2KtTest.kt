@@ -18,7 +18,7 @@ internal class Part2KtTest {
                 Instruction2.Forward(10),
                 Instruction2.North(3),
                 Instruction2.Forward(7),
-                Instruction2.Right(90),
+                Instruction2.Turn(90),
                 Instruction2.Forward(11)
             )
         )

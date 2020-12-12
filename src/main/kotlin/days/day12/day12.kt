@@ -23,7 +23,7 @@ fun main() {
     fun part2() =
         input
             .map { Instruction2.from(it) }
-            .doIt(State2(0, 0, 10, 1)).manhattanDistance
+            .doIt(State2(Vector(0, 0), Vector(10, 1))).boat.manhattanDistance
 
     time("part 2") { part2() }
 }
