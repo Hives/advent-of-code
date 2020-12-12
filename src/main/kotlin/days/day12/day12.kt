@@ -16,14 +16,14 @@ fun main() {
     fun part1() =
         input
             .map { Instruction1.from(it) }
-            .doIt(State1(0, 0, 90)).manhattanDistance
+            .doItPart1(State1(0, 0, 90)).manhattanDistance
 
     time("part 1") { part1() }
 
-    fun part2() =
-        input
-            .map { Instruction2.from(it) }
-            .doIt(State2(Vector(0, 0), Vector(10, 1))).boat.manhattanDistance
+    fun part2(): Int {
+        val initial = State(Vector(0, 0), Vector(10, 1))
+        return doItPart2(input, initial).location.manhattanDistance
+    }
 
     time("part 2") { part2() }
 }

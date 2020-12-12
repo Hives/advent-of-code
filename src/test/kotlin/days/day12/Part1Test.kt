@@ -27,7 +27,7 @@ internal class Part1Test {
 
     @Test
     fun `steps`() {
-        assertThat(parseInput1(exampleInput).doIt(State1(0, 0, 90))).isEqualTo(
+        assertThat(parseInput1(exampleInput).doItPart1(State1(0, 0, 90))).isEqualTo(
             State1(17, -8, 180),
         )
     }

@@ -2,82 +2,58 @@ package days.day12
 
 import kotlin.math.abs
 
-fun List<Instruction2>.doIt(initial: State2): State2 =
-    this.fold(initial) { acc, instruction -> instruction.move(acc) }
+fun doItPart2(input: List<String>, initial: State): State =
+    input.fold(initial) { acc, s -> updateState(acc, s) }
 
-fun parseInput2(input: String) = input.trim().lines().map { Instruction2.from(it) }
+fun updateState(state: State, input: String): State {
+    val (action, value) = Pair(input.take(1), input.drop(1).toInt())
+    val (location, waypoint) = state
 
-sealed class Instruction2 {
-    abstract fun move(initial: State2): State2
-
-    data class North(private val distance: Int) : Instruction2() {
-        override fun move(initial: State2) = with(initial) {
-            State2(
-                boat = boat,
-                waypoint = waypoint.move(Vector(0, distance))
-            )
-        }
-    }
-
-    data class East(private val distance: Int) : Instruction2() {
-        override fun move(initial: State2) = with(initial) {
-            State2(
-                boat = boat,
-                waypoint = waypoint.move(Vector(distance, 0))
-            )
-        }
-    }
-
-    data class Turn(private val clockwiseQuarterTurns: Int) : Instruction2() {
-        override fun move(initial: State2) = with(initial) {
-            State2(
-                boat = boat,
-                waypoint = waypoint.repeatedlyApply(clockwiseQuarterTurns) {it.rotateRight()}
-            )
-        }
-    }
-
-    data class Forward(private val arg: Int) : Instruction2() {
-        override fun move(initial: State2) = with(initial) {
-            State2(
-                boat = boat.move(waypoint * arg),
-                waypoint = waypoint
-            )
-        }
-    }
-
-    companion object {
-        fun from(input: String): Instruction2 {
-            val (action, value) = Pair(input.take(1), input.drop(1).toInt())
-            return when (action) {
-                "N" -> North(value)
-                "S" -> North(-value)
-                "E" -> East(value)
-                "W" -> East(-value)
-                "R" -> Turn(Math.floorMod(value, 360) / 90)
-                "L" -> Turn(Math.floorMod(-value, 360) / 90)
-                "F" -> Forward(value)
-                else -> throw Exception("Unparseable instruction")
-            }
-        }
+    return when (action) {
+        in "NESW" -> State(
+            location = location,
+            waypoint = waypoint + (Direction.valueOf(action).vector * value)
+        )
+        "R" -> State(
+            location = location,
+            waypoint = waypoint.rotateQuarterTurnsRight(Math.floorMod(value, 360) / 90)
+        )
+        "L" -> State(
+            location = location,
+            waypoint = waypoint.rotateQuarterTurnsRight(Math.floorMod(-value, 360) / 90)
+        )
+        "F" -> State(
+            location = location + (waypoint * value),
+            waypoint = waypoint
+        )
+        else -> throw Exception("Unparseable instruction: $input")
     }
 }
 
-data class Vector(val east: Int, val north: Int) {
+enum class Direction(val vector: Vector) {
+    N(Vector(0, 1)),
+    S(Vector(0, -1)),
+    E(Vector(1, 0)),
+    W(Vector(-1 , 0))
+}
+
+data class Vector(val x: Int, val y: Int) {
     val manhattanDistance: Int
-        get() = abs(east) + abs(north)
+        get() = abs(x) + abs(y)
 
-    operator fun times(n: Int) = Vector(east * n, north * n)
+    operator fun times(n: Int) = Vector(x * n, y * n)
 
-    fun move(vector: Vector) = Vector(this.east + vector.east, this.north + vector.north)
+    operator fun plus(vector: Vector) = Vector(this.x + vector.x, this.y + vector.y)
 
-    fun rotateRight() = this.copy(
-        north = -this.east,
-        east = this.north
-    )
+    fun rotateQuarterTurnsRight(times: Int = 1) = this.repeatedlyApply(times) {
+        Vector(
+            y = -it.x,
+            x = it.y
+        )
+    }
 }
 
-data class State2(val boat: Vector, val waypoint: Vector)
+data class State(val location: Vector, val waypoint: Vector)
 
 tailrec fun <T> T.repeatedlyApply(n: Int, f: (T) -> T): T =
     if (n == 0) this

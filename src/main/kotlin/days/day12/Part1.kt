@@ -2,7 +2,7 @@ package days.day12
 
 import kotlin.math.abs
 
-fun List<Instruction1>.doIt(initial: State1): State1 =
+fun List<Instruction1>.doItPart1(initial: State1): State1 =
     this.fold(initial) { acc, instruction -> instruction.move(acc) }
 
 fun parseInput1(input: String) = input.trim().lines().map { Instruction1.from(it) }
