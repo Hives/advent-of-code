@@ -105,7 +105,7 @@ There are a number of algorithms to find the solution to a set of equations whic
 
 Yes, I'm afraid so. The (non-extended) Euclidean Algorithm is a way to construct the greatest common divisor (GCD) for two numbers. The Extended Euclidean Algorithm uses the results of the Euclidean Algorithm to express the GCD as a linear combination of the original two numbers.
 
-So if your two numbers are a and b, the Euclidean Algorithm with give you the greatest common divisor, G, and the Extended Euclidean Algorithm will give you two numbers r and s such that you can write:
+So if your two numbers are a and b, the Euclidean Algorithm will give you the greatest common divisor, G, and the Extended Euclidean Algorithm will give you two numbers r and s such that you can write:
 
 - G = (r * a) + (s * b)
 
