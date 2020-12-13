@@ -16,7 +16,7 @@ So if the input list is [7, 5, 8, blank], we need to find the smallest time t su
 - a number 8 bus leaves at time t + 2
 - we don't care what happens at time t + 3
 
-The answer in this case is 14 (I made the example up to be simple). Here's a picture showing when buses depart in this example:
+The answer in this case is 14. Here's a picture showing when buses depart in this example:
 ```
     |   buses
   t |  7  5  8
@@ -82,7 +82,7 @@ Ok, so now I google "chinese remainder theorem solution algorithm" or similar...
 
 ## Chinese Remainder Theorem algorithm
 
-There are a number of algorithms to find the solution to a set of equations which satisfy the conditions of the CRT. [This was the simplest explanation I found][crt-algo].
+There are a number of algorithms to find the solution to a set of equations which satisfy the conditions of the CRT. [This was the simplest explanation I found][chinese-remainder-algo].
 
 *Disclaimer: I don't understand why this works, but it does...*
 
@@ -90,9 +90,9 @@ There are a number of algorithms to find the solution to a set of equations whic
 > 
 > This means we can use the Extended Euclidean Algorithm to find integers r<sub>i</sub> and s<sub>i</sub> such that:
 > 
-> - r<sub>i</sub> n<sub>i</sub> + s<sub>i</sub> N n<sub>i</sub> = 1
+> - r<sub>i</sub> n<sub>i</sub> + s<sub>i</sub> N / n<sub>i</sub> = 1
 > 
-> Then a solution x to the set of equations is equal to the sum of this expression for all a<sub>i</sub> and n<sub>i</sub>:
+> Then a solution x to the set of equations is equal to the following expression, summed over all a<sub>i</sub> and n<sub>i</sub>:
 > - a<sub>i</sub> s<sub>i</sub> N / n<sub>i</sub>
 > 
 > And the minimal solution is:
@@ -103,18 +103,21 @@ There are a number of algorithms to find the solution to a set of equations whic
 
 > Wait, you mentioned an Extended Euclidean Algorithm as well, so we have to use that too?
 
-Yes, I'm afraid so. The (non-extended) Euclidean Algorithm is a way to construct the greatest common divisor (GCD) for two numbers. The Extended Euclidean Algorithm uses the results of the Euclidean Algorithm to express the GCD as a linear combination of the original two numbers.
+Yes, I'm afraid so. The (non-extended) Euclidean Algorithm is a way to construct the greatest common divisor (GCD) for two numbers. The [Extended Euclidean Algorithm][extended-euclid-wiki] uses the results of the Euclidean Algorithm to express the GCD as a linear combination of the original two numbers.
 
-So if your two numbers are a and b, the Euclidean Algorithm will give you the greatest common divisor, G, and the Extended Euclidean Algorithm will give you two numbers r and s such that you can write:
+So if your two numbers are a and b, the Euclidean Algorithm will give you the greatest common divisor, and the Extended Euclidean Algorithm will give you two numbers x and y such that:
 
-- G = (r * a) + (s * b)
+- a x + b y = gcd(a, b)
 
-I watched [this excellent video][extended-euclid-vid] explaining how the Extended Euclidean Algorithm works, and unlike the Chinese Remainder Theorem algorithm, I felt like I understood this part.
+This is called Bezout's Identity.
+
+I watched [this excellent video][extended-euclid-vid] explaining how the Extended Euclidean Algorithm works, and implemented it as he described.
 
 ## The solution
 
 So to solve the puzzle, just implement these two algorithms, and plug in your input. Simple!
 
 [chinese-remainder-wiki]: https://en.wikipedia.org/wiki/Chinese_Remainder_Theorem
-[crt-algo]: https://rosettacode.org/wiki/Chinese_remainder_theorem
+[chinese-remainder-algo]: https://rosettacode.org/wiki/Chinese_remainder_theorem
+[extended-euclid-wiki]: https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm
 [extended-euclid-vid]: https://www.youtube.com/watch?v=hB34-GSDT3k
