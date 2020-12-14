@@ -8,13 +8,13 @@ fun main() {
 
     time("part 1", 100) {
         val computer = BitMaskComputerPart1(program)
-        computer.go()
-        computer.addValues()
+        computer.run()
+        computer.sumOfValues
     }
 
     time("part 2", 100) {
         val computer2 = BitMaskComputerPart2(program)
-        computer2.go()
-        computer2.addValues()
+        computer2.run()
+        computer2.sumOfValues
     }
 }
