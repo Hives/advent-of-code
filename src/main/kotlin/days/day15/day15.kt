@@ -6,16 +6,17 @@ val puzzleInput = listOf(9, 6, 0, 10, 18, 2, 1)
 
 fun main() {
 
-    time ("part 1") {
+    time("part 1") {
         val part1 = CountingGame(puzzleInput)
         part1.go(2020)
         // should equal 1238
         part1.current
     }
 
-    time ("part 2", 1, 0) {
+    // warning - slow (~6s per iteration)
+    time("part 2", 10, 10) {
         val part2 = CountingGame(puzzleInput)
-        part2.go(30000000)
+        part2.go(30_000_000)
         // should equal 3745954
         part2.current
     }
@@ -23,32 +24,28 @@ fun main() {
 }
 
 class CountingGame(startingNumbers: List<Int>) {
-    private var history = startingNumbers.toMutableList()
-    private val lastTimesNumberWasCalled =
-        startingNumbers.mapIndexed { index, i -> i to Pair<Int?, Int?>(null, index) }.toMap().toMutableMap()
-    private var pointer = startingNumbers.size - 1
-
-    val current: Int
-        get() = history.last()
+    private val lastTimeNumberWasCalled =
+        startingNumbers.subList(0, startingNumbers.size - 1).mapIndexed { index, i -> i to index }
+            .toMap().toMutableMap()
+    private var position = startingNumbers.size - 1
+    var current = startingNumbers.last()
 
     fun go(n: Int) {
-        while (pointer < n - 1) crunch()
+        while (position < n - 1) crunch()
     }
 
-    private fun crunch() {
-        val nextNumber = differenceBetweenLastTwoTimes(current)
-
-        pointer++
-        history.add(nextNumber)
-        lastTimesNumberWasCalled[nextNumber] = Pair(lastTimesNumberWasCalled[nextNumber]?.second, pointer)
+    fun crunch() {
+        val nextNumber = lastTimeNumberWasCalled[current]?.let { position - it } ?: 0
+        lastTimeNumberWasCalled[current] = position
+        current = nextNumber
+        position++
     }
 
-    private fun differenceBetweenLastTwoTimes(n: Int): Int {
-        val times: Pair<Int?, Int?> = lastTimesNumberWasCalled[n] ?: return 0
-        val (lastButOneTime, lastTime) = times
-
-        return if (lastButOneTime == null) 0
-        else lastTime!! - lastButOneTime
+    fun debug() {
+        println("--")
+        println("position: $position")
+        println("current: $current")
+        println(lastTimeNumberWasCalled)
+        println("--")
     }
-
 }
