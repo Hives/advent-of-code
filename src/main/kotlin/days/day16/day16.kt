@@ -5,10 +5,11 @@ import lib.time
 
 fun main() {
 //    val (first, second, third) = splitInput(exampleInput1)
-    val (first, second, third) = splitInput(exampleInput2)
-//    val (first, second, third) = splitInput(puzzleInput)
+//    val (first, second, third) = splitInput(exampleInput2)
+    val (first, second, third) = splitInput(puzzleInput)
 
-    val rulesRegex = """^([a-z\s]+): (\d+)-(\d+) or (\d+)-(\d+)$""".toRegex()
+    val rulesRegex = """^([a-z ]+): (\d+)-(\d+) or (\d+)-(\d+)$""".toRegex()
+
     val rules = first.split("\n")
         .map { rulesRegex.find(it)!!.destructured }
         .map { (name, a1, a2, b1, b2) -> name to Pair(a1.toInt()..a2.toInt(), b1.toInt()..b2.toInt()) }
@@ -16,30 +17,49 @@ fun main() {
     val myTicket = parseTicket(second.split("\n")[1])
     val nearbyTickets = third.split("\n").drop(1).map { parseTicket(it) }
 
-//    time("part 1") { part1(rules, nearbyTickets) }
-
-    val potentiallyValidTickets = nearbyTickets.filterNot { ticket ->
-        ticket.someFieldsAreInvalid(rules)
+    time("part 1") {
+        var ticketScanningErrorRate = 0
+        nearbyTickets.forEach { ticket ->
+            ticket.forEach { field ->
+                if (rules.all { rule -> field.isNotValid(rule.value) }) ticketScanningErrorRate += field
+            }
+        }
+        ticketScanningErrorRate
     }
 
-//    potentiallyValidTickets.flip()
-//        .also { println(it.size) }
+    time("part 2") {
+        val potentiallyValidTickets = nearbyTickets.filterNot { ticket ->
+            ticket.someFieldsAreInvalid(rules)
+        }
+
+        val rulesWhichApplyToEachField = potentiallyValidTickets.flip().map { fields ->
+            rules.filter { (_, rule) ->
+                fields.all { field ->
+                    field.isValid(rule)
+                }
+            }.map { it.key }
+        }
+
+        val fieldMap = mutableMapOf<String, Int>()
+
+        while (fieldMap.keys.size < rules.size) {
+            rulesWhichApplyToEachField.forEachIndexed { index, listOfRules ->
+                val possibleRules = listOfRules - fieldMap.keys
+                possibleRules.singleOrNull()?.also { fieldMap[it] = index }
+            }
+        }
+
+        val departureRules = fieldMap.filter { it.key.startsWith("departure") }
+
+        val values = departureRules.map { (_, index) -> myTicket[index] }
+
+        values.map { it.toLong() }.reduce { a, b -> a * b }
+    }
+
 }
 
 typealias Rule = Pair<ClosedRange<Int>, ClosedRange<Int>>
 typealias Rules = Map<String, Rule>
-
-fun part1(rules: Rules, tickets: List<List<Int>>): Int {
-    var ticketScanningErrorRate = 0
-
-    tickets.forEach { ticket ->
-        for (field in ticket) {
-            if (rules.all { field.isNotValidByRule(it.value) }) ticketScanningErrorRate += field
-        }
-    }
-
-    return ticketScanningErrorRate
-}
 
 fun List<List<Int>>.flip(): List<List<Int>> =
     (this[0].indices).map { col ->
@@ -49,12 +69,12 @@ fun List<List<Int>>.flip(): List<List<Int>> =
     }
 
 fun List<Int>.someFieldsAreInvalid(rules: Rules) =
-    this.any { field -> rules.all { rule -> field.isNotValidByRule(rule.value) } }
+    this.any { field -> rules.all { rule -> field.isNotValid(rule.value) } }
 
 fun parseTicket(input: String) = input.split(",").map { it.toInt() }
 
-fun Int.isNotValidByRule(rule: Rule) = !this.isValidByRule(rule)
-fun Int.isValidByRule(rule: Rule) = this in rule.first || this in rule.second
+fun Int.isNotValid(rule: Rule) = !this.isValid(rule)
+fun Int.isValid(rule: Rule) = this in rule.first || this in rule.second
 
 fun splitInput(input: String) = input.trim().split("\n\n")
 
