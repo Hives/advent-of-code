@@ -1,29 +1,14 @@
 package days.day17
 
-import lib.Reader
-
-val example = ".#.\n" +
-        "..#\n" +
-        "###"
-
-fun main() {
-    val puzzleInput = Reader("day17.txt").string()
-//    val c = ConwayCubes(example)
-    val c = ConwayCubes(puzzleInput)
-    c.crunch()
-    c.crunch()
-    c.crunch()
-    c.crunch()
-    c.crunch()
-    c.crunch()
-    c.countActive().also { println(it) }
-}
-
-class ConwayCubes(input: String) {
+class ConwayCubes3D(input: String) {
     private var state: MutableList<MutableList<MutableList<Char>>> =
         mutableListOf(input.trim().split("\n").map { it.map { it }.toMutableList() }.toMutableList())
     private var bottomLayer = 0
     private var cycles = 0
+
+    fun run(n: Int) {
+        repeat(n) { crunch () }
+    }
 
     fun crunch() {
         val newState =
@@ -55,8 +40,8 @@ class ConwayCubes(input: String) {
 
     fun countActive() = state.sumBy { slice -> slice.sumBy { col -> col.count { cell -> cell == '#' } } }
 
-    private fun getNeighbours(x: Int, y: Int, z: Int) = directions
-        .map { Point(it.x + x, it.y + y, it.z + z) }
+    private fun getNeighbours(x: Int, y: Int, z: Int) = directions3D
+        .map { Point3D(it.x + x, it.y + y, it.z + z) }
         .map { state.getOrNull(it.z)?.getOrNull(it.y)?.getOrNull(it.x) ?: '.' }
 
     fun print() {
@@ -71,33 +56,33 @@ class ConwayCubes(input: String) {
     }
 }
 
-data class Point(val x: Int, val y: Int, val z: Int)
+private data class Point3D(val x: Int, val y: Int, val z: Int)
 
-val directions = listOf(
-    Point(-1, -1, 1),
-    Point(-1, 0, 1),
-    Point(-1, 1, 1),
-    Point(0, -1, 1),
-    Point(0, 0, 1),
-    Point(0, 1, 1),
-    Point(1, -1, 1),
-    Point(1, 0, 1),
-    Point(1, 1, 1),
-    Point(-1, -1, 0),
-    Point(-1, 0, 0),
-    Point(-1, 1, 0),
-    Point(0, -1, 0),
-    Point(0, 1, 0),
-    Point(1, -1, 0),
-    Point(1, 0, 0),
-    Point(1, 1, 0),
-    Point(-1, -1, -1),
-    Point(-1, 0, -1),
-    Point(-1, 1, -1),
-    Point(0, -1, -1),
-    Point(0, 0, -1),
-    Point(0, 1, -1),
-    Point(1, -1, -1),
-    Point(1, 0, -1),
-    Point(1, 1, -1),
+private val directions3D = listOf(
+    Point3D(-1, -1, 1),
+    Point3D(-1, 0, 1),
+    Point3D(-1, 1, 1),
+    Point3D(0, -1, 1),
+    Point3D(0, 0, 1),
+    Point3D(0, 1, 1),
+    Point3D(1, -1, 1),
+    Point3D(1, 0, 1),
+    Point3D(1, 1, 1),
+    Point3D(-1, -1, 0),
+    Point3D(-1, 0, 0),
+    Point3D(-1, 1, 0),
+    Point3D(0, -1, 0),
+    Point3D(0, 1, 0),
+    Point3D(1, -1, 0),
+    Point3D(1, 0, 0),
+    Point3D(1, 1, 0),
+    Point3D(-1, -1, -1),
+    Point3D(-1, 0, -1),
+    Point3D(-1, 1, -1),
+    Point3D(0, -1, -1),
+    Point3D(0, 0, -1),
+    Point3D(0, 1, -1),
+    Point3D(1, -1, -1),
+    Point3D(1, 0, -1),
+    Point3D(1, 1, -1),
 )
