@@ -12,31 +12,24 @@ fun main() {
 //    println(parsy(splitString("5 + (8 * 3 + 9 + 3 * 4 * 3)")))
 }
 
-fun parsy(input: List<String>) = parseSymbols2(input.map { Symbol.from(it) })
+fun parsy(input: List<String>) = evaluateSymbols(input.map { Symbol.from(it) })
 
-fun parseSymbols2(input: List<Symbol>): List<Symbol> =
-    when {
-        input.size == 3 -> {
-            listOf(input.evaluateSimpleExpression())
-        }
+fun evaluateSymbols(input: List<Symbol>): Value =
+    if (input.size == 1) input.single() as Value
+    else when {
         input.contains(LParen) -> {
-            parseSymbols2(input.evaluateFirstParenthesis())
+            input.evaluateFirstParentheses()
         }
         input.contains(And) -> {
-            parseSymbols2(input.evaluateFirstInstanceOfOperator(And))
+            input.evaluateFirstInstanceOfOperator(And)
         }
         input.contains(Times) -> {
-            parseSymbols2(input.evaluateFirstInstanceOfOperator(Times))
+            input.evaluateFirstInstanceOfOperator(Times)
         }
         else -> throw Exception("Something bad happened")
-    }
+    }.let { evaluateSymbols(it) }
 
-fun List<Symbol>.evaluateSimpleExpression(): Value {
-    val (n1, operator, n2) = this
-    return (operator as Operator).evaluate(n1 as Value, n2 as Value)
-}
-
-fun List<Symbol>.evaluateFirstParenthesis(): List<Symbol> {
+fun List<Symbol>.evaluateFirstParentheses(): List<Symbol> {
     val lParenIndex = this.indexOf(LParen)
     val rParenIndex = this.findMatchingRParen(lParenIndex)
 
@@ -44,17 +37,22 @@ fun List<Symbol>.evaluateFirstParenthesis(): List<Symbol> {
     val betweenParens = this.subList(lParenIndex + 1, rParenIndex)
     val afterParens = this.subList(rParenIndex + 1, this.size)
 
-    return beforeParens + parseSymbols2(betweenParens) + afterParens
+    return beforeParens + evaluateSymbols(betweenParens) + afterParens
 }
 
 fun List<Symbol>.evaluateFirstInstanceOfOperator(operator: Operator): List<Symbol> {
     val i = this.indexOf(operator)
 
-    val beforeOperator = this.subList(0, i - 1)
-    val surroundingOperator = this.subList(i - 1, i + 2)
-    val afterOperator = this.subList(i + 2, this.size)
+    val start = this.subList(0, i - 1)
+    val operatorAndNeighbours = this.subList(i - 1, i + 2)
+    val end = this.subList(i + 2, this.size)
 
-    return beforeOperator + parseSymbols2(surroundingOperator) + afterOperator
+    return start + evaluateSimpleExpression(operatorAndNeighbours) + end
+}
+
+fun evaluateSimpleExpression(expression: List<Symbol>): Value {
+    val (n1, operator, n2) = expression
+    return (operator as Operator).evaluate(n1 as Value, n2 as Value)
 }
 
 fun List<Symbol>.findMatchingRParen(lParenIndex: Int): Int {
@@ -145,7 +143,6 @@ object Times : Operator() {
         Value(n1.value * n2.value)
 }
 
-sealed class Paren : Symbol()
-object LParen : Paren()
-object RParen : Paren()
+object LParen : Symbol()
+object RParen : Symbol()
 

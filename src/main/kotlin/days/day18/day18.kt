@@ -11,8 +11,11 @@ fun main() {
             .reduce { a, b -> a + b }
     }
 
-    input.map { (parsy(it).single() as Value).value }
-        .reduce { a, b -> a + b }
-        .also { println(it) }
+    // average time was 1.5ms
+    time("part 2") {
+        input
+            .map { parsy(it).value }
+            .reduce { a, b -> a + b }
+    }
 
 }

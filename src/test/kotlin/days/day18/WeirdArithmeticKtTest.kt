@@ -5,7 +5,7 @@ import assertk.assertions.isEqualTo
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-internal class WeirdMathsKtTest {
+internal class WeirdArithmeticKtTest {
     private val one = Value(1)
     private val two = Value(2)
     private val three = Value(3)
