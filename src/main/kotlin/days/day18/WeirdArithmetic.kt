@@ -1,35 +1,49 @@
 package days.day18
 
-fun splitString(input: String) =
+import days.day18.Symbol.LParen
+import days.day18.Symbol.Operator
+import days.day18.Symbol.Operator.Plus
+import days.day18.Symbol.Operator.Times
+import days.day18.Symbol.RParen
+import days.day18.Symbol.Value
+
+fun stringToSymbols(input: String) =
     input
         .replace("(", "( ")
         .replace(")", " )")
         .split(" ")
+        .map { Symbol.from(it) }
 
-fun main() {
-//    println(parsy(splitString("1 + 2 * 3 + 4 * 5 + 6")))
-//    println(parsy(splitString("1 + (2 * 3) + (4 * (5 + 6))")))
-//    println(parsy(splitString("5 + (8 * 3 + 9 + 3 * 4 * 3)")))
-}
-
-fun parsy(input: List<String>) = evaluateSymbols(input.map { Symbol.from(it) })
-
-fun evaluateSymbols(input: List<Symbol>): Value =
+fun evaluateSymbols1(input: List<Symbol>): Value =
     if (input.size == 1) input.single() as Value
     else when {
         input.contains(LParen) -> {
-            input.evaluateFirstParentheses()
+            val (before, between, after) = input.splitOnParentheses()
+            before + evaluateSymbols1(between) + after
         }
-        input.contains(And) -> {
-            input.evaluateFirstInstanceOfOperator(And)
-        }
-        input.contains(Times) -> {
-            input.evaluateFirstInstanceOfOperator(Times)
+        input.contains(Plus) || input.contains(Times) -> {
+            input.evaluateFirstOperator()
         }
         else -> throw Exception("Something bad happened")
-    }.let { evaluateSymbols(it) }
+    }.let { evaluateSymbols1(it) }
 
-fun List<Symbol>.evaluateFirstParentheses(): List<Symbol> {
+fun evaluateSymbols2(input: List<Symbol>): Value =
+    if (input.size == 1) input.single() as Value
+    else when {
+        input.contains(LParen) -> {
+            val (before, between, after) = input.splitOnParentheses()
+            before + evaluateSymbols2(between) + after
+        }
+        input.contains(Plus) -> {
+            input.evaluateFirstInstanceOf(Plus)
+        }
+        input.contains(Times) -> {
+            input.evaluateFirstInstanceOf(Times)
+        }
+        else -> throw Exception("Something bad happened")
+    }.let { evaluateSymbols2(it) }
+
+fun List<Symbol>.splitOnParentheses(): Triple<List<Symbol>, List<Symbol>, List<Symbol>> {
     val lParenIndex = this.indexOf(LParen)
     val rParenIndex = this.findMatchingRParen(lParenIndex)
 
@@ -37,10 +51,20 @@ fun List<Symbol>.evaluateFirstParentheses(): List<Symbol> {
     val betweenParens = this.subList(lParenIndex + 1, rParenIndex)
     val afterParens = this.subList(rParenIndex + 1, this.size)
 
-    return beforeParens + evaluateSymbols(betweenParens) + afterParens
+    return Triple(beforeParens, betweenParens, afterParens)
 }
 
-fun List<Symbol>.evaluateFirstInstanceOfOperator(operator: Operator): List<Symbol> {
+fun List<Symbol>.evaluateFirstOperator(): List<Symbol> {
+    val i = this.indexOfFirst { it is Operator }
+
+    val start = this.subList(0, i - 1)
+    val operatorAndNeighbours = this.subList(i - 1, i + 2)
+    val end = this.subList(i + 2, this.size)
+
+    return start + evaluateSimpleExpression(operatorAndNeighbours) + end
+}
+
+fun List<Symbol>.evaluateFirstInstanceOf(operator: Operator): List<Symbol> {
     val i = this.indexOf(operator)
 
     val start = this.subList(0, i - 1)
@@ -66,83 +90,34 @@ fun List<Symbol>.findMatchingRParen(lParenIndex: Int): Int {
     return rParenIndex
 }
 
-fun parseSymbols(input: List<String>): Expression =
-    if (input.size == 1) Value(input.single().toLong())
-    else {
-        if (input[input.size - 1] == ")") {
-            var index = input.size
-            var parenCount = 0
-            do {
-                index--
-                if (input[index] == ")") parenCount++
-                if (input[index] == "(") parenCount--
-            } while (parenCount > 0)
-            val lastSymbols = input.subList(index + 1, input.size - 1)
-            if (index == 0) {
-                parseSymbols(lastSymbols)
-            } else {
-                val operator = input[index - 1]
-                val rest = input.subList(0, index - 1)
-                Combination(parseSymbols(rest), Operator.from(operator), parseSymbols(lastSymbols))
-            }
-        } else {
-            val last = input[input.size - 1]
-            val operator = input[input.size - 2]
-            val rest = input.subList(0, input.size - 2)
-            Combination(parseSymbols(rest), Operator.from(operator), Value(last.toLong()))
+sealed class Symbol {
+    data class Value(val value: Long) : Symbol()
+
+    object LParen : Symbol()
+    object RParen : Symbol()
+
+    sealed class Operator : Symbol() {
+        abstract fun evaluate(n1: Value, n2: Value): Value
+
+        object Plus : Operator() {
+            override fun evaluate(n1: Value, n2: Value): Value =
+                Value(n1.value + n2.value)
+        }
+
+        object Times : Operator() {
+            override fun evaluate(n1: Value, n2: Value): Value =
+                Value(n1.value * n2.value)
         }
     }
 
-sealed class Symbol {
     companion object {
         fun from(input: String) =
             when (input) {
                 "(" -> LParen
                 ")" -> RParen
-                "+" -> And
+                "+" -> Plus
                 "*" -> Times
                 else -> Value(input.toLong())
             }
     }
 }
-
-interface Expression {
-    fun evaluate(): Value
-}
-
-data class Value(val value: Long) : Symbol(), Expression {
-    override fun evaluate(): Value = this
-}
-
-data class Combination(val n1: Expression, val operator: Operator, val n2: Expression) : Expression {
-    override fun evaluate(): Value {
-        return operator.evaluate(n1.evaluate(), n2.evaluate())
-    }
-}
-
-sealed class Operator : Symbol() {
-    abstract fun evaluate(n1: Value, n2: Value): Value
-
-    companion object {
-        fun from(input: String) =
-            when (input) {
-                "+" -> And
-                "*" -> Times
-                else -> throw Exception("Bad operator")
-            }
-    }
-}
-
-object And : Operator() {
-    override fun evaluate(n1: Value, n2: Value): Value =
-        Value(n1.value + n2.value)
-}
-
-object Times : Operator() {
-    override fun evaluate(n1: Value, n2: Value): Value =
-        Value(n1.value * n2.value)
-}
-
-object LParen : Symbol()
-object RParen : Symbol()
-
