@@ -22,7 +22,7 @@ fun evaluateSymbols1(input: List<Symbol>): Value =
             before + evaluateSymbols1(between) + after
         }
         input.contains(Plus) || input.contains(Times) -> {
-            input.evaluateFirstOperator()
+            input.evaluateOperatorAt(input.indexOfFirst { it is Operator })
         }
         else -> throw Exception("Something bad happened")
     }.let { evaluateSymbols1(it) }
@@ -35,10 +35,10 @@ fun evaluateSymbols2(input: List<Symbol>): Value =
             before + evaluateSymbols2(between) + after
         }
         input.contains(Plus) -> {
-            input.evaluateFirstInstanceOf(Plus)
+            input.evaluateOperatorAt(input.indexOf(Plus))
         }
         input.contains(Times) -> {
-            input.evaluateFirstInstanceOf(Times)
+            input.evaluateOperatorAt(input.indexOf(Times))
         }
         else -> throw Exception("Something bad happened")
     }.let { evaluateSymbols2(it) }
@@ -54,19 +54,7 @@ fun List<Symbol>.splitOnParentheses(): Triple<List<Symbol>, List<Symbol>, List<S
     return Triple(beforeParens, betweenParens, afterParens)
 }
 
-fun List<Symbol>.evaluateFirstOperator(): List<Symbol> {
-    val i = this.indexOfFirst { it is Operator }
-
-    val start = this.subList(0, i - 1)
-    val operatorAndNeighbours = this.subList(i - 1, i + 2)
-    val end = this.subList(i + 2, this.size)
-
-    return start + evaluateSimpleExpression(operatorAndNeighbours) + end
-}
-
-fun List<Symbol>.evaluateFirstInstanceOf(operator: Operator): List<Symbol> {
-    val i = this.indexOf(operator)
-
+fun List<Symbol>.evaluateOperatorAt(i: Int): List<Symbol> {
     val start = this.subList(0, i - 1)
     val operatorAndNeighbours = this.subList(i - 1, i + 2)
     val end = this.subList(i + 2, this.size)
