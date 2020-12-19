@@ -5,36 +5,21 @@ import lib.time
 
 fun main() {
     val puzzleInput = Reader("day19-sorted.txt").string()
-    // 498 messages
-    // 134 rules
 
-    time("part 1", 100) {
+    time("part 1 (should be 224)", 100) {
         val (ruleMap, messages) = parseInput(puzzleInput)
-        val regexRule0 = condenseRule(ruleMap, 0)
+        val regexRule0 = expandRule(ruleMap, "0")
         messages.count { message -> regexRule0.matches(message) }
     }
 
-    fun doIt(input: String): Int {
-        // rule 0 = 8 11
-        // rule 8 = 42     | 42 8
-        // rule 11 = 42 31 | 42 11 31
-        // answer is not 446 :(
-        val (ruleMap, messages) = parseInput(input)
-        val rule8 = condenseRule(ruleMap, 8).toString()
-        val rule11 = condenseRule(ruleMap, 11).toString()
+    time("part 2 (should be 436)", 10) {
+        val (ruleMap, messages) = parseInput(puzzleInput)
 
-        val rule42 = condenseRule(ruleMap, 42).toString()
-        val rule31 = condenseRule(ruleMap, 31).toString()
+        val rule42 = expandRule(ruleMap, "42").toString()
+        val rule31 = expandRule(ruleMap, "31").toString()
 
-        val rule0 = combineRules(rule42, rule31)
-
-        return messages
-            .filter { testMessage(it, rule42, rule31) }
-            .size
+        messages.count { testMessageInPart2(it, rule42, rule31, 20) }
     }
-
-    println("example2: ${doIt(example2)} (should be 12)")
-    println("puzzle: ${doIt(puzzleInput)} (should be 436)")
 }
 
 val example2 = """42: 9 14 | 10 1

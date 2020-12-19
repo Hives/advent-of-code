@@ -1,47 +1,49 @@
 package days.day19
 
-fun parseInput(input: String): Pair<Map<Int, String>, List<String>> {
-    val (start, end) = input.trim().split("\n\n")
-    val ruleRegex = """^(\d+): (.*)$""".toRegex()
-    val ruleMap = start.split("\n")
-        .map { ruleRegex.find(it)!!.destructured }
-        .map { (id, rule) -> id.toInt() to rule }
+fun parseInput(input: String): Pair<Map<String, String>, List<String>> {
+    val (rules, messages) = input.trim().split("\n\n")
+
+    val ruleMap = rules.split("\n")
+        .map { it.split(": ") }
+        .map { (id, rule) -> id to rule }
         .toMap()
 
-    return Pair(ruleMap, end.split("\n"))
+    return Pair(ruleMap, messages.split("\n"))
 }
 
-fun testMessage(message: String, rule42: String, rule31: String): Boolean {
-    return (1..20).map { i ->
-        val rule = """($rule42)+($rule42){$i}($rule31){$i}""".toRegex()
-        val result = rule.matches(message)
-//        println("$i: $result")
-        result
-    }.any { it }
-}
+// recursive rule substitutions:
+// rule 8 becomes: 42 | 42 8
+// - matches one more more applications of rule 42
+// rule 11 becomes: 42 31 | 42 11 41
+// - matches rule 42 n times, then rule 32 n times, for some n > 0
+//
+// and rule 0: 8 11
+// hence:
+fun testMessageInPart2(message: String, rule42: String, rule31: String, maxN: Int) =
+    (1..maxN).any { i ->
+        val rule0 = """($rule42)+($rule42){$i}($rule31){$i}""".toRegex()
+        rule0.matches(message)
+    }
 
-fun combineRules(rule42: String, rule31: String): Regex =
-    """($rule42)($rule42)+($rule31)+""".toRegex()
-
-fun condenseRule(ruleMap: Map<Int, String>, ruleId: Int): Regex {
-    var rule = ruleMap[ruleId]!!
+fun expandRule(ruleMap: Map<String, String>, ruleId: String): Regex {
+    var rule = ruleMap[ruleId] ?: ""
     do {
-        rule = rule.substituteRules(ruleMap)
-    } while ("""\d""".toRegex().containsMatchIn(rule))
+        rule = rule.expandRuleOneLevel(ruleMap)
+    } while (rule.containsNumber())
 
     return rule.replace(" ", "").replace("\"", "").toRegex()
 }
 
-fun String.substituteRules(ruleMap: Map<Int, String>): String {
-    return this
+fun String.expandRuleOneLevel(ruleMap: Map<String, String>): String =
+    this
         .split(" ").joinToString(" ") {
-            try {
-                val rule = ruleMap[it.toInt()]
-                if (rule!!.contains("|")) "( $rule )"
-                else rule
-            } catch (e: Exception) {
-                it
-            }
+            if (it.isNumber()) {
+                val replacementRule = ruleMap[it] ?: ""
+                if (replacementRule.contains("|")) "( $replacementRule )"
+                else replacementRule
+            } else it
         }
-}
 
+private val numberRegex = """\d+""".toRegex()
+private fun String.containsNumber() = numberRegex.containsMatchIn(this)
+private fun String.isNumber() = numberRegex.matches(this)

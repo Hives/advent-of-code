@@ -45,11 +45,11 @@ internal class MessageValidatorKtTest {
 
     @Test
     fun `asd asd`() {
-        assertThat(testMessage("$matches42$matches31", rule42, rule31)).isFalse()
-        assertThat(testMessage("$matches42$matches42$matches31", rule42, rule31)).isTrue()
-        assertThat(testMessage("$matches42$matches42$matches42$matches31", rule42, rule31)).isTrue()
-        assertThat(testMessage("$matches42$matches42$matches42$matches31$matches31", rule42, rule31)).isTrue()
-        assertThat(testMessage("$matches42$matches31$matches31", rule42, rule31)).isFalse()
-        assertThat(testMessage("$matches42$matches42$matches31$matches31$matches31", rule42, rule31)).isFalse()
+        assertThat(testMessageInPart2("$matches42$matches31", rule42, rule31)).isFalse()
+        assertThat(testMessageInPart2("$matches42$matches42$matches31", rule42, rule31)).isTrue()
+        assertThat(testMessageInPart2("$matches42$matches42$matches42$matches31", rule42, rule31)).isTrue()
+        assertThat(testMessageInPart2("$matches42$matches42$matches42$matches31$matches31", rule42, rule31)).isTrue()
+        assertThat(testMessageInPart2("$matches42$matches31$matches31", rule42, rule31)).isFalse()
+        assertThat(testMessageInPart2("$matches42$matches42$matches31$matches31$matches31", rule42, rule31)).isFalse()
     }
 }
