@@ -9,43 +9,16 @@ class Puzzle(input: String) {
     val placements = MutableList<OrientedTile?>(tiles.size) { null }
     val iterators = MutableList<Iterator<OrientedTile>?>(tiles.size) { null }
 
-    var pos = -1
+    var currentPosition = -1
 
     init {
         goForward()
     }
 
     fun go() {
-        while (pos < tiles.size) {
+        while (currentPosition < tiles.size) {
             crunch()
         }
-    }
-
-    fun crunch() {
-        val possibility = findNextPossibility(pos)
-
-        if (possibility == null) {
-            goBackward()
-        } else {
-            placements[pos] = possibility
-            goForward()
-        }
-    }
-
-    fun goForward() {
-        pos++
-        if (pos < tiles.size) {
-            iterators[pos] = OrientedTileIterator(getPossibilities())
-        }
-    }
-
-    fun goBackward() {
-        while (!iterators[pos]!!.hasNext()) {
-            iterators[pos] = null
-            pos--
-            placements[pos] = null
-        }
-        iterators[pos]!!.next()
     }
 
     fun multiplyCorners() =
@@ -58,38 +31,57 @@ class Puzzle(input: String) {
             getPlacementFromCoordinates(it)?.tile?.id ?: 0
         }.reduce { a, b -> a * b }
 
-    fun findNextPossibility(n: Int): OrientedTile? {
+    private fun crunch() {
+        val possibility = findNextPossibility(currentPosition)
 
-        while (iterators[n]!!.hasNext()) {
-            val next = iterators[n]!!.next()
-            if (next.alignsWithNeighbours(n)) return next
+        if (possibility == null) {
+            goBackward()
+        } else {
+            placements[currentPosition] = possibility
+            goForward()
+        }
+    }
+
+    private fun goForward() {
+        currentPosition++
+        if (currentPosition < tiles.size) {
+            iterators[currentPosition] = OrientedTileIterator(getPossibilities())
+        }
+    }
+
+    private fun goBackward() {
+        while (!iterators[currentPosition]!!.hasNext()) {
+            iterators[currentPosition] = null
+            currentPosition--
+            placements[currentPosition] = null
+        }
+        iterators[currentPosition]!!.next()
+    }
+
+    private fun findNextPossibility(position: Int): OrientedTile? {
+        while (iterators[position]!!.hasNext()) {
+            val next = iterators[position]!!.next()
+            if (next.alignsWithNeighbours(position)) return next
         }
 
         return null
     }
 
-    fun getPossibilities() = tiles.filterNot { tile -> placements.map { it?.tile }.contains(tile) }
+    private fun getPossibilities() = tiles.filterNot { it.isPlaced() }
 
-    fun OrientedTile.alignsWithNeighbours(n: Int): Boolean {
-        val neighbouringPlacements = getNeighbouringPlacements(n)
-        return neighbouringPlacements.mapIndexed { index, neighbour ->
-            this.alignsWith(neighbour, index)
-        }.all { it }
-    }
+    private fun Tile.isPlaced() = placements.map { it?.tile }.contains(this)
 
-    fun getNeighbouringPlacements(n: Int): List<OrientedTile?> {
-        val coordinates = getPlacementCoordinates(n)
-        val neighbours = coordinates.neighbours
-        return neighbours.map { getPlacementFromCoordinates(it) }
-    }
+    private fun OrientedTile.alignsWithNeighbours(position: Int): Boolean =
+        getNeighbouringPlacements(position).zip(0..3)
+            .all { (neighbour, direction) -> this.alignsWith(neighbour, direction) }
 
-    fun getPlacementCoordinates(n: Int): Coordinate {
-        val row = n / dimension
-        val col = n % dimension
-        return Coordinate(row, col)
-    }
+    private fun getNeighbouringPlacements(position: Int): List<OrientedTile?> =
+        convertPositionToCoordinates(position).neighbours.map { getPlacementFromCoordinates(it) }
 
-    fun getPlacementFromCoordinates(c: Coordinate): OrientedTile? =
+    private fun convertPositionToCoordinates(position: Int): Coordinate =
+        Coordinate(position / dimension, position % dimension)
+
+    private fun getPlacementFromCoordinates(c: Coordinate): OrientedTile? =
         when {
             c.row < 0 -> null
             c.row >= dimension -> null
@@ -120,15 +112,37 @@ fun OrientedTile.alignsWith(secondTile: OrientedTile?, direction: Int): Boolean 
 
 data class OrientedTile(val tile: Tile, val orientation: Orientation) {
     fun border(direction: Int) = tile.borders(orientation)[direction]
+
+    val image
+        get(): List<String> =
+            this.tile.rows
+                .let { if (this.orientation.flipped) it.reflect() else it }
+                .let { it.rotate(this.orientation.quarterTurnsCCW) }
+                .let { tile ->
+                    tile.dropFirstAndLast()
+                        .map { row ->
+                            row.dropFirstAndLast().joinToString("")
+                        }
+                }
 }
 
+fun List<OrientedTile?>.toImage(dimension: Int): List<String> =
+    this
+        .map { it!!.image }
+        .chunked(dimension)
+        .flatMap { chunk ->
+            (chunk[0].indices).map { i -> chunk.joinToString("") { it[i] } }
+        }
+
+
 data class Tile(val id: Long, val rows: List<List<Char>>) {
-    override fun toString(): String {
-        return "T($id)"
-    }
+//    override fun toString(): String {
+//        return "T($id)"
+//    }
 
     fun borders(orientation: Orientation): List<List<Char>> =
-        rows.let { if (orientation.flipped) it.reflect() else it }.rotate(orientation.quarterTurnsCCW)
+        rows.let { if (orientation.flipped) it.reflect() else it }
+            .rotate(orientation.quarterTurnsCCW)
             .let { oriented ->
                 // ordered top, right, bottom, left
                 // top and bottom read left-to-right, left and right read top-to-bottom
@@ -164,10 +178,10 @@ fun <T> List<List<T>>.rotate(quarterTurnsCCW: Int): List<List<T>> =
     }
 
 data class Orientation(val flipped: Boolean, val quarterTurnsCCW: Int) {
-    override fun toString(): String {
-        val flippedString = if (flipped) "R" else "_"
-        return "O(${flippedString}$quarterTurnsCCW)"
-    }
+//    override fun toString(): String {
+//        val flippedString = if (flipped) "R" else "_"
+//        return "O(${flippedString}$quarterTurnsCCW)"
+//    }
 
     companion object {
         val first = Orientation(false, 0)
@@ -201,3 +215,6 @@ class OrientedTileIterator(val tiles: List<Tile>) : Iterator<OrientedTile> {
         )
     }
 }
+
+fun <T> List<T>.dropFirstAndLast() = this.subList(1, this.size - 1)
+
