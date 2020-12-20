@@ -61,7 +61,7 @@ fun main() {
 typealias Rule = Pair<ClosedRange<Int>, ClosedRange<Int>>
 typealias Rules = Map<String, Rule>
 
-fun List<List<Int>>.flip(): List<List<Int>> =
+fun <T> List<List<T>>.flip(): List<List<T>> =
     (this[0].indices).map { col ->
         (this.indices).map { row ->
             this[row][col]
