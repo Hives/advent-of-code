@@ -14,9 +14,7 @@ fun countSafeIngredients(input: List<String>): Int {
 }
 
 fun part2(input: List<String>): String =
-    findAllergenicIngredients(input).toList()
-        .sortedBy { (ingredient, _) -> ingredient }
-        .joinToString(",") { (_, allergen) -> allergen }
+    findAllergenicIngredients(input).toSortedMap().values.joinToString(",")
 
 fun findAllergenicIngredients(input: List<String>): Map<String, String> {
     val allergenInfo = parseInput(input)
