@@ -12,7 +12,7 @@ class Puzzle(input: String) {
     var currentPosition = -1
 
     init {
-        goForward()
+        goToNextPosition()
     }
 
     fun go() {
@@ -35,27 +35,31 @@ class Puzzle(input: String) {
         val possibility = findNextPossibility(currentPosition)
 
         if (possibility == null) {
-            goBackward()
+            goBackAndIncrementAPreviousPlacement()
         } else {
             placements[currentPosition] = possibility
-            goForward()
+            goToNextPosition()
         }
     }
 
-    private fun goForward() {
+    private fun goToNextPosition() {
         currentPosition++
         if (currentPosition < tiles.size) {
             iterators[currentPosition] = OrientedTileIterator(getPossibilities())
         }
     }
 
-    private fun goBackward() {
+    private fun goBackAndIncrementAPreviousPlacement() {
         while (!iterators[currentPosition]!!.hasNext()) {
-            iterators[currentPosition] = null
-            currentPosition--
-            placements[currentPosition] = null
+            goToPreviousPosition()
         }
         iterators[currentPosition]!!.next()
+    }
+
+    private fun goToPreviousPosition() {
+        iterators[currentPosition] = null
+        currentPosition--
+        placements[currentPosition] = null
     }
 
     private fun findNextPossibility(position: Int): OrientedTile? {
