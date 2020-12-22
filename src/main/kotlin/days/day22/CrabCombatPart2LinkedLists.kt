@@ -29,7 +29,7 @@ class Part2StandardLists(private val hands: Pair<List<Int>, List<Int>>) {
         val thisGame = gameCount
 
         log("=== Game $thisGame ===")
-        val results = play(handA, handB, emptyList(), emptyList(), thisGame, 1)
+        val results = play(handA, handB, emptyList(), thisGame, 1)
         log("The winner of game $thisGame is player ${results.first.index + 1}!")
         return results
     }
@@ -37,26 +37,25 @@ class Part2StandardLists(private val hands: Pair<List<Int>, List<Int>>) {
     private tailrec fun play(
         handA: List<Int>,
         handB: List<Int>,
-//        history: List<Pair<List<Int>, List<Int>>>,
-        historyA: List<List<Int>>,
-        historyB: List<List<Int>>,
+        history: List<Pair<List<Int>, List<Int>>>,
+//        historyA: List<List<Int>>,
+//        historyB: List<List<Int>>,
         gameLevel: Int,
         round: Int
     ): Pair<Player, List<Int>> {
         if (handA.isEmpty()) return Pair(PLAYER_B, handB)
         if (handB.isEmpty()) return Pair(PLAYER_A, handA)
-        if (historyA.contains(handA) && historyB.contains(handB)) return Pair(PLAYER_A, handA)
+//        if (historyA.contains(handA) && historyB.contains(handB)) return Pair(PLAYER_A, handA)
+        if (history.contains(Pair(handA, handB))) return Pair(PLAYER_A, handA)
 
         val (newHandA, newHandB) = oneRound(handA, handB, gameLevel, round)
 
-        return play(newHandA, newHandB, historyA + listOf(handA), historyB + listOf(handB), gameLevel, round + 1)
+        return play(newHandA, newHandB, history + Pair(handA, handB), gameLevel, round + 1)
     }
 
     private fun oneRound(handA: List<Int>, handB: List<Int>, gameLevel: Int, round: Int): Pair<List<Int>, List<Int>> {
         roundCount++
         if (round > maxRound) maxRound = round
-
-//        if (roundCount == 1_000) exitProcess(0)
 
         log("\n-- Round $round (Game $gameLevel) --")
         log("Player 1's deck: ${handA.joinToString(", ")}")

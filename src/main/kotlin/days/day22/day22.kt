@@ -17,17 +17,17 @@ fun main() {
         part1StandardLists(parseInput(myPuzzleInput))
     }
 
-    time("part 2, my puzzle input (linked lists)", 2, 0) {
-        Part2LinkedLists.run(parseInput(myPuzzleInput))
-    }
+//    time("part 2, my puzzle input (linked lists)", 2, 0) {
+//        Part2LinkedLists.run(parseInput(myPuzzleInput))
+//    }
 
     listOf(
-        Pair("my input (32018)", myPuzzleInput),
-        Pair("mark fisher's input (should be 33745)", markFishersPuzzleInput),
-        Pair("david prior's input (should be 31956)", davidPriorsPuzzleInput),
-        Pair("pj's input (should be 32665)", pjsPuzzleInput),
+        Pair("part 2, my input (should be 32018)", myPuzzleInput),
+        Pair("part 2, mark fisher's input (should be 33745)", markFishersPuzzleInput),
+        Pair("part 2, david prior's input (should be 31956)", davidPriorsPuzzleInput),
+        Pair("part 2, pj's input (should be 32665)", pjsPuzzleInput),
     ).forEach { (message, input) ->
-        time(message, 5, 5) {
+        time(message, 1, 0) {
             Part2StandardLists(parseInput(input)).run().score
         }
     }

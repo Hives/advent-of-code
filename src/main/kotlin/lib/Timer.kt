@@ -17,9 +17,11 @@ fun time(message: String? = null, iterations: Int = 1000, warmUpIterations: Int 
         .also { times ->
             val average = times.average()
 
-            val time = if (average > 1_000_000_000) "${round(average / 1_000_000_000)} seconds"
-            else if (average > 1_000_000) "${round(average / 1_000_000)} milliseconds"
-            else "${round(average / 1_000)} microseconds"
+            val time = when {
+                average > 1_000_000_000 -> "${round(average / 1_000_000_000)} seconds"
+                average > 1_000_000 -> "${round(average / 1_000_000)} milliseconds"
+                else -> "${round(average / 1_000)} microseconds"
+            }
 
             println("average time over $iterations iterations = $time")
         }
