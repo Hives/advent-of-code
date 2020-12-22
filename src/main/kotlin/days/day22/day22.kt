@@ -1,44 +1,36 @@
 package days.day22
 
-import java.util.*
 import lib.Reader
 import lib.time
 
 fun main() {
-    val puzzleInput = Reader("day22.txt").string()
+    val myPuzzleInput = Reader("day22.txt").string()
+    val pjsPuzzleInput = Reader("day22-pjs-input.txt").string()
+    val davidPriorsPuzzleInput = Reader("day22-david-priors-input.txt").string()
+    val markFishersPuzzleInput = Reader("day22-mark-fishers-input.txt").string()
 
     time("part 1 (linked lists)") {
-        puzzleInput.trim().split("\n\n").map { hand ->
-            hand.lines().drop(1).map { it.toInt() }
-        }
-            .map { LinkedList(it) }
-            .let { (handA, handB) ->
-                while (!handA.isEmpty() && !handB.isEmpty()) {
-                    val a = handA.poll()
-                    val b = handB.poll()
-                    if (a > b) {
-                        handA.add(a)
-                        handA.add(b)
-                    } else {
-                        handB.add(b)
-                        handB.add(a)
-                    }
-                }
-                if (handA.isEmpty()) handB else handA
-            }
-            .score()
+        part1LinkedLists(parseInput(myPuzzleInput))
     }
 
     time("part 1 (standard lists)") {
-        puzzleInput.trim().split("\n\n").map { hand ->
-            hand.lines().drop(1).map { it.toInt() }
-        }
-            .let { (handA, handB) ->
-                play(handA, handB)
-            }
-            .score()
+        part1StandardLists(parseInput(myPuzzleInput))
     }
 
+    time("part 2, my puzzle input (linked lists)", 2, 0) {
+        Part2LinkedLists.run(parseInput(myPuzzleInput))
+    }
+
+    listOf(
+        Pair("my input (32018)", myPuzzleInput),
+        Pair("mark fisher's input (should be 33745)", markFishersPuzzleInput),
+        Pair("david prior's input (should be 31956)", davidPriorsPuzzleInput),
+        Pair("pj's input (should be 32665)", pjsPuzzleInput),
+    ).forEach { (message, input) ->
+        time(message, 5, 5) {
+            Part2StandardLists(parseInput(input)).run().score
+        }
+    }
 }
 
 val example = "Player 1:\n" +
