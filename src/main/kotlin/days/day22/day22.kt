@@ -17,18 +17,25 @@ fun main() {
         part1StandardLists(parseInput(myPuzzleInput))
     }
 
-//    time("part 2, my puzzle input (linked lists)", 2, 0) {
-//        Part2LinkedLists.run(parseInput(myPuzzleInput))
-//    }
+    listOf(
+        Pair("part 2, standard lists, my input (should be 32018)", myPuzzleInput),
+        Pair("part 2, standard lists, mark fisher's input (should be 33745)", markFishersPuzzleInput),
+        Pair("part 2, standard lists, david prior's input (should be 31956)", davidPriorsPuzzleInput),
+        Pair("part 2, standard lists, pj's input (should be 32665)", pjsPuzzleInput),
+    ).forEach { (message, input) ->
+        time(message, 5, 2) {
+            Part2StandardLists.run(parseInput(input))
+        }
+    }
 
     listOf(
-        Pair("part 2, my input (should be 32018)", myPuzzleInput),
-        Pair("part 2, mark fisher's input (should be 33745)", markFishersPuzzleInput),
-        Pair("part 2, david prior's input (should be 31956)", davidPriorsPuzzleInput),
-        Pair("part 2, pj's input (should be 32665)", pjsPuzzleInput),
+        Pair("part 2, linked lists, my input (should be 32018)", myPuzzleInput),
+        Pair("part 2, linked lists, mark fisher's input (should be 33745)", markFishersPuzzleInput),
+        Pair("part 2, linked lists, david prior's input (should be 31956)", davidPriorsPuzzleInput),
+        Pair("part 2, linked lists, pj's input (should be 32665)", pjsPuzzleInput),
     ).forEach { (message, input) ->
-        time(message, 1, 0) {
-            Part2StandardLists(parseInput(input)).run().score
+        time(message, 5, 2) {
+            Part2LinkedLists.run(parseInput(input))
         }
     }
 }
