@@ -8,6 +8,7 @@ fun main() {
     val pjsPuzzleInput = Reader("day22-pjs-input.txt").string()
     val davidPriorsPuzzleInput = Reader("day22-david-priors-input.txt").string()
     val markFishersPuzzleInput = Reader("day22-mark-fishers-input.txt").string()
+    val kevinHannasPuzzleInput = Reader("day22-kevin-hannas-input.txt").string()
 
     time("part 1 (linked lists)") {
         part1LinkedLists(parseInput(myPuzzleInput))
@@ -22,6 +23,7 @@ fun main() {
         Pair("part 2, standard lists, mark fisher's input (should be 33745)", markFishersPuzzleInput),
         Pair("part 2, standard lists, david prior's input (should be 31956)", davidPriorsPuzzleInput),
         Pair("part 2, standard lists, pj's input (should be 32665)", pjsPuzzleInput),
+        Pair("part 2, standard lists, kevin hanna's input (should be 32054)", kevinHannasPuzzleInput)
     ).forEach { (message, input) ->
         time(message, 5, 2) {
             Part2StandardLists.run(parseInput(input))
@@ -33,6 +35,7 @@ fun main() {
         Pair("part 2, linked lists, mark fisher's input (should be 33745)", markFishersPuzzleInput),
         Pair("part 2, linked lists, david prior's input (should be 31956)", davidPriorsPuzzleInput),
         Pair("part 2, linked lists, pj's input (should be 32665)", pjsPuzzleInput),
+        Pair("part 2, linked lists, kevin hanna's input (should be 32054)", kevinHannasPuzzleInput)
     ).forEach { (message, input) ->
         time(message, 5, 2) {
             Part2LinkedLists.run(parseInput(input))
