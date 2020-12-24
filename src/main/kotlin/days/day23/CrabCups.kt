@@ -44,7 +44,7 @@ class CrabCups(input: String, max: Int? = null) {
         current = cupsLinks[current]
     }
 
-    fun getFirst(n: Int): List<Int> {
+    fun take(n: Int): List<Int> {
         val o = mutableListOf<Int>()
         var cup = 1
         repeat(n) {
