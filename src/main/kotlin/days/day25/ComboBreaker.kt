@@ -2,6 +2,16 @@ package days.day25
 
 const val bigPrime = 20201227L
 
+fun generateAllKeyPairs(): Map<Long, Long> {
+    val map = mutableMapOf<Long, Long>()
+    (1L..bigPrime).fold(1L) { acc, i ->
+        val v = (acc * 7) % bigPrime
+        map[v] = i
+        v
+    }
+    return map
+}
+
 fun transform(privateKey: Long, subjectNumber: Long): Long =
     modularExponentiation2(subjectNumber, privateKey, bigPrime)
 
@@ -37,14 +47,6 @@ fun decomposeToPowersOf2(n: Long): MutableSet<Int> {
     }
     n.toInt().toBinaryString().reversed().go()
     return powersOf2
-}
-
-fun modularExponentiation(base: Long, exponent: Long, modulo: Long): Long {
-    tailrec fun go(value: Long, iterations: Long): Long =
-        if (iterations == 0L) value
-        else go((value * base) % modulo, iterations - 1)
-
-    return go(1L, exponent)
 }
 
 fun Int.toBinaryString(): String = Integer.toBinaryString(this)
