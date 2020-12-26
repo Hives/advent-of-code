@@ -5,7 +5,7 @@ import java.math.RoundingMode
 import java.math.RoundingMode.HALF_DOWN
 import kotlin.system.measureNanoTime
 
-fun time(message: String? = null, iterations: Int = 1000, warmUpIterations: Int = 10, f: () -> Any?) {
+fun time(message: String? = null, iterations: Int = 100, warmUpIterations: Int = 10, f: () -> Any?) {
     println()
     message?.also { println(it) }
 

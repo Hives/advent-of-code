@@ -3,21 +3,26 @@ package days.day25
 import lib.time
 
 fun main() {
-    time ("part 1 fast",1, 0) {
-        val input = exampleInput
+    time ("part 1 fast using card private key (should be 10548634)") {
+        val input = puzzleInput
 
         val cardPublic = input[0]
         val doorPublic = input[1]
 
-        val keyPairs = generateAllKeyPairs()
+        val cardPrivate = findPrivateKeyWithRecursion(cardPublic)
 
-        val cardPrivate = keyPairs[cardPublic]!!
-        val doorPrivate = keyPairs[doorPublic]!!
+        transform(cardPrivate, doorPublic)
+    }
 
-        listOf(
-            Pair(cardPrivate, doorPublic),
-            Pair(doorPrivate, cardPublic)
-        ).map { transform(it.first, it.second) }
+    time ("part 1 fast using door private key (should be 10548634)") {
+        val input = puzzleInput
+
+        val cardPublic = input[0]
+        val doorPublic = input[1]
+
+        val doorPrivate = findPrivateKeyWithRecursion(doorPublic)
+
+        transform(doorPrivate, cardPublic)
     }
 
     time("part 1 (should be 10548634)", 1, 0) {
@@ -26,13 +31,11 @@ fun main() {
         val cardPublic = input[0]
         val doorPublic = input[1]
 
-        val cardPrivate = findPrivateKey(cardPublic)
-        val doorPrivate = findPrivateKey(doorPublic)
+        val cardPrivate = findPrivateKeySlowly(cardPublic)
 
-        listOf(
-            Pair(cardPrivate, doorPublic),
-            Pair(doorPrivate, cardPublic)
-        ).map { transform(it.first, it.second) }
+        println(cardPrivate)
+
+        transform(cardPrivate, doorPublic)
     }
 }
 

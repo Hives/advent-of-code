@@ -2,20 +2,23 @@ package days.day25
 
 const val bigPrime = 20201227L
 
-fun generateAllKeyPairs(): Map<Long, Long> {
-    val map = mutableMapOf<Long, Long>()
-    (1L..bigPrime).fold(1L) { acc, i ->
-        val v = (acc * 7) % bigPrime
-        map[v] = i
-        v
+fun findPrivateKeyWithRecursion(publicKey: Long): Long {
+    var exponent = 0L
+
+    tailrec fun go(previous: Long): Long {
+        exponent++
+        val new = previous * 7L % bigPrime
+        return if (new == publicKey) exponent
+        else go(new)
     }
-    return map
+
+    return go(1L)
 }
 
 fun transform(privateKey: Long, subjectNumber: Long): Long =
     modularExponentiation2(subjectNumber, privateKey, bigPrime)
 
-fun findPrivateKey(publicKey: Long): Long =
+fun findPrivateKeySlowly(publicKey: Long): Long =
     (1..bigPrime).first { privateKey ->
         transform(privateKey, 7) == publicKey
     }.toLong()
