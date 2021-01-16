@@ -15,9 +15,9 @@ var Operation;
 var input = readStrings("day06.txt");
 function processInstruction(instructionString, rules) {
     var inst = parseInstruction(instructionString);
-    for (var y = inst.start.y; y <= inst.end.y; y++) {
-        for (var x = inst.start.x; x <= inst.end.x; x++) {
-            rules[inst.operation]({ x: x, y: y });
+    for (var y_1 = inst.start.y; y_1 <= inst.end.y; y_1++) {
+        for (var x_1 = inst.start.x; x_1 <= inst.end.x; x_1++) {
+            rules[inst.operation]({ x: x_1, y: y_1 });
         }
     }
 }
