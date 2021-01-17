@@ -12,7 +12,7 @@ function memLength(string) {
         replaceHex,
         replaceEscapedQuote,
         replaceEscapedBackslash,
-        removeSurroundingQuotes
+        removeSurroundingQuotes,
     ].reduce((acc, replacer) => replacer(acc), string);
     return replacedString.length;
 }
@@ -47,7 +47,7 @@ function reencodedLength(string) {
     const escapedString = [
         escapeBackslashes,
         escapeQuotes,
-        wrapWithQuotes
+        wrapWithQuotes,
     ].reduce((acc, replacer) => replacer(acc), string);
     return escapedString.length;
 }
@@ -57,11 +57,11 @@ function escapeQuotes(string) {
 }
 
 function escapeBackslashes(string) {
-    return string.replace(/\\/g, '\\\\');
+    return string.replace(/\\/g, "\\\\");
 }
 
 function wrapWithQuotes(string) {
-    return `"${string}"`
+    return `"${string}"`;
 }
 
 const part2 = input.reduce(
