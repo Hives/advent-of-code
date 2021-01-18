@@ -1,4 +1,4 @@
-import readStrings from "../lib/reader.js";
+import { readStrings } from "../lib/reader.js";
 
 const input = readStrings("day08.txt");
 const exampleInput = ['""', '"abc"', '"aaa\\"aaa"', '"\\x27"'];

@@ -1,4 +1,4 @@
-const { readStrings } = require("../lib/reader.js");
+import { readStrings } from "../lib/reader.js";
 
 function parseInstruction(input) {
     try {

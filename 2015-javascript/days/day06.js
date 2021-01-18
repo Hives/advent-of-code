@@ -1,3 +1,4 @@
+"use strict";
 var __spreadArrays = (this && this.__spreadArrays) || function () {
     for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
     for (var r = Array(s), k = 0, i = 0; i < il; i++)
@@ -5,19 +6,20 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
             r[k] = a[j];
     return r;
 };
-var readStrings = require('../lib/reader.js').readStrings;
+exports.__esModule = true;
+var reader_js_1 = require("../lib/reader.js");
 var Operation;
 (function (Operation) {
     Operation["turn on"] = "TurnOn";
     Operation["turn off"] = "TurnOff";
     Operation["toggle"] = "Toggle";
 })(Operation || (Operation = {}));
-var input = readStrings("day06.txt");
+var input = reader_js_1.readStrings("day06.txt");
 function processInstruction(instructionString, rules) {
     var inst = parseInstruction(instructionString);
-    for (var y_1 = inst.start.y; y_1 <= inst.end.y; y_1++) {
-        for (var x_1 = inst.start.x; x_1 <= inst.end.x; x_1++) {
-            rules[inst.operation]({ x: x_1, y: y_1 });
+    for (var y = inst.start.y; y <= inst.end.y; y++) {
+        for (var x = inst.start.x; x <= inst.end.x; x++) {
+            rules[inst.operation]({ x: x, y: y });
         }
     }
 }
@@ -45,22 +47,24 @@ var testInstructions = [
     "turn on 0,0 through 7,7",
     "turn off 3,5 through 7,7",
     "toggle 1,1 through 6,6",
-    "toggle 4,3 through 5,5"
+    "toggle 4,3 through 5,5",
 ];
 var exampleInstructions = [
     "turn on 0,0 through 999,999",
     "toggle 0,0 through 999,0",
-    "turn off 499,499 through 500,500"
+    "turn off 499,499 through 500,500",
 ];
 var rules1 = {
-    TurnOn: function (pnt) { return grid[pnt.y][pnt.x] = 1; },
-    TurnOff: function (pnt) { return grid[pnt.y][pnt.x] = 0; },
-    Toggle: function (pnt) { return grid[pnt.y][pnt.x] = (grid[pnt.y][pnt.x] + 1) % 2; }
+    TurnOn: function (pnt) { return (grid[pnt.y][pnt.x] = 1); },
+    TurnOff: function (pnt) { return (grid[pnt.y][pnt.x] = 0); },
+    Toggle: function (pnt) { return (grid[pnt.y][pnt.x] = (grid[pnt.y][pnt.x] + 1) % 2); }
 };
 var rules2 = {
-    TurnOn: function (pnt) { return grid[pnt.y][pnt.x] = grid[pnt.y][pnt.x] + 1; },
-    TurnOff: function (pnt) { return grid[pnt.y][pnt.x] = Math.max(grid[pnt.y][pnt.x] - 1, 0); },
-    Toggle: function (pnt) { return grid[pnt.y][pnt.x] = grid[pnt.y][pnt.x] + 2; }
+    TurnOn: function (pnt) { return (grid[pnt.y][pnt.x] = grid[pnt.y][pnt.x] + 1); },
+    TurnOff: function (pnt) {
+        return (grid[pnt.y][pnt.x] = Math.max(grid[pnt.y][pnt.x] - 1, 0));
+    },
+    Toggle: function (pnt) { return (grid[pnt.y][pnt.x] = grid[pnt.y][pnt.x] + 2); }
 };
 var grid;
 var gridSize = 1000;

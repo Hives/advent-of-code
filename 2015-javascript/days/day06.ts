@@ -1,102 +1,102 @@
-const { readStrings } = require('../lib/reader.js')
+import { readStrings } from "../lib/reader.js";
 
 interface Point {
-    x: number,
-    y: number
+    x: number;
+    y: number;
 }
 
 enum Operation {
     "turn on" = "TurnOn",
     "turn off" = "TurnOff",
-    "toggle" = "Toggle"
+    "toggle" = "Toggle",
 }
 
-type Rule = (p: Point) => void
+type Rule = (p: Point) => void;
 
 interface Rules {
-    TurnOn: Rule,
-    TurnOff: Rule,
-    Toggle: Rule
+    TurnOn: Rule;
+    TurnOff: Rule;
+    Toggle: Rule;
 }
 
 interface Instruction {
-    operation: Operation,
-    start: Point,
-    end: Point
+    operation: Operation;
+    start: Point;
+    end: Point;
 }
 
-const input: string[] = readStrings("day06.txt")
+const input: string[] = readStrings("day06.txt");
 
 function processInstruction(instructionString: string, rules: Rules): void {
-    const inst = parseInstruction(instructionString)
-    
+    const inst = parseInstruction(instructionString);
+
     for (let y = inst.start.y; y <= inst.end.y; y++) {
         for (let x = inst.start.x; x <= inst.end.x; x++) {
-            rules[inst.operation]({x, y})
+            rules[inst.operation]({ x, y });
         }
     }
 }
 
 function parseInstruction(instruction: string): Instruction {
-    const [ , operation, x1, y1, x2, y2] =
-        instruction.match(/^(.*) (\d+),(\d+) through (\d+),(\d+)$/)
+    const [, operation, x1, y1, x2, y2] = instruction.match(
+        /^(.*) (\d+),(\d+) through (\d+),(\d+)$/
+    );
 
     return {
         operation: Operation[operation],
         start: {
             x: parseInt(x1),
-            y: parseInt(y1)
+            y: parseInt(y1),
         },
         end: {
             x: parseInt(x2),
-            y: parseInt(y2)
-        }
-    }
+            y: parseInt(y2),
+        },
+    };
 }
 
 function sumArray(array: number[]): number {
-    return array.reduce((acc, n) => acc + n)
+    return array.reduce((acc, n) => acc + n);
 }
 
 function sumGrid(): number {
-    return sumArray(grid.flat())
+    return sumArray(grid.flat());
 }
 
 const testInstructions = [
     "turn on 0,0 through 7,7",
     "turn off 3,5 through 7,7",
     "toggle 1,1 through 6,6",
-    "toggle 4,3 through 5,5"
-]
+    "toggle 4,3 through 5,5",
+];
 
 const exampleInstructions = [
-    "turn on 0,0 through 999,999", 
+    "turn on 0,0 through 999,999",
     "toggle 0,0 through 999,0",
-    "turn off 499,499 through 500,500"
-]
+    "turn off 499,499 through 500,500",
+];
 
 const rules1: Rules = {
-    TurnOn: pnt => grid[pnt.y][pnt.x] = 1,
-    TurnOff: pnt => grid[pnt.y][pnt.x] = 0,
-    Toggle: pnt => grid[pnt.y][pnt.x] = (grid[pnt.y][pnt.x] + 1) % 2 
-}
+    TurnOn: (pnt) => (grid[pnt.y][pnt.x] = 1),
+    TurnOff: (pnt) => (grid[pnt.y][pnt.x] = 0),
+    Toggle: (pnt) => (grid[pnt.y][pnt.x] = (grid[pnt.y][pnt.x] + 1) % 2),
+};
 
 const rules2: Rules = {
-    TurnOn: pnt => grid[pnt.y][pnt.x] = grid[pnt.y][pnt.x] + 1,
-    TurnOff: pnt => grid[pnt.y][pnt.x] = Math.max(grid[pnt.y][pnt.x] - 1, 0),
-    Toggle: pnt => grid[pnt.y][pnt.x] = grid[pnt.y][pnt.x] + 2,
-}
+    TurnOn: (pnt) => (grid[pnt.y][pnt.x] = grid[pnt.y][pnt.x] + 1),
+    TurnOff: (pnt) =>
+        (grid[pnt.y][pnt.x] = Math.max(grid[pnt.y][pnt.x] - 1, 0)),
+    Toggle: (pnt) => (grid[pnt.y][pnt.x] = grid[pnt.y][pnt.x] + 2),
+};
 
+let grid: number[][];
 
-let grid: number[][]
+const gridSize = 1000;
 
-const gridSize = 1000
+grid = [...Array(gridSize)].map((_) => Array(gridSize).fill(0));
+input.forEach((i) => processInstruction(i, rules1));
+console.log(`${sumGrid()} - should be 543903`);
 
-grid = [...Array(gridSize)].map(_ => Array(gridSize).fill(0))
-input.forEach(i => processInstruction(i, rules1))
-console.log(`${sumGrid()} - should be 543903`)
-
-grid = [...Array(gridSize)].map(_ => Array(gridSize).fill(0))
-input.forEach(i => processInstruction(i, rules2))
-console.log(`${sumGrid()} - should be 14687245`)
-
+grid = [...Array(gridSize)].map((_) => Array(gridSize).fill(0));
+input.forEach((i) => processInstruction(i, rules2));
+console.log(`${sumGrid()} - should be 14687245`);

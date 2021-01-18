@@ -997,36 +997,40 @@ const input = `4x23x21
 10x15x23
 21x29x14
 20x29x30
-23x11x5`
+23x11x5`;
 
-const parse = dimensions => dimensions.match(/(\d+)x(\d+)x(\d+)/).slice(1,4).map(s => parseInt(s))
-const getMins = (array, n) => array.sort((a, b) => a - b).slice(0, n)
+const parse = (dimensions) =>
+    dimensions
+        .match(/(\d+)x(\d+)x(\d+)/)
+        .slice(1, 4)
+        .map((s) => parseInt(s));
+const getMins = (array, n) => array.sort((a, b) => a - b).slice(0, n);
 
-const wrappingPaperRequired = dims => {
-    const minDims = getMins(dims, 2)
+const wrappingPaperRequired = (dims) => {
+    const minDims = getMins(dims, 2);
 
-    return 2 * ((dims[0] * dims[1]) +
-                (dims[1] * dims[2]) +
-                (dims[2] * dims[0])) +
-           (minDims[0] * minDims[1])
-}
+    return (
+        2 * (dims[0] * dims[1] + dims[1] * dims[2] + dims[2] * dims[0]) +
+        minDims[0] * minDims[1]
+    );
+};
 
-const ribbonRequired = dims => {
-    const minDims = getMins(dims, 2)
+const ribbonRequired = (dims) => {
+    const minDims = getMins(dims, 2);
 
-    return 2 * (minDims[0] + minDims[1]) + (dims[0] * dims[1] * dims[2])
-}
+    return 2 * (minDims[0] + minDims[1]) + dims[0] * dims[1] * dims[2];
+};
 
-const inputArray = input.split("\n")
+const inputArray = input.split("\n");
 console.log(
     inputArray
-        .map(dimsString => parse(dimsString))
-        .map(dims => wrappingPaperRequired(dims))
+        .map((dimsString) => parse(dimsString))
+        .map((dims) => wrappingPaperRequired(dims))
         .reduce((a, b) => a + b)
-)
+);
 console.log(
     inputArray
-        .map(dimsString => parse(dimsString))
-        .map(dims => ribbonRequired(dims))
+        .map((dimsString) => parse(dimsString))
+        .map((dims) => ribbonRequired(dims))
         .reduce((a, b) => a + b)
-)
+);
