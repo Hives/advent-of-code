@@ -1,6 +1,16 @@
 import { readFile } from "../lib/reader.js";
 import { sumArray } from "../lib/array.js";
 
+const puzzleInput = readFile("day12.json");
+
+console.log(`part 1: ${sumNumbers(puzzleInput)}`);
+
+let s = puzzleInput
+while (s.indexOf("red") !== -1) {
+    s = deleteRed(s)
+}
+console.log(`part 2: ${sumNumbers(s)}`)
+
 function sumNumbers(string) {
     return sumArray(findNumbers(string));
 }
@@ -27,7 +37,7 @@ function deleteRed(string) {
 
     // if "red" is inside object, delete the object
     if (string[previousBracketIndex] === "{") {
-        const closingBracketIndex = findMatchingBracket(
+        const closingBracketIndex = findMatchingBrace(
             string,
             previousBracketIndex
         );
@@ -40,19 +50,19 @@ function deleteRed(string) {
     }
 }
 
-function findMatchingBracket(string, openBracketIndex) {
-    let bracketDepth = 1;
-    let current = openBracketIndex;
+function findMatchingBrace(string, openBraceIndex) {
+    let braceDepth = 1;
+    let current = openBraceIndex;
 
     do {
         current++;
         if (string[current] === "{") {
-            bracketDepth++;
+            braceDepth++;
         }
         if (string[current] === "}") {
-            bracketDepth--;
+            braceDepth--;
         }
-    } while (bracketDepth > 0);
+    } while (braceDepth > 0);
 
     return current;
 }
@@ -68,13 +78,3 @@ function isOpenBracket(c) {
 function isCloseBracket(c) {
     return c === "}" || c === "]";
 }
-
-const puzzleInput = readFile("day12.json");
-
-console.log(`part 1: ${sumNumbers(puzzleInput)}`);
-
-let s = puzzleInput
-while (s.indexOf("red") !== -1) {
-    s = deleteRed(s)
-}
-console.log(`part 2: ${sumNumbers(s)}`)
