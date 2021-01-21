@@ -7,5 +7,18 @@ export function removeValueFromArray(array, value) {
 }
 
 export function sumArray(array) {
-    return array.reduce((acc, current) => acc + current, 0)
+    return array.reduce((acc, current) => acc + current, 0);
+}
+
+export function permutations(array) {
+    if (array.length === 1) {
+        return array;
+    }
+    return array.flatMap((selected) => {
+        return permutations(array.filter((it) => it !== selected)).map(
+            (subList) => {
+                return [selected].concat(subList);
+            }
+        );
+    });
 }
