@@ -22,3 +22,56 @@ export function permutations(array) {
         );
     });
 }
+
+export function zip(array1, array2) {
+    const length = Math.min(array1.length, array2.length);
+    const output = [];
+    for (let i = 0; i < length; i++) {
+        output.push([array1[i], array2[i]]);
+    }
+    return output;
+}
+
+export function flip(twoDimArray) {
+    const output = [];
+    for (let i = 0; i < twoDimArray[0].length; i++) {
+        const row = [];
+        for (let j = 0; j < twoDimArray.length; j++) {
+            row.push(twoDimArray[j][i]);
+        }
+        output.push(row);
+    }
+    return output;
+}
+
+export function range(start, end) {
+    const output = [];
+    for (let i = start; i < end; i++) {
+        output.push(i);
+    }
+    return output;
+}
+
+export function max(array) {
+    return array
+        .slice(1, array.length)
+        .reduce((acc, current) => (current > acc ? current : acc), array[0]);
+}
+
+export function map(fn) {
+    return function(array) {
+        return array.map(fn)
+    }
+}
+
+export function filter(fn) {
+    return function(array) {
+        return array.filter(fn)
+    }
+}
+
+export function reduce(fn, initial) {
+    return function(array) {
+        return array.reduce(fn, initial)
+    }
+}
