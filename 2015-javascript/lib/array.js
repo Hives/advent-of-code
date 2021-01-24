@@ -52,6 +52,14 @@ export function range(start, end) {
     return output;
 }
 
+export function sort(array) {
+    return array.slice().sort((a, b) => a - b)
+}
+
+export function reverse(array) {
+    return array.slice().reverse()
+}
+
 export function max(array) {
     return array
         .slice(1, array.length)
@@ -67,12 +75,6 @@ export function map(fn) {
 export function filter(fn) {
     return function (array) {
         return array.filter(fn);
-    };
-}
-
-export function filterByProperty(property) {
-    return function (array) {
-        return array.filter((element) => element[property]);
     };
 }
 
