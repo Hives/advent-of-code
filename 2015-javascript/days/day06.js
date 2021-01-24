@@ -8,6 +8,7 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
 };
 exports.__esModule = true;
 var reader_js_1 = require("../lib/reader.js");
+var array_js_1 = require("../lib/array.js");
 var Operation;
 (function (Operation) {
     Operation["turn on"] = "TurnOn";
@@ -37,11 +38,8 @@ function parseInstruction(instruction) {
         }
     };
 }
-function sumArray(array) {
-    return array.reduce(function (acc, n) { return acc + n; });
-}
 function sumGrid() {
-    return sumArray(grid.flat());
+    return array_js_1.sum(grid.flat());
 }
 var testInstructions = [
     "turn on 0,0 through 7,7",

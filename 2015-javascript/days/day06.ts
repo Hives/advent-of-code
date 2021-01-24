@@ -1,4 +1,5 @@
 import { readStrings } from "../lib/reader.js";
+import { sum } from "../lib/array.js";
 
 interface Point {
     x: number;
@@ -55,12 +56,8 @@ function parseInstruction(instruction: string): Instruction {
     };
 }
 
-function sumArray(array: number[]): number {
-    return array.reduce((acc, n) => acc + n);
-}
-
 function sumGrid(): number {
-    return sumArray(grid.flat());
+    return sum(grid.flat());
 }
 
 const testInstructions = [

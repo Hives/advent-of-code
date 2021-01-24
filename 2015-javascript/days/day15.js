@@ -1,4 +1,4 @@
-import { max, zip, flip, sumArray, range, map, filter, reduce } from "../lib/array.js";
+import { max, zip, flip, sum, range, map, filter, reduce } from "../lib/array.js";
 import { pipe } from "../lib/fn.js";
 
 const exampleInput = [
@@ -62,7 +62,7 @@ function evaluateCookieTaste(ingredientsAndQuantities) {
                 ingredient.tasteComponents.map((n) => n * quantity)
             ),
         flip,
-        map(sumArray),
+        map(sum),
         map((n) => Math.max(n, 0)),
         reduce((acc, current) => acc * current, 1)
     );

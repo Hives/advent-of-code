@@ -1,5 +1,5 @@
 import { readFile } from "../lib/reader.js";
-import { sumArray } from "../lib/array.js";
+import { sum } from "../lib/array.js";
 
 const puzzleInput = readFile("day12.json");
 
@@ -12,7 +12,7 @@ while (s.indexOf("red") !== -1) {
 console.log(`part 2: ${sumNumbers(s)}`)
 
 function sumNumbers(string) {
-    return sumArray(findNumbers(string));
+    return sum(findNumbers(string));
 }
 
 function findNumbers(string) {

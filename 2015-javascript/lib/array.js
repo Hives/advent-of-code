@@ -6,7 +6,7 @@ export function removeValueFromArray(array, value) {
     return [...array.slice(0, index), ...array.slice(index + 1, array.size)];
 }
 
-export function sumArray(array) {
+export function sum(array) {
     return array.reduce((acc, current) => acc + current, 0);
 }
 
