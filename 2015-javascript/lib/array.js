@@ -59,19 +59,25 @@ export function max(array) {
 }
 
 export function map(fn) {
-    return function(array) {
-        return array.map(fn)
-    }
+    return function (array) {
+        return array.map(fn);
+    };
 }
 
 export function filter(fn) {
-    return function(array) {
-        return array.filter(fn)
-    }
+    return function (array) {
+        return array.filter(fn);
+    };
+}
+
+export function filterByProperty(property) {
+    return function (array) {
+        return array.filter((element) => element[property]);
+    };
 }
 
 export function reduce(fn, initial) {
-    return function(array) {
-        return array.reduce(fn, initial)
-    }
+    return function (array) {
+        return array.reduce(fn, initial);
+    };
 }
