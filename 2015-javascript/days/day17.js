@@ -1,5 +1,5 @@
 import { pipe } from "../lib/fn.js";
-import { sort, reverse, sum, map } from "../lib/array.js";
+import { sort, reverse, sum } from "../lib/array.js";
 
 const puzzleInput = [
     11,
