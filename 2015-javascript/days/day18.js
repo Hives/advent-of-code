@@ -15,44 +15,49 @@ const exampleInput = [
     "####..",
 ].map((s) => s.split(""));
 
-const rules = [
-    (cell, neighbours) =>
-        (isOn(cell) && areOn(neighbours, 2)) || areOn(neighbours, 3),
-    (cell, neighbours) => isOff(cell) && areOn(neighbours, 3),
+const standardRules = [
+    (board, i, j) =>
+        isOn(board[j][i]) &&
+        [2, 3].includes(countOn(getNeighbours(board, i, j))),
+    (board, i, j) =>
+        isOff(board[j][i]) && countOn(getNeighbours(board, i, j)) === 3,
 ];
 
-console.log(pipe(run(puzzleInput, 100, rules), countOn));
-console.log(pipe(run(puzzleInput, 100, rules, true), countOn));
+const cornersRule = (board, i, j) =>
+    [0, board[j].length - 1].includes(i) && [0, board.length - 1].includes(j);
 
-function run(
-    initial,
-    iterations,
-    rules,
-    cornersAlwaysOn = false
-) {
-    function turnOnCornersIfRequired(board) {
-        return cornersAlwaysOn ? turnOnCorners(board) : board;
-    }
+console.log(`part 1: ${part1(puzzleInput, 100)} (should be 814)`);
+console.log(`part 2: ${part2(puzzleInput, 100)} (should be 924)`);
 
+function part1(input, iterations) {
+    return pipe(run(input, iterations, standardRules), countOn);
+}
+
+function part2(input, iterations) {
+    const initial = turnOnCorners(input);
+    return pipe(
+        run(initial, iterations, [...standardRules, cornersRule]),
+        countOn
+    );
+}
+
+function run(initial, iterations, rules) {
     function go(board, iterations) {
         if (iterations == 0) {
             return board;
         }
 
-        const nextBoard = pipe(oneStep(board, rules), turnOnCornersIfRequired);
-
-        return go(nextBoard, iterations - 1);
+        return go(applyRules(board, rules), iterations - 1);
     }
 
-    return go(turnOnCornersIfRequired(initial), iterations)
+    return go(initial, iterations);
 }
 
-function oneStep(board, rules) {
+function applyRules(board, rules) {
     return board.map((row, rowIndex) => {
-        return row.map((cell, colIndex) => {
-            const neighbours = getNeighbours(board, colIndex, rowIndex);
+        return row.map((_, colIndex) => {
             return rules.reduce(
-                (acc, rule) => acc || rule(cell, neighbours),
+                (acc, rule) => acc || rule(board, rowIndex, colIndex),
                 false
             )
                 ? on
@@ -71,7 +76,7 @@ function turnOnCorners(board) {
 }
 
 function countOn(board) {
-    return board.flat().filter(cell => isOn(cell)).length;
+    return board.flat().filter((cell) => isOn(cell)).length;
 }
 
 function getNeighbours(board, i, j) {
@@ -95,12 +100,4 @@ function isOn(cell) {
 
 function isOff(cell) {
     return !isOn(cell);
-}
-
-function areOn(cells, number) {
-    const numOnCells = cells.reduce(
-        (acc, cell) => (isOn(cell) ? acc + 1 : acc),
-        0
-    );
-    return numOnCells === number;
 }
