@@ -6,10 +6,6 @@ export function removeValueFromArray(array, value) {
     return [...array.slice(0, index), ...array.slice(index + 1, array.size)];
 }
 
-export function sum(array) {
-    return array.reduce((acc, current) => acc + current, 0);
-}
-
 export function permutations(array) {
     if (array.length === 1) {
         return array;
@@ -52,12 +48,16 @@ export function range(start, end) {
     return output;
 }
 
+export function sum(array) {
+    return array.reduce((acc, current) => acc + current, 0);
+}
+
 export function sort(array) {
-    return array.slice().sort((a, b) => a - b)
+    return array.slice().sort((a, b) => a - b);
 }
 
 export function reverse(array) {
-    return array.slice().reverse()
+    return array.slice().reverse();
 }
 
 export function max(array) {
@@ -69,6 +69,12 @@ export function max(array) {
 export function map(fn) {
     return function (array) {
         return array.map(fn);
+    };
+}
+
+export function flatMap(fn) {
+    return function (array) {
+        return array.flatMap(fn);
     };
 }
 
