@@ -56,6 +56,12 @@ export function sort(array) {
     return array.slice().sort((a, b) => a - b);
 }
 
+export function sortBy(fn) {
+    return function (array) {
+        return array.slice().sort(fn);
+    };
+}
+
 export function reverse(array) {
     return array.slice().reverse();
 }
@@ -82,6 +88,12 @@ export function filter(fn) {
     return function (array) {
         return array.filter(fn);
     };
+}
+
+export function find(fn) {
+    return function (array) {
+        return array.find(fn)
+    }
 }
 
 export function reduce(fn, initial) {

@@ -34,10 +34,6 @@ function part2(input) {
         return go(nextString, rules, iterations + 1)
     }
 
-    // const sortedRules = createMap(input).sort(
-    //     (a, b) => b.to.length - a.to.length
-    // );
-
     return go(medicineMolecule, createMap(input))
 }
 

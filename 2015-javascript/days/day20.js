@@ -1,47 +1,42 @@
-import {pipe} from "../lib/fn.js";
+import { pipe } from "../lib/fn.js";
 import { range, sum, filter } from "../lib/array.js";
 
 const puzzleInput = 34000000;
 
-console.log(`part 1: ${doIt(calculatePresentsPart1)}`)
-console.log(`part 2: ${doIt(calculatePresentsPart2)}`)
+console.log(`part 1: ${doIt(puzzleInput, calculatePresentsPart1)}`);
+console.log(`part 2: ${doIt(puzzleInput, calculatePresentsPart2)}`);
 
-function doIt(calculatePresents) {
+function doIt(limit, calculatePresents) {
     let doorNumber = 0;
     let presents;
     let largestPresents = 0;
 
     do {
         doorNumber++;
-        presents = calculatePresents(doorNumber)
+        presents = calculatePresents(doorNumber);
 
         if (presents > largestPresents) largestPresents = presents;
 
         if (doorNumber % 50000 === 0) {
             console.log(`${doorNumber}, largest so far: ${largestPresents}`);
         }
-    } while (presents < puzzleInput);
+    } while (presents < limit);
 
-    return doorNumber
+    return doorNumber;
 }
 
 function calculatePresentsPart1(doorNumber) {
-    return pipe(
-        doorNumber,
-        getFactors,
-        sum,
-        n => n * 10
-    )
+    return pipe(doorNumber, getFactors, sum, (n) => n * 10);
 }
 
 function calculatePresentsPart2(doorNumber) {
     return pipe(
         doorNumber,
         getFactors,
-        filter(factor => doorNumber / factor <= 50),
+        filter((factor) => doorNumber / factor <= 50),
         sum,
-        n => n * 11
-    )
+        (n) => n * 11
+    );
 }
 
 function getFactors(n) {
