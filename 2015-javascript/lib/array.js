@@ -72,6 +72,12 @@ export function max(array) {
         .reduce((acc, current) => (current > acc ? current : acc), array[0]);
 }
 
+export function min(array) {
+    return array
+        .slice(1, array.length)
+        .reduce((acc, current) => (current < acc ? current : acc), array[0]);
+}
+
 export function map(fn) {
     return function (array) {
         return array.map(fn);
@@ -92,8 +98,8 @@ export function filter(fn) {
 
 export function find(fn) {
     return function (array) {
-        return array.find(fn)
-    }
+        return array.find(fn);
+    };
 }
 
 export function reduce(fn, initial) {
