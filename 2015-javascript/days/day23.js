@@ -59,6 +59,18 @@ function doOne(state, program) {
     }
 }
 
+function parse(string) {
+    const [, opcode, p1, p2] = string.match(
+        /^(\w*) (a|b|(?:\+|-)\d+)(?:\, (.*))?/
+    );
+
+    return {
+        opcode,
+        p1,
+        p2,
+    };
+}
+
 function half(r, { registers, position }) {
     return {
         registers: {
@@ -115,17 +127,5 @@ function jumpIfOne(r, offset, { registers, position }) {
         },
         position:
             registers[r] === 1 ? position + parseInt(offset) : position + 1,
-    };
-}
-
-function parse(string) {
-    const [, opcode, p1, p2] = string.match(
-        /^(\w*) (a|b|(?:\+|-)\d+)(?:\, (.*))?/
-    );
-
-    return {
-        opcode,
-        p1,
-        p2,
     };
 }

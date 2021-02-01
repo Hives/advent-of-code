@@ -6,6 +6,12 @@ export function removeValueFromArray(array, value) {
     return [...array.slice(0, index), ...array.slice(index + 1, array.size)];
 }
 
+export function removeValuesFromArray(array, values) {
+    return values.reduce((acc, current) => removeValueFromArray(acc, current), [
+        ...array,
+    ]);
+}
+
 export function permutations(array) {
     if (array.length === 1) {
         return array;
