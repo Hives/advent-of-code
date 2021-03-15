@@ -1,6 +1,6 @@
 (ns aoc-2016-clojure.day02part1_spec
   (:require [speclj.core :refer :all]
-            [aoc-2016-clojure.day02part1 :refer :all]))
+            [aoc-2016-clojure.day02-1 :refer :all]))
 
 (describe "move-one-space"
           (it "can go up"

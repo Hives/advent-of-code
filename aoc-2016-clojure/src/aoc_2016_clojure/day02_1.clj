@@ -1,4 +1,4 @@
-(ns aoc-2016-clojure.day02part1
+(ns aoc-2016-clojure.day02-1
   (:require [clojure.string :as string]))
 
 (defn outside-bounds [[x y]]

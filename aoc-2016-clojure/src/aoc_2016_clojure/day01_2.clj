@@ -1,4 +1,4 @@
-(ns aoc-2016-clojure.day01part2)
+(ns aoc-2016-clojure.day01-2)
 
 (defn parseInstruction
   "Parses one unit of the input"

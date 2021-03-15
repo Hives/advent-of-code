@@ -1,4 +1,4 @@
-(ns aoc-2016-clojure.day01part1)
+(ns aoc-2016-clojure.day01-1)
 
 (defn parseInput
   "Parses an input"
