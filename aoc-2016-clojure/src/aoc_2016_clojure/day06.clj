@@ -13,35 +13,25 @@
   (let [zipped (map vector word counts)]
     (map increase-letter-count zipped)))
 
-(defn count-letter-frequencies [input]
-  (let [initial (take (count (first input)) (repeat {}))]
-    (reduce increase-letters-counts initial input)))
+(defn count-letter-frequencies [words]
+  (let [empty-counts (take (count (first words)) (repeat {}))]
+    (reduce increase-letters-counts empty-counts words)))
 
-(defn get-highest-value-key [input]
+(defn get-key-by-comparison [comparison input]
   (reduce
     (fn [acc next]
-      (if (> (second acc) (second next))
+      (if (comparison (second acc) (second next))
         acc
         next))
     input))
 
-(defn get-lowest-value-key [input]
-  (reduce
-    (fn [acc next]
-      (if (< (second acc) (second next))
-        acc
-        next))
-    input))
-
-(defn part1 [input]
+(defn decoder [input ordering]
   (let [frequencies   (count-letter-frequencies input)
-        most-frequent (map get-highest-value-key frequencies)]
+        most-frequent (map (partial get-key-by-comparison ordering) frequencies)]
     (str/join (map (comp name first) most-frequent))))
 
-(defn part2 [input]
-  (let [frequencies   (count-letter-frequencies input)
-        least-frequent (map get-lowest-value-key frequencies)]
-    (str/join (map (comp name first) least-frequent))))
+(defn part1 [input] (decoder input >))
+(defn part2 [input] (decoder input <))
 
 (part1 testInput)
 (part2 testInput)
