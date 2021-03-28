@@ -10,7 +10,7 @@
 
 (defn generate-checksum [encryptedName]
   (let [letters (remove #(= "-" %) (str/split encryptedName #""))
-        freqs (into [] (frequencies letters))]
+        freqs   (into [] (frequencies letters))]
     (str/join
       (take 5
         (map first
@@ -36,15 +36,17 @@
   (char (+ letter 97)))
 
 (defn shift-letter [character distance]
-  (number-to-letter (mod
-                      (+ distance (letter-to-number character))
-                      26)))
+  (number-to-letter
+    (mod
+      (+ distance (letter-to-number character))
+      26)))
 
 (defn decrypt [name distance]
   (str/join (map
-              (fn [character] (if (= character \-)
-                        \space
-                        (shift-letter character distance)))
+              (fn [character]
+                (if (= character \-)
+                  \space
+                  (shift-letter character distance)))
               name)))
 
 (defn part2 [input]
@@ -52,7 +54,7 @@
     (filter
       (fn [[name _]] (str/includes? name "pole"))
       (map
-       (fn [[name sectorID]] [(decrypt name sectorID) sectorID])
-       valid-rooms))))
+        (fn [[name sectorID]] [(decrypt name sectorID) sectorID])
+        valid-rooms))))
 
 (part2 puzzleInput)
