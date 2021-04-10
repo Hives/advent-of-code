@@ -2,17 +2,17 @@
 
 (def max-floor 3)
 (def min-floor 0)
-(def a-floor '("HM" "LM" "HG"))
+(def a-floor '([:h :microchip] [:h :generator] [:l :microchip]))
 
 (defn get-microchips [floor]
-  (map second
-    (remove nil?
-      (map #(re-find #"(.)M" %) floor))))
+  (->> floor
+    (filter #(= :microchip (second %)))
+    (map first)))
 
 (defn get-generators [floor]
-  (map second
-    (remove nil?
-      (map #(re-find #"(.)G" %) floor))))
+  (->> floor
+    (filter #(= :generator (second %)))
+    (map first)))
 
 (defn is-valid-floor? [floor]
   (let [microchips           (get-microchips floor)
@@ -36,27 +36,25 @@
 (defn select-one-or-two [coll]
   (concat (map list coll) (all-pairs coll)))
 
-(defn remove-from-lists [lists needle]
+(defn remove-items-from-lists [items lists]
   (map
     (fn [list]
-      (remove #(= needle %) list))
+      (remove #(some #{%} items) list))
     lists))
 
 (defn move-equipment-to-floor [state equipment new-floor-num]
   (let [{floors :floors} state
-        equipment-removed (reduce
-                            remove-from-lists
-                            floors
-                            equipment)
-        equipment-added   (map-indexed
-                            (fn [index floor]
-                              (if (= index new-floor-num)
-                                (concat floor equipment)
-                                floor))
-                            equipment-removed)
-        as-sets           (map set equipment-added)]
+        new-floors (->> floors
+                     (remove-items-from-lists equipment)
+                     (map-indexed
+                       (fn [index floor]
+                         (if (= index new-floor-num)
+                           (concat floor equipment)
+                           floor)))
+                     (map set)
+                     (vec))]
     {:elevator new-floor-num
-     :floors   (vec as-sets)}))
+     :floors   new-floors}))
 
 (defn get-potential-next-floors [current-floor]
   (filter
@@ -97,41 +95,40 @@
 
 (def test-initial-state
   {:elevator 0
-   :floors   [#{"HM" "LM"}
-              #{"HG"}
-              #{"LG"}
+   :floors   [#{[:hydrogen :microchip] [:lithium :microchip]}
+              #{[:hydrogen :generator]}
+              #{[:lithium :generator]}
               #{}]})
 
 (def puzzle-initial-state
   {:elevator 0
-   :floors   [#{"TG" "TM" "PG" "SG"}
-              #{"PM" "SM"}
-              #{"XG" "XM" "RG" "RM"}
+   :floors   [#{[:thulium :generator] [:thulium :microchip] [:plutonium :generator] [:strontium :generator]}
+              #{[:plutonium :microchip] [:strontium :microchip]}
+              #{[:promethium :generator] [:promethium :microchip] [:ruthenium :generator] [:ruthenium :microchip]}
               #{}]})
 
 (defn go-one-step [current-states previous-states]
   (let [next-states             (set (mapcat get-valid-moves current-states))
-        non-looping-next-states (remove #(some #{%} previous-states) next-states)]
+        non-looping-next-states (filter #(not-any? #{%} previous-states) next-states)]
     [non-looping-next-states (clojure.set/union previous-states (set current-states))]))
-
-(go-one-step
-  (list {:elevator 1, :floors [#{"LM"} #{"HG" "HM"} #{"LG"} #{}]})
-  '())
-
 
 (defn foo [initial]
   (loop [current-states  #{initial}
          previous-states #{}
          counter         0]
-    (if (some state-complete? current-states)
-      counter
-      (let [[new-states new-previous-states] (go-one-step current-states previous-states)
-            _ (println (str "count: " counter))
-            _ (println (str "states: " (count new-states)))
-            _ (println (str "previous states: " (count new-previous-states)))]
-        (recur
-          new-states
-          new-previous-states
-          (inc counter))))))
+    (if (> counter 40)
+      current-states
+      (if (some state-complete? current-states)
+       counter
+       (let [[new-states new-previous-states] (go-one-step current-states previous-states)
+             _ (println (str "count: " counter))
+             _ (println (str "states: " (count new-states)))
+             _ (println (str "previous states: " (count new-previous-states)))]
+         (recur
+           new-states
+           new-previous-states
+           (inc counter)))))))
 
-(foo test-initial-state)
+(time
+  (foo test-initial-state)
+  )
