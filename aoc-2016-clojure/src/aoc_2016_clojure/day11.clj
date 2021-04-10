@@ -2,17 +2,16 @@
 
 (def max-floor 3)
 (def min-floor 0)
-(def a-floor '([:h :microchip] [:h :generator] [:l :microchip]))
 
 (defn get-microchips [floor]
   (->> floor
-    (filter #(= :microchip (second %)))
-    (map first)))
+    (filter #(= :microchip (first %)))
+    (map second)))
 
 (defn get-generators [floor]
   (->> floor
-    (filter #(= :generator (second %)))
-    (map first)))
+    (filter #(= :generator (first %)))
+    (map second)))
 
 (defn is-valid-floor? [floor]
   (let [microchips           (get-microchips floor)
@@ -93,42 +92,90 @@
 (defn history-complete? [history]
   (state-complete? (first history)))
 
+(defn find-floor-of [floors item]
+  (let [floors-indexed (map-indexed (fn [idx itm] [idx itm]) floors)]
+    (->> floors-indexed
+      (filter (fn [[_ floor]] (some #{item} floor)))
+      (first)
+      (first))))
+
+(defn get-equipment-floors [floors element]
+  [(find-floor-of floors [:microchip element])
+   (find-floor-of floors [:generator element])
+   ])
+
+(defn add-fingerprint [state]
+  (let [{elevator :elevator
+         floors   :floors} state
+        fingerprint (->> floors
+                      (reduce concat)
+                      (map second)
+                      (set)
+                      (map #(get-equipment-floors floors %))
+                      (cons [elevator])
+                      (sort))]
+    {:elevator    elevator
+     :floors      floors
+     :fingerprint fingerprint}))
+
+(defn distinct-by-fingerprint [states]
+  (->> states
+    (group-by :fingerprint)
+    (vals)
+    (map first)))
+
+(defn go-one-step [current-states previous-fingerprints]
+  (let [non-looping-next-states (->> current-states
+                                  (mapcat get-valid-moves)
+                                  (set)
+                                  (map add-fingerprint)
+                                  (distinct-by-fingerprint)
+                                  (filter #(not-any? #{(:fingerprint %)} previous-fingerprints)))]
+    [non-looping-next-states (clojure.set/union previous-fingerprints (set (map :fingerprint current-states)))]))
+
+(defn foo [initial]
+  (loop [current-states        #{(add-fingerprint initial)}
+         previous-fingerprints #{}
+         counter               0]
+    (if (some state-complete? current-states)
+      counter
+      (let [[new-states new-previous-fingerprints] (go-one-step current-states previous-fingerprints)
+            _ (println (str "count: " counter))
+            _ (println (str "states: " (count new-states)))
+            _ (println (str "previous states: " (count new-previous-fingerprints)))]
+        (recur
+          new-states
+          new-previous-fingerprints
+          (inc counter))))))
+
 (def test-initial-state
   {:elevator 0
-   :floors   [#{[:hydrogen :microchip] [:lithium :microchip]}
-              #{[:hydrogen :generator]}
-              #{[:lithium :generator]}
+   :floors   [#{[:microchip :hydrogen] [:microchip :lithium]}
+              #{[:generator :hydrogen]}
+              #{[:generator :lithium]}
+              #{}]})
+
+(def test-initial-state-2
+  {:elevator 0
+   :floors   [#{[:microchip :hydrogen] [:microchip :lithium]}
+              #{[:generator :lithium]}
+              #{[:generator :hydrogen]}
               #{}]})
 
 (def puzzle-initial-state
   {:elevator 0
-   :floors   [#{[:thulium :generator] [:thulium :microchip] [:plutonium :generator] [:strontium :generator]}
-              #{[:plutonium :microchip] [:strontium :microchip]}
-              #{[:promethium :generator] [:promethium :microchip] [:ruthenium :generator] [:ruthenium :microchip]}
+   :floors   [#{[:generator :thulium] [:microchip :thulium] [:generator :plutonium] [:generator :strontium]}
+              #{[:microchip :plutonium] [:microchip :strontium]}
+              #{[:generator :promethium] [:microchip :promethium] [:generator :ruthenium] [:microchip :ruthenium]}
               #{}]})
 
-(defn go-one-step [current-states previous-states]
-  (let [next-states             (set (mapcat get-valid-moves current-states))
-        non-looping-next-states (filter #(not-any? #{%} previous-states) next-states)]
-    [non-looping-next-states (clojure.set/union previous-states (set current-states))]))
-
-(defn foo [initial]
-  (loop [current-states  #{initial}
-         previous-states #{}
-         counter         0]
-    (if (> counter 40)
-      current-states
-      (if (some state-complete? current-states)
-       counter
-       (let [[new-states new-previous-states] (go-one-step current-states previous-states)
-             _ (println (str "count: " counter))
-             _ (println (str "states: " (count new-states)))
-             _ (println (str "previous states: " (count new-previous-states)))]
-         (recur
-           new-states
-           new-previous-states
-           (inc counter)))))))
+(def puzzle-initial-state-2
+  {:elevator 0
+   :floors   [#{[:generator :thulium] [:microchip :thulium] [:generator :plutonium] [:generator :strontium] [:generator :elerium] [:microchip :elerium] [:generator :dilithium] [:microchip :dilithium]}
+              #{[:microchip :plutonium] [:microchip :strontium]}
+              #{[:generator :promethium] [:microchip :promethium] [:generator :ruthenium] [:microchip :ruthenium]}
+              #{}]})
 
 (time
-  (foo test-initial-state)
+  (foo puzzle-initial-state-2)
   )
