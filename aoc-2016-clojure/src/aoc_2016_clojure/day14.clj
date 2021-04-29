@@ -83,5 +83,5 @@
           (recur (inc index) (inc running-total))
           (recur (inc index) running-total))))))
 
-;(part-1 puzzle-input)
-(part-2 puzzle-input)
+; (part-1 puzzle-input)
+; (part-2 puzzle-input) ; slow!

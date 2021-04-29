@@ -26,18 +26,6 @@
       iteration
       (recur (+ 1 (* 2 length)) (inc iteration)))))
 
-(defn expand-n-times [seed n]
-  (loop [iteration n
-         current   seed]
-    (if (= iteration 0)
-      current
-      (recur (dec iteration) (expand current)))))
-
-(count (expand-n-times "1" 20))
-
-;; (defn expand-to-fill-disk-2 [input disk-length]
-;;   (let [iterations (iterations-to-fill-disk input disk-length)]))
-
 (defn contract [input]
   (->> input
        (partition 2)
@@ -56,5 +44,5 @@
       (contract-until-odd-length)
       (#(apply str %))))
 
-;; (time (do-it puzzle-input 36864))
-;; (time (do-it puzzle-input 35651584))
+(time (do-it puzzle-input 36864))
+;; (time (do-it puzzle-input 35651584)) ;; slow
