@@ -69,13 +69,14 @@
 ;; (part-1 puzzle-input)
 
 (defn part-2-one-step [seed state longest-path-length length]
-  (let [next-steps       (mapcat #(generate-next-steps seed %) state)
+  (let [new-length       (inc length)
+        next-steps       (mapcat #(generate-next-steps seed %) state)
         complete-paths   (filter is-complete? next-steps)
         new-longest-path (if (empty? complete-paths)
                            longest-path-length
-                           length)
+                           new-length)
         new-state       (remove is-complete? next-steps)]
-    [new-state new-longest-path (inc length)]))
+    [new-state new-longest-path new-length]))
 
 (defn part-2 [seed]
   (loop [state               [{:path [] :location {:x 0 :y 0}}]
@@ -87,6 +88,4 @@
             [new-state new-longest-path new-length] (part-2-one-step seed state longest-path-length length)]
         (recur new-state new-longest-path new-length)))))
 
-;; (part-2 "ihgpwlah")
-
-;; (part-2-one-step "ihgpwlah" [{:path [\D \D \R \R \R] :location {:x 3 :y 2}}] 0 5)
+(part-2 puzzle-input)
