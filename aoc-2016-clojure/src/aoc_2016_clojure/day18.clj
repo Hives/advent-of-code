@@ -4,18 +4,16 @@
 (def example-input ".^^.^.^^^^")
 
 (defn is-trap? [trio]
-  (let [trio-string (apply str trio)]
-    (or
-      (= "^^." trio-string)
-      (= ".^^" trio-string)
-      (= "^.." trio-string)
-      (= "..^" trio-string))))
+  (or
+   (= '(\^ \^ \.) trio)
+   (= '(\^ \. \.) trio)
+   (= '(\. \^ \^) trio)
+   (= '(\. \. \^) trio)))
 
 (defn get-next-row [row]
-  (->> (str "." row ".")
+  (->> (concat [\.] row [\.])
        (partition 3 1)
-       (map #(if (is-trap? %) \^ \.))
-       (apply str)))
+       (map #(if (is-trap? %) \^ \.))))
 
 (defn get-rows [first n]
   (loop [rows [first]]
@@ -24,7 +22,8 @@
       (recur (conj rows (get-next-row (last rows)))))))
 
 (defn part-1 [input n]
-  (let [final (get-rows input n)
+  (let [first (seq input)
+        final (map #(apply str %) (get-rows first n))
         _     (println (clojure.string/join "\n" final))]
     (count (remove #(= \^ %) (seq (clojure.string/join "" final))))))
 
