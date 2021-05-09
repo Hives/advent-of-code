@@ -4,18 +4,19 @@
 (def example-input ".^^.^.^^^^")
 
 (defn is-trap? [trio]
-  (or
-   (= '(\^ \^ \.) trio)
-   (= '(\^ \. \.) trio)
-   (= '(\. \^ \^) trio)
-   (= '(\. \. \^) trio)))
+  (let [trio-string (apply str trio)]
+    (or
+     (= "^^." trio-string)
+     (= ".^^" trio-string)
+     (= "^.." trio-string)
+     (= "..^" trio-string))))
 
 (defn get-next-row [row]
   (->> (concat [\.] row [\.])
        (partition 3 1)
        (map #(if (is-trap? %) \^ \.))))
 
-(defn get-rows [first n]
+(defn get-rows-1 [first n]
   (loop [rows [first]]
     (if (= (count rows) n)
       rows
@@ -27,5 +28,16 @@
         _     (println (clojure.string/join "\n" final))]
     (count (remove #(= \^ %) (seq (clojure.string/join "" final))))))
 
-(part-1 puzzle-input 40)
-;; (part-1 puzzle-input 400000)
+(defn get-rows-2 [first n]
+  (loop [row              first
+         safe-tiles-count 0
+         row-count        1]
+    (let [new-safe-tiles-count (+
+                                safe-tiles-count
+                                (count (filter #(= \. %) row)))]
+      (if (= n row-count)
+        new-safe-tiles-count
+        (recur (get-next-row row) new-safe-tiles-count (inc row-count))))))
+
+;; (part-1 puzzle-input 40)
+;; (get-rows-2 puzzle-input 400000) ;; slow (~1m)
