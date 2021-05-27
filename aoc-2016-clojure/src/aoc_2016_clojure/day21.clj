@@ -41,6 +41,20 @@
         bonus-step (if (>= index 4) 1 0)]
     (rotate-right (+ 1 index bonus-step) input)))
 
+; manually calculated for the 8 possibilities for an 8-letter password
+(defn inverse-rotate-based-on-letter
+  [letter input]
+  (let [index      (.indexOf input letter)
+        steps-map  {1 1
+                    3 2
+                    5 3
+                    7 4
+                    2 6
+                    4 7
+                    6 8
+                    0 9}]
+    (rotate-left (steps-map index) input)))
+
 (defn reverse-x-through-y
   [index-x index-y input]
   (vec (concat
@@ -75,36 +89,75 @@
       false)))
 
 (def matchers
-  [{:matcher   #"move position (\d+) to position (\d+)"
-    :create-fn (fn [group-1 group-2]
-                 (partial move-x-to-y (toInt group-1) (toInt group-2)))}
-   {:matcher   #"swap position (\d+) with position (\d+)"
-    :create-fn (fn [group-1 group-2]
-                 (partial swap-pos (toInt group-1) (toInt group-2)))}
-   {:matcher   #"swap letter ([a-z]) with letter ([a-z])"
-    :create-fn (fn [group-1 group-2]
-                 (partial swap-char (first group-1) (first group-2)))}
-   {:matcher   #"rotate left (\d+) steps?"
-    :create-fn (fn [group-1 _]
-                 (partial rotate-left (toInt group-1)))}
-   {:matcher   #"rotate right (\d+) steps?"
-    :create-fn (fn [group-1 _]
-                 (partial rotate-right (toInt group-1)))}
-   {:matcher   #"rotate based on position of letter ([a-z])"
-    :create-fn (fn [group-1 _]
-                 (partial rotate-based-on-letter (first group-1)))}
-   {:matcher   #"reverse positions (\d+) through (\d+)"
-    :create-fn (fn [group-1 group-2]
-                 (partial reverse-x-through-y (toInt group-1) (toInt group-2)))}
-   {:matcher   #"move position (\d+) to position (\d+)"
-    :create-fn (fn [group-1 group-2]
-                 (partial move-x-to-y (toInt group-1) (toInt group-2)))}
+  [{:matcher    #"^move position (\d+) to position (\d+)$"
+    :create-op  (fn [group-1 group-2]
+                  (partial move-x-to-y (toInt group-1) (toInt group-2)))
+    :create-inv (fn [group-1 group-2]
+                  (partial move-x-to-y (toInt group-2) (toInt group-1)))
+    }
+
+   {:matcher    #"^swap position (\d+) with position (\d+)$"
+    :create-op  (fn [group-1 group-2]
+                  (partial swap-pos (toInt group-1) (toInt group-2)))
+    :create-inv (fn [group-1 group-2]
+                  (partial swap-pos (toInt group-1) (toInt group-2)))
+    }
+
+   {:matcher    #"^swap letter ([a-z]) with letter ([a-z])$"
+    :create-op  (fn [group-1 group-2]
+                  (partial swap-char (first group-1) (first group-2)))
+    :create-inv  (fn [group-1 group-2]
+                  (partial swap-char (first group-2) (first group-1)))
+    }
+
+   {:matcher    #"^rotate left (\d+) steps?$"
+    :create-op  (fn [group-1 _]
+                  (partial rotate-left (toInt group-1)))
+    :create-inv (fn [group-1 _]
+                  (partial rotate-right (toInt group-1)))
+    }
+
+   {:matcher    #"^rotate right (\d+) steps?$"
+    :create-op  (fn [group-1 _]
+                  (partial rotate-right (toInt group-1)))
+    :create-inv (fn [group-1 _]
+                  (partial rotate-left (toInt group-1)))
+    }
+
+   {:matcher    #"^rotate based on position of letter ([a-z])$"
+    :create-op  (fn [group-1 _]
+                  (partial rotate-based-on-letter (first group-1)))
+    :create-inv (fn [group-1 _]
+                  (partial inverse-rotate-based-on-letter (first group-1)))
+    }
+
+   {:matcher    #"^reverse positions (\d+) through (\d+)$"
+    :create-op  (fn [group-1 group-2]
+                  (partial reverse-x-through-y (toInt group-1) (toInt group-2)))
+    :create-inv (fn [group-1 group-2]
+                  (partial reverse-x-through-y (toInt group-1) (toInt group-2)))
+    }
+
+   {:matcher    #"^move position (\d+) to position (\d+)$"
+    :create-op  (fn [group-1 group-2]
+                  (partial move-x-to-y (toInt group-1) (toInt group-2)))
+    :create-inv (fn [group-1 group-2]
+                  (partial move-x-to-y (toInt group-2) (toInt group-1)))
+    }
    ])
 
-(defn match-and-create-operation [{matcher :matcher create-fn :create-fn} instruction]
+(defn match-and-create-operation
+  [{matcher :matcher create-op :create-op} instruction]
   (let [[match group-1 group-2] (re-matches matcher instruction)]
     (if match
-      (create-fn group-1 group-2)
+      (create-op group-1 group-2)
+      false)))
+
+(defn match-and-create-inverse
+  [{matcher :matcher create-inv :create-inv} instruction]
+  (let [[match group-1 group-2] (re-matches matcher instruction)]
+    (if match
+      (create-inv group-1 group-2)
       false)))
 
 (defn process-instruction
@@ -112,8 +165,18 @@
   (let [operation (some #(match-and-create-operation % instruction) matchers)]
     (operation input)))
 
-(defn part-1
-  [instructions]
-  (str/join (reduce process-instruction (vec "abcdefgh") instructions)))
+(defn unprocess-instruction
+  [input instruction]
+  (let [operation (some #(match-and-create-inverse % instruction) matchers)]
+    (operation input)))
 
-(part-1 puzzleInput)
+(defn scramble
+  [instructions password]
+  (str/join (reduce process-instruction (vec password) instructions)))
+
+(defn unscramble
+  [instructions password]
+  (str/join (reduce unprocess-instruction (vec password) (reverse instructions))))
+
+(scramble puzzleInput "abcdefgh")
+(unscramble puzzleInput "fbgdceah")
