@@ -3,20 +3,20 @@ dec b
 cpy a d
 cpy 0 a
 cpy b c
-inc a
-dec c
-jnz c -2
-dec d
-jnz d -5
-dec b
+inc a      # 5
+dec c      # 6
+jnz c -2   # 7
+dec d      # 8
+jnz d -5   # 9
+dec b      # 10
 cpy b c
 cpy c d
-dec d
-inc c
-jnz d -2
-tgl c
-cpy -16 c
-jnz 1 c
+dec d      # 13
+inc c      # 14
+jnz d -2   # 15
+tgl c      # 16
+cpy -16 c  # 17
+jnz 1 c    # 18 -> always returns to line 2
 cpy 80 c
 jnz 97 d
 inc a

@@ -13,6 +13,11 @@ cpy 1 a
 dec a
 dec a" #"\n"))
 
+(defn clear-log []
+  (spit "output.txt" ""))
+(defn log [string]
+  (spit "output.txt" (str string "\n") :append true))
+
 (defn string-to-number
   [string]
   (let [number (re-matches #"-?\d+" string)]
@@ -57,6 +62,18 @@ dec a" #"\n"))
       (jump 1 state)
       (jump steps-value state))))
 
+(defn multiply-and-add
+  [reg-1 reg-2 target-reg state]
+  (let [_                (log "i tried to multiplied")
+        value-1          ((keyword reg-1) state)
+        value-2          ((keyword reg-2) state)
+        target-value     ((keyword target-reg) state)
+        new-target-value (+ target-value (* value-1 value-2))]
+    (jump 5 (assoc state
+                   (keyword reg-1) 0
+                   (keyword reg-2) 0
+                   (keyword target-reg) new-target-value))))
+
 (defn toggle
   [instructions position]
   (let [target-instruction (get instructions position)
@@ -96,6 +113,44 @@ dec a" #"\n"))
       "jnz" (jnz param-1 param-2 state)
       "tgl" (tgl param-1 state))))
 
+(defn process-line-5
+  [state]
+  (let [{instructions :instructions} state
+        line-5 (get instructions 5)
+        line-6 (get instructions 6)
+        line-7 (get instructions 7)
+        line-8 (get instructions 8)
+        line-9 (get instructions 9)
+        _ (println line-5)]
+    (if (and (= (str/split line-5 #" ") "inc")
+             (= (str/split line-6 #" ") "dec")
+             (= (str/split line-7 #" ") "jnz")
+             (= (str/split line-8 #" ") "dec")
+             (= (str/split line-9 #" ") "jnz"))
+      (multiply-and-add "c" "d" "a" state)
+      (let []
+        (log (format "Something changed in lines 5-9\n%s"
+                     (:instructions state)))
+       (process-one-instruction state)))))
+
+(defn process-special-lines
+  [state]
+  (if (= (:position state) 5)
+    (process-line-5 state)
+    (process-one-instruction state)))
+
+(defn process-line
+  [state]
+  (let [special-lines [5]]
+    (if (some #{(:position state)} special-lines)
+      (process-special-lines state)
+      (process-one-instruction state))))
+
+(defn write-state [state]
+  (let [{a :a b :b c :c d :d position :position} state]
+    (log (format "a: %s, b: %s, c: %s, d: %s, line: %s"
+                   a b c d position))))
+
 (defn run
   [initial-state]
   (loop
@@ -103,14 +158,18 @@ dec a" #"\n"))
     (let [{position     :position
            instructions :instructions
            iterations   :iterations} state
+          _ (write-state state)
           ]
       (if (>= position (count instructions))
        state
-       (recur (process-one-instruction (assoc state :iterations (inc iterations))))))))
+       (recur
+        (process-line
+         (assoc state :iterations (inc iterations))))))))
 
 (defn part-1
   [instructions]
-  (let [initial-state {:a 7 :b 0 :c 0 :d 0 :position 0 :instructions instructions :iterations 0}]
+  (let [_ (clear-log)
+        initial-state {:a 7 :b 0 :c 0 :d 0 :position 0 :instructions instructions :iterations 0}]
     (run initial-state)))
 
 (part-1 puzzleInput)
