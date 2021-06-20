@@ -116,32 +116,46 @@ dec a" #"\n"))
 (defn process-line-5
   [state]
   (let [{instructions :instructions} state
-        line-5 (get instructions 5)
-        line-6 (get instructions 6)
-        line-7 (get instructions 7)
-        line-8 (get instructions 8)
-        line-9 (get instructions 9)
-        _ (println line-5)]
-    (if (and (= (str/split line-5 #" ") "inc")
-             (= (str/split line-6 #" ") "dec")
-             (= (str/split line-7 #" ") "jnz")
-             (= (str/split line-8 #" ") "dec")
-             (= (str/split line-9 #" ") "jnz"))
+        lines-5-to-9 (subvec instructions 5 10)]
+    (if (and (= (first (str/split (get lines-5-to-9 0) #" ")) "inc")
+             (= (first (str/split (get lines-5-to-9 1) #" ")) "dec")
+             (= (first (str/split (get lines-5-to-9 2) #" ")) "jnz")
+             (= (first (str/split (get lines-5-to-9 3) #" ")) "dec")
+             (= (first (str/split (get lines-5-to-9 4) #" ")) "jnz"))
       (multiply-and-add "c" "d" "a" state)
       (let []
-        (log (format "Something changed in lines 5-9\n%s"
-                     (:instructions state)))
+        (log (format "Something changed in lines 5-9\n%s" lines-5-to-9))
        (process-one-instruction state)))))
 
+(defn process-line-21
+  [state]
+  (let [{instructions :instructions} state
+        lines-21-to-25 (subvec instructions 21 26)
+        _ (log lines-21-to-25)]
+    (if (and (= (first (str/split (get lines-21-to-25 0) #" ")) "inc")
+             (= (first (str/split (get lines-21-to-25 1) #" ")) "dec")
+             (= (first (str/split (get lines-21-to-25 2) #" ")) "jnz")
+             (= (first (str/split (get lines-21-to-25 3) #" ")) "dec")
+             (= (first (str/split (get lines-21-to-25 4) #" ")) "jnz"))
+      (multiply-and-add "c" "d" "a" state)
+      (let []
+        (log (format "Something changed in lines 5-9\n%s" lines-21-to-25))
+       (process-one-instruction state)))))
+
+; certain lines in the puzzle input perform multiplication very slowly by
+; incrementing register a by one over and over again. here we target those
+; lines and translate them into multiplication so part 2 can run in a reasonable
+; amount of time.
 (defn process-special-lines
   [state]
-  (if (= (:position state) 5)
-    (process-line-5 state)
+  (case (:position state)
+    5 (process-line-5 state)
+    21 (process-line-21 state)
     (process-one-instruction state)))
 
 (defn process-line
   [state]
-  (let [special-lines [5]]
+  (let [special-lines [5 21]]
     (if (some #{(:position state)} special-lines)
       (process-special-lines state)
       (process-one-instruction state))))
@@ -172,4 +186,11 @@ dec a" #"\n"))
         initial-state {:a 7 :b 0 :c 0 :d 0 :position 0 :instructions instructions :iterations 0}]
     (run initial-state)))
 
+(defn part-2
+  [instructions]
+  (let [_ (clear-log)
+        initial-state {:a 12 :b 0 :c 0 :d 0 :position 0 :instructions instructions :iterations 0}]
+    (run initial-state)))
+
 (part-1 puzzleInput)
+(part-2 puzzleInput)
