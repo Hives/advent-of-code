@@ -1,6 +1,8 @@
 (ns aoc-2016-clojure.day24
   (:require [clojure.string :as str]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojure.set :as set]
+            [clojure.math.combinatorics :as combo]))
 
 (def puzzle-input (slurp (io/resource "day24.txt")))
 
@@ -14,25 +16,32 @@
 (defn parse-input [input]
   (vec (map vec (str/split input #"\n"))))
 
+(defn in?
+  [coll elm]
+  (some #(= elm %) coll))
+
 (def test-floor-plan (parse-input test-input))
 (def floor-plan (parse-input puzzle-input))
 
 (defn find-start [floor-plan]
-  (let [start-row (first (filter #(some #{\0} %) floor-plan))
+  (let [start-row (first (filter #(in? % \0) floor-plan))
         y         (.indexOf floor-plan start-row)
         x         (.indexOf start-row \0)]
     {:x x :y y}))
 
-(find-start test-floor-plan)
-
 (defn is-target [square]
-  (and (not= square \#) (not= square \.) (not= square \0)))
+  (and (not= square \#) (not= square \.)))
+
+(defn find-coordinates [floor-plan target]
+  (let [y (first (filter #(.contains (floor-plan %) target) (range)))
+        x (first (filter #(= target ((floor-plan y) %)) (range)))]
+    {:x x :y y}))
 
 (defn get-targets [floor-plan]
   (->> floor-plan
        (flatten)
        (filter is-target)
-       (set)))
+       (reduce (fn [acc next] (assoc acc next (find-coordinates floor-plan next))) {})))
 
 (defn add [point-1 point-2]
   {:x (+ (:x point-1) (:x point-2))
@@ -49,51 +58,64 @@
   (let [square (get-square floor-plan point)]
     (not= \# square)))
 
-(defn collect [floor-plan collected point]
-  (let [square (get-square floor-plan point)]
-    (if (is-target square)
-      (conj collected square)
-      collected)))
-
-(defn next-points [floor-plan point]
+(defn viable-neighbours [floor-plan point]
   (->> point
        (neighbours)
        (filter #(is-not-wall? floor-plan %))))
 
-(defn next-steps [floor-plan {:keys [point collected]}]
-  (->> point
-       (next-points floor-plan)
-       (map (fn [point]
-              {:point point
-               :collected (collect floor-plan collected point)}))))
+(defn shortest-distance-between [floor-plan start end]
+  (println "--")
+  (println (str "finding shortest distance between " start " and " end))
+  (loop [steps 0
+         visited #{}
+         current [start]]
+    (if (in? current end)
+      (let [_ (println (str "shortest distance: " steps))]
+        steps)
+      (let [new-visited (set/union visited (set current))
+            new-current (->> current
+                             (mapcat #(viable-neighbours floor-plan %))
+                             (set)
+                             (remove #(in? new-visited %)))]
+        (recur
+         (inc steps)
+         new-visited
+         new-current)))))
 
-(defn extend-history [floor-plan history]
-  (let [current (last history)
-        next    (next-steps floor-plan current)]
-    (map #(conj history %) next)))
+(defn shortest-distances-between-targets [floor-plan]
+  (let [targets (get-targets floor-plan)
+        target-key-pairs (map set (combo/combinations (keys targets) 2))]
+    (reduce
+     (fn [acc target-keys]
+       (let [key1 ((vec target-keys) 0)
+             key2 ((vec target-keys) 1)]
+         (println target-keys)
+         (assoc acc target-keys
+                (shortest-distance-between floor-plan (targets key1) (targets key2)))))
+     {}
+     target-key-pairs)))
 
-(defn is-loop? [history]
-  (let [current  (last history)
-        previous (drop-last history)]
-    (some #{current} previous)))
-
-(defn is-complete? [history targets]
-  (let [{collected :collected} (last history)]
-    (= targets collected)))
+(defn get-path-distance [path distances]
+  (->> path
+       (partition 2 1)
+       (reduce
+        (fn [running-total next-leg]
+          (+ running-total (distances (set next-leg))))
+        0)))
 
 (defn part-1 [floor-plan]
-  (let [start   (find-start floor-plan)
-        _       (println start)
-        targets (get-targets floor-plan)
-        _       (println targets)]
-    (loop [histories [[{:point start :collected #{}}]]]
-      (if (some #(is-complete? % targets) histories)
-        (dec (count (first histories)))
-        (let [_ (if (= 0 (mod (count (first histories)) 10))
-                  (println (count (first histories))))
-              new-histories (->> histories
-                                 (mapcat #(extend-history floor-plan %))
-                                 (remove is-loop?))]
-          (recur new-histories))))))
+  (let [target-keys    (keys (get-targets floor-plan))
+        distances      (shortest-distances-between-targets floor-plan)
+        viable-paths   (map #(conj % \0) (combo/permutations (remove #(= \0 %) target-keys)))
+        path-distances (map #(get-path-distance % distances) viable-paths)]
+    (apply min path-distances)))
 
-(part-1 test-floor-plan)
+(defn part-2 [floor-plan]
+  (let [target-keys    (keys (get-targets floor-plan))
+        distances      (shortest-distances-between-targets floor-plan)
+        viable-paths   (map #(concat (conj % \0) [\0]) (combo/permutations (remove #(= \0 %) target-keys)))
+        path-distances (map #(get-path-distance % distances) viable-paths)]
+    (apply min path-distances)))
+
+;; (part-1 floor-plan) ;; slow ~1m
+;; (part-2 floor-plan) ;; slow ~1m
