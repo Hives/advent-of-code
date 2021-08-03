@@ -39,9 +39,13 @@ def part_1(n):
     return abs(spiral.location[0]) + abs(spiral.location[1])
 
 
+def vector_add(pt1, pt2):
+    return pt1[0] + pt2[0], pt1[1] + pt2[1]
+
+
 def neighbours(point):
     vectors = [(-1, 1), (0, 1), (1, 1), (-1, 0), (1, 0), (-1, -1), (0, -1), (1, -1)]
-    return [(point[0] + vector[0], point[1] + vector[1]) for vector in vectors]
+    return [vector_add(vector, point) for vector in vectors]
 
 
 def intersection(lst1, lst2):
