@@ -2,7 +2,7 @@
 
 from functools import reduce
 
-puzzle_input = [line.strip().split(" ") for line in open("input.txt").readlines()]
+puzzle_input = [line.strip().split(" ") for line in open("inputs/day_04.txt").readlines()]
 
 
 def is_valid_1(passphrase):

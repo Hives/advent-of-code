@@ -2,7 +2,7 @@
 
 from functools import reduce
 
-puzzle_input = [int(char) for char in open("input.txt").read().strip()]
+puzzle_input = [int(char) for char in open("inputs/day_01.txt").read().strip()]
 
 
 def pair_with_next(xs):

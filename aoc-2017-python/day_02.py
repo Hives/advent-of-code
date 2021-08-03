@@ -3,7 +3,7 @@
 from functools import reduce
 from itertools import permutations
 
-puzzle_input = [[int(n) for n in line.strip().split("\t")] for line in open("input.txt").readlines()]
+puzzle_input = [[int(n) for n in line.strip().split("\t")] for line in open("inputs/day_02.txt").readlines()]
 
 
 def part_1(spreadsheet):
