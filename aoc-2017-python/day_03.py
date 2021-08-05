@@ -23,6 +23,7 @@ class Spiral:
 
         self.count -= 1
 
+        # l.o.l. at this
         if self.count == 0:
             self.direction = (self.direction + 1) % 4
             self.count = self.side
