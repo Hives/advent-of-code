@@ -1,4 +1,5 @@
 #! /usr/bin/env pypy
+
 import operator
 from functools import reduce
 
