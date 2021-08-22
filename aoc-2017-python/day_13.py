@@ -41,21 +41,22 @@ def take_a_trip_1(scanners_original):
     return severity
 
 
-def take_a_trip_2(scanners_original, delay):
-    scanners = copy.deepcopy(scanners_original)
-    number_of_layers = max(scanners.keys())
+def parse_input_2(deets):
+    scanners = []
+    for deet in deets:
+        depth, range = deet.split(": ")
+        scanners.append({
+            "depth": int(depth),
+            "loop length": (2 * int(range)) - 2,
+        })
+    return scanners
 
-    for scanner in scanners.values():
-        scanner["position"] = delay % scanner["loop length"]
 
-    depth = 0
+def take_a_trip_2(scanners, delay):
 
-    while depth <= number_of_layers:
-        if depth in scanners and scanners[depth]["position"] == 0:
+    for scanner in scanners:
+        if (scanner["depth"] + delay) % scanner["loop length"] == 0:
             return False
-        depth += 1
-        for scanner in scanners.values():
-            scanner["position"] = (scanner["position"] + 1) % scanner["loop length"]
 
     return True
 
@@ -67,17 +68,14 @@ def part_1(deets):
 
 def part_2(deets):
     delay = 0
-    scanners = parse_input(deets)
+    scanners = parse_input_2(deets)
 
     while not take_a_trip_2(scanners, delay):
-        if delay % 100_000 == 0:
-            print(delay)
         delay += 1
 
     return delay
 
 
 print(part_1(puzzle_input))
-print(f"part 2 example solution '{part_2(example_input)}' should equal 10")
-# brute force solution... slow....
+print(f"calculated solution for part 2 example '{part_2(example_input)}' should equal 10")
 print(part_2(puzzle_input))
