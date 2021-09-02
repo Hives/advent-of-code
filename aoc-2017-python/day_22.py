@@ -45,18 +45,25 @@ class Virus1:
         self.position = add(self.position, self.units[self.direction])
 
     def __repr__(self):
+        min_x = min(x for (x, y) in self.infected)
+        max_x = max(x for (x, y) in self.infected)
+        min_y = min(y for (x, y) in self.infected)
+        max_y = max(y for (x, y) in self.infected)
+
         output = []
-        for y in range(-4, 5):
+        for y in range(min_y, max_y + 1):
             row = []
-            for x in range(-4, 5):
+            for x in range(min_x, max_x + 1):
                 spot = "#" if (x, y) in self.infected else "."
                 if (x, y) == self.position:
-                    row.append(f"[{spot}")
+                    left_gutter = "["
                 elif (x - 1, y) == self.position:
-                    row.append(f"]{spot}")
+                    left_gutter = "]"
                 else:
-                    row.append(f" {spot}")
+                    left_gutter = " "
+                row.append(left_gutter + spot)
             output.append(row)
+
         return "--\n" + "\n".join(["".join(row) for row in output])
 
     def burst(self):
@@ -71,17 +78,17 @@ class Virus1:
 
 class Virus2:
     def __init__(self, initial_infected):
-        self.nodes = {p: "I" for p in initial_infected}
+        self.nodes = {p: "#" for p in initial_infected}
         self.position = (0, 0)
         self.units = [(0, -1), (-1, 0), (0, 1), (1, 0)]
         self.direction = 0
         self.infections = 0
 
     def current(self):
-        return self.nodes.get(self.position, "C")
+        return self.nodes.get(self.position, ".")
 
     def infect(self):
-        self.nodes[self.position] = "I"
+        self.nodes[self.position] = "#"
         self.infections += 1
 
     def weaken(self):
@@ -109,30 +116,36 @@ class Virus2:
         self.position = add(self.position, self.units[self.direction])
 
     def __repr__(self):
-        return f"--\nposition: {self.position}\nnodes: {self.nodes}"
-        # output = []
-        # for y in range(-4, 5):
-        #     row = []
-        #     for x in range(-4, 5):
-        #         spot = "#" if (x, y) in self.infected else "."
-        #         if (x, y) == self.position:
-        #             row.append(f"[{spot}")
-        #         elif (x - 1, y) == self.position:
-        #             row.append(f"]{spot}")
-        #         else:
-        #             row.append(f" {spot}")
-        #     output.append(row)
-        # return "--\n" + "\n".join(["".join(row) for row in output])
+        min_x = min(x for (x, y) in self.nodes.keys())
+        max_x = max(x for (x, y) in self.nodes.keys())
+        min_y = min(y for (x, y) in self.nodes.keys())
+        max_y = max(y for (x, y) in self.nodes.keys())
+
+        output = []
+        for y in range(min_y, max_y + 1):
+            row = []
+            for x in range(min_x, max_x + 1):
+                spot = self.nodes.get((x, y), ".")
+                if (x, y) == self.position:
+                    left_gutter = "["
+                elif (x - 1, y) == self.position:
+                    left_gutter = "]"
+                else:
+                    left_gutter = " "
+                row.append(left_gutter + spot)
+            output.append(row)
+
+        return "--\n" + "\n".join(["".join(row) for row in output])
 
     def burst(self):
         current = self.current()
 
-        if current == "C":
+        if current == ".":
             self.turn_left()
             self.weaken()
         elif current == "W":
             self.infect()
-        elif current == "I":
+        elif current == "#":
             self.turn_right()
             self.flag()
         elif current == "F":
@@ -148,7 +161,7 @@ def part_1(deets, bursts):
     virus = Virus1(parse(deets))
     for _ in range(0, bursts):
         virus.burst()
-    print(virus)
+    # print(virus)
     return virus.infections
 
 
@@ -156,8 +169,10 @@ def part_2(deets, bursts):
     virus = Virus2(parse(deets))
     for _ in range(0, bursts):
         virus.burst()
+    # print(virus)
     return virus.infections
 
 
+print(part_1(test_input, 1_000))
 print(part_1(puzzle_input, 10_000))
 print(part_2(puzzle_input, 10_000_000))
