@@ -9,7 +9,7 @@ my $test-input = "dabAcCaCBAcCcaDA";
 sub annihilates($char1, $char2) {
     return False if $char2 === Any;
     ($char1 ne $char2) && ($char1.lc eq $char2.lc);
-} 
+}
 
 sub pass(@chars) {
     my @output;

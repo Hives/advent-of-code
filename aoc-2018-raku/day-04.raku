@@ -27,7 +27,7 @@ sub parse-line($line) {
         my $activity =
                 $5 eq "falls asleep" ?? "SLEEP" !!
                 $5 eq "wakes up" ?? "WAKE" !!
-                "START";
+                        "START";
 
         my $id = $activity eq "START" ?? $5.split(" ")[1].substr(1) !! Nil;
 
@@ -52,7 +52,7 @@ sub go(@input) {
             when "START" {
                 $id = %observation{'id'};
                 if !($id ∈ %deets) {
-                    %deets{$id} := {total => 0, minutes => {}};
+                    %deets{$id} := { total => 0, minutes => {} };
                 }
             };
             when "SLEEP" {
@@ -71,24 +71,24 @@ sub go(@input) {
     }
 
     say "Part 1";
-    my $sleepy-deets = %deets.max({$_.value{'total'}}); 
+    my $sleepy-deets = %deets.max({ $_.value{'total'} });
     my $sleepy-id = $sleepy-deets.key;
     say "Sleepiest guard: " ~ $sleepy-id;
-    my $sleepy-minute = $sleepy-deets.value{'minutes'}.max({$_.value}).key;
+    my $sleepy-minute = $sleepy-deets.value{'minutes'}.max({ $_.value }).key;
     say "Sleepiest minute: " ~ $sleepy-minute;
 
     say "Answer: " ~ ($sleepy-id * $sleepy-minute);
 
     say "Part 2";
     my $sleepy-deets2 = %deets
-        .grep({$_.value{'total'} > 0})
-        .max({$_.value{'minutes'}.max({$_.value}).value});
+            .grep({ $_.value{'total'} > 0 })
+            .max({ $_.value{'minutes'}.max({ $_.value }).value });
     my $sleepy-id2 = $sleepy-deets2.key;
     say "Sleepiest guard: " ~ $sleepy-id2;
-    my $sleepy-minute2 = $sleepy-deets2.value{'minutes'}.max({$_.value}).key;
+    my $sleepy-minute2 = $sleepy-deets2.value{'minutes'}.max({ $_.value }).key;
     say "Sleepiest minute: " ~ $sleepy-minute2;
 
     say "Answer: " ~ ($sleepy-id2 * $sleepy-minute2);
 }
 
-go(@input-lines)
+go(@input-lines);
