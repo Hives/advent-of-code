@@ -7,52 +7,63 @@ $input-file.close;
 my $test-input = "dabAcCaCBAcCcaDA";
 
 sub annihilates($char1, $char2) {
+    return False if $char1 === Any;
     return False if $char2 === Any;
     ($char1 ne $char2) && ($char1.lc eq $char2.lc);
 }
 
-sub pass(@chars) {
-    my @output;
+sub react($input) {
+    my $letters = $input;
+    my $old-letters = "";
+    until $old-letters.chars == $letters.chars {
+        $old-letters = $letters;
+        $letters = pass($letters);
+    }
+    return $letters.chars;
+}
+
+sub pass($input) {
     my $pointer = 0;
+    my @chars = $input.comb();
+
+    my @blocks = 0;
+
     while $pointer < @chars.elems {
         if (annihilates(@chars[$pointer], @chars[$pointer + 1])) {
-            $pointer += 2;
+            my $block-end = $pointer;
+            my $block-start = $pointer + 1;
+            while (($block-end - 1 > @blocks[*- 1]) && annihilates(@chars[$block-end - 1], @chars[$block-start + 1])) {
+                $block-end -= 1;
+                $block-start += 1;
+            }
+            @blocks.append($block-end - 1);
+            @blocks.append($block-start + 1);
+            $pointer = $block-start + 1;
         } else {
-            @output.push(@chars[$pointer]);
             $pointer += 1;
         }
     }
-    return @output;
-}
 
-sub reduce(@new-chars) {
-    my @chars;
-    my $iteration = 0;
-    until @new-chars.elems == @chars.elems {
-        say "iteration " ~ $iteration if $iteration %% 100;
-        $iteration += 1;
-        @chars = @new-chars;
-        @new-chars = pass(@chars);
-    }
-    return @chars.elems;
+    @blocks.append(@chars.elems - 1);
+
+    @blocks.batch(2).map({ $input.substr($_[0] .. $_[1]) }).join;
 }
 
 sub part1($input) {
-    my @chars = $input.comb();
-    say reduce(@chars);
+    say react($input);
 }
 
 sub part2($input) {
-    my @chars = $input.comb();
     my %results := {};
     for 'a' .. 'z' -> $removed_unit {
         say "removing " ~ $removed_unit;
-        my @filtered_chars = @chars.grep({ $_.lc ne $removed_unit });
-        %results{$removed_unit} = reduce(@filtered_chars);
+        my $filtered_input = $input.comb().grep({ $_.lc ne $removed_unit }).join();
+        %results{$removed_unit} = react($filtered_input);
+        say "reacted length: " ~ %results{$removed_unit};
     }
     say %results;
+    say "shortest: " ~ %results.min({ $_.value })
 }
 
-# warning - very slow
 part1($input);
 part2($input);
