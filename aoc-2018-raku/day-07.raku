@@ -26,7 +26,7 @@ sub part1(@input) {
     });
 
     my @available = %requirements.grep({ $_.value.elems == 0 }).map({ $_.key });
-    
+
     my @completed;
 
     while @available.elems > 0 {
@@ -41,7 +41,73 @@ sub part1(@input) {
         @available = @available.unique;
     }
 
-    @completed.join();
+    @completed.join('');
 };
 
-say part1(@input-lines);
+sub part2(@input, $additional-step-time, $max-workers) {
+
+    my @instructions = parse(@input);
+    my @letters = (flat @instructions.map({ $_.value }), @instructions.map({ $_.key })).unique;
+    my %requirements = @letters.map(-> $letter {
+        $letter => @instructions.grep({ $_.value eq $letter }).map({ $_.key }).list
+    });
+
+    my %workers;
+    my @completed;
+    my @available;
+
+    my $time = 0;
+
+    sub step-time($letter) {
+        $letter.parse-base(36) - 9 + $additional-step-time;
+    }
+
+    sub update-available() {
+        my @newly-available = %requirements.kv.grep(-> $, $reqs {
+            $reqs.map(-> $req { $req ∈ @completed }).all
+        })
+                .map({ $_[0] })
+                .grep(-> $job { $job !∈ @completed && $job !∈ %workers.keys && $job !∈ @available });
+
+        for @newly-available { @available.append($_) }
+        @available = @available.sort;
+    }
+
+    loop {
+        last if @completed.elems == @letters.elems;
+
+        say "----";
+
+        update-available();
+        say "available: {@available}\n";
+
+        while (%workers.keys < $max-workers && @available.elems > 0) {
+            my $job = @available.shift;
+            say "starting job $job";
+            %workers{$job} = step-time($job);
+        }
+
+        say "workers:";
+        say %workers;
+        say "";
+
+        my $least-remaining-time = %workers.values.min;
+        for %workers.keys -> $job {
+            my $remaining-time = %workers{$job} - $least-remaining-time;
+            if $remaining-time == 0 {
+                @completed.append($job);
+                %workers{$job}:delete;
+            } else {
+                %workers{$job} = $remaining-time;
+            }
+        }
+        $time += $least-remaining-time;
+
+        say "completed {@completed.join('')} in $time seconds";
+    }
+
+    $time;
+};
+
+say part2(@test-input-lines, 0, 2);
+say part2(@input-lines, 60, 5);
