@@ -1,55 +1,49 @@
 #! /usr/bin/env rakudo
 
 my $input = ${ players => 413, last-marble => 71082 };
-my $test1 = ${ players => 9, last-marble => 25 };
-my $test2 = ${ players => 10, last-marble => 1618 };
-my $test3 = ${ players => 13, last-marble => 7999 };
-my $test4 = ${ players => 17, last-marble => 1104 };
-my $test5 = ${ players => 21, last-marble => 6111 };
-my $test6 = ${ players => 30, last-marble => 5807 };
 
-sub insert($n, $i, @array) {
-    my @start = @array[^$i];
-    my @end = @array[$i ..*];
-    @start.append($n).append(@end);
+sub allocate-scores(%scores, $players) {
+    my %allocated-scores;
+    for %scores.keys -> $iteration {
+        %allocated-scores{$iteration % $players} += %scores{$iteration}
+    }
+    return %allocated-scores;
 }
 
-sub delete($i, @array) {
-    my @start = @array[^$i];
-    my @end = @array[$i ^..*];
-    @start.append(@end);
-}
+sub brute-force(% (:$players, :$last-marble)) {
+    # state after turn 23:
+    my @placed = 2, 20, 10, 21, 5, 22, 11, 1, 12, 6, 13, 3, 14, 7, 15, 0, 16, 8, 17, 4, 18, 19;
+    my %scores = 23 => 32;
+    my $turn = 23;
 
-sub go(% (:$players, :$last-marble)) {
-    my @placed = [0];
-    my $next-marble = 0;
-    my $pointer = 0;
-    my $player = 0;
-    my %scores;
+    loop {
+        say "turn $turn";
+        # 22 normal turns
+        $turn++;
+        my @next_22_marbles = ($turn .. ($turn + 21)).list;
+        @placed = (@placed[22 ..*], zip(@placed, @next_22_marbles)).flat;
 
-    while ($next-marble++ < $last-marble) {
-        say $next-marble if $next-marble %% 500;
-        if $next-marble %% 23 {
-            %scores{$player} += $next-marble;
-            $pointer = ($pointer - 7) % @placed.elems;
-            %scores{$player} += @placed[$pointer];
-            @placed = delete($pointer, @placed);
-            $pointer %= @placed.elems;
-        } else {
-            $pointer = ($pointer + 2) % @placed.elems;
-            @placed = insert($next-marble, $pointer, @placed);
-        }
-
-        $player = ($player + 1) % $players;
-
+        # 1 special turn
+        $turn += 22;
+        last if $turn > $last-marble;
+        %scores{$turn} = $turn + @placed[*- 8];
+        @placed = (@placed[*- 6 ..*], @placed[0 .. *- 9], @placed[*- 7]).flat;
     }
 
-    say "max score: {%scores.values.max}";
+    allocate-scores(%scores, $players).values.max;
 }
 
-go($test1);
-go($test2);
-#go($test3);
-go($test4);
-go($test5);
-go($test6);
+DOC CHECK {
+    use Test;
+    subtest 'Part 1', {
+        brute-force(${ players => 9, last-marble => 25 }).&is: 32;
+        brute-force(${ players => 10, last-marble => 1618 }).&is: 8317;
+        brute-force(${ players => 13, last-marble => 7999 }).&is: 146373;
+        brute-force(${ players => 17, last-marble => 1104 }).&is: 2764;
+        brute-force(${ players => 21, last-marble => 6111 }).&is: 54718;
+        brute-force(${ players => 30, last-marble => 5807 }).&is: 37305;
+    }
+}
+
+# very slow (7m on my machine)
+say brute-force($input);
