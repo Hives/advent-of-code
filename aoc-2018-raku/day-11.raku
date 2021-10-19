@@ -11,90 +11,72 @@ sub power-level($x, $y, $serial-no) {
     hundreds-digit((($rack-id * $y) + $serial-no) * $rack-id) - 5;
 }
 
-sub power-levels($serial-no) {
-    my %power-levels;
+sub create-summed-area-table($serial-no) {
+    my @square = gather {
+        for ^301 {
+            take gather {
+                for ^301 { take 0; }
+            }.Array
+        }
+    }.Array;
     for 1 .. 300 -> $y {
         for 1 .. 300 -> $x {
-            %power-levels{"$x,$y"} = power-level($x, $y, $serial-no);
+            @square[$y][$x] =
+                    @square[$y - 1][$x] + @square[$y][$x - 1] - @square[$y - 1][$x - 1] +
+                    power-level($x, $y, $serial-no);
         }
     }
-    %power-levels;
+    @square.map({ $_.list }).list;
 }
 
-sub calc-square-power-level($top-left-x, $top-left-y, $serial-no, $size) {
-    gather {
-        for $top-left-x ..^ ($top-left-x + $size) -> $x {
-            for $top-left-y ..^ ($top-left-y + $size) -> $y {
-                take power-level($x, $y, $serial-no)
-            }
-        }
-    }.sum
-}
-
-sub square-power-level($top-left-x, $top-left-y, %power-levels, $size) {
-    gather {
-        for $top-left-x ..^ ($top-left-x + $size) -> $x {
-            for $top-left-y ..^ ($top-left-y + $size) -> $y {
-                take %power-levels{"$x,$y"};
-            }
-        }
-    }.sum
+sub sum-sub-square($top-left-x, $top-left-y, $size, @summed-area-table) {
+    @summed-area-table[$top-left-y + $size - 1][$top-left-x + $size - 1]
+            - @summed-area-table[$top-left-y + $size - 1][$top-left-x - 1]
+            - @summed-area-table[$top-left-y - 1][$top-left-x + $size - 1]
+            + @summed-area-table[$top-left-y - 1][$top-left-x - 1];
 }
 
 sub part1($serial-no) {
+    my @summed-area-table = create-summed-area-table($serial-no);
     my $size = 3;
-    #    my @power-levels = power-levels($serial-no);
-    my @co-ords = gather {
-        for 1 .. (300 - $size + 1) -> $x {
-            for 1 .. (300 - $size + 1) -> $y {
-                take ($x, $y)
-            }
-        }
-    }
-    @co-ords.max(-> @ ($x, $y) {
-        #        square-power-level($x, $y, @power-levels, $size)
-        calc-square-power-level($x, $y, $serial-no, $size)
-    });
-}
-
-# did size 1-5, calculating, in 26s
-# did size 1-5, looking things up, in 38s
-
-sub part2($serial-no) {
     my $largest-total-power = 0;
     my $identifier;
 
-    my $start-time = now;
-
-    my $fh = open "day-11-output.txt", :w;
-    sub fsay($text) {
-        $fh.say($text);
-        $fh.flush;
+    for 1 .. (300 - $size + 1) -> $x {
+        for 1 .. (300 - $size + 1) -> $y {
+            my $power = sum-sub-square($x, $y, $size, @summed-area-table);
+            if $power > $largest-total-power {
+                $largest-total-power = $power;
+                $identifier = ($x, $y);
+                say "$identifier - $power";
+            }
+        }
     }
 
+    say "the answer: $identifier";
+}
+
+
+sub part2($serial-no) {
+    my @summed-area-table = create-summed-area-table($serial-no);
+    my $largest-total-power = 0;
+    my $identifier;
+
     for 1 .. 300 -> $size {
-        fsay("---");
-        fsay("size $size");
-        fsay("---");
+        say "size $size";
         for 1 .. (300 - $size + 1) -> $x {
             for 1 .. (300 - $size + 1) -> $y {
-                my $power = calc-square-power-level($x, $y, $serial-no, $size);
+                my $power = sum-sub-square($x, $y, $size, @summed-area-table);
                 if $power > $largest-total-power {
                     $largest-total-power = $power;
                     $identifier = ($x, $y, $size);
-                    fsay("$identifier - $power");
+                    say "$identifier - $power";
                 }
             }
         }
     }
 
-    fsay("--");
-
-    fsay("time: { now - $start-time }");
-
-    fsay("the answer: $identifier");
-
-    $fh.close;
+    say "the answer: $identifier";
 }
 
 DOC CHECK {
@@ -112,5 +94,5 @@ DOC CHECK {
     }
 }
 
-#say part1($input-serial-no);
-say part2($input-serial-no);
+part1($input-serial-no);
+part2($input-serial-no);
