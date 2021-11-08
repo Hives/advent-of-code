@@ -61,16 +61,17 @@ sub move-cart(%cart, @map) {
     my $location = %cart<location>;
     my $direction = %cart<direction>;
     my $next-turn = %cart<next-turn>;
+    my $crashed = %cart<crashed>;
     my $id = %cart<id>;
 
     $location = add-vectors($location, $direction);
 
     my $track = @map[$location[1]][$location[0]];
 
-#    if $id == 4 {
-#        say %cart;
-#        say $track;
-#    }
+    #    if $id == 4 {
+    #        say %cart;
+    #        say $track;
+    #    }
 
     given $track {
         when '/' {
@@ -106,7 +107,7 @@ sub move-cart(%cart, @map) {
         default {}
     }
 
-    return %(:$location, :$direction, :$next-turn, :$id)
+    return %(:$location, :$direction, :$next-turn, :$id, :$crashed)
 }
 
 sub tick1(@map, @carts) {
@@ -132,13 +133,22 @@ sub remove-crashed(@carts) {
 
 sub tick2(@map, @carts) {
     my @sorted-carts = sort-carts(@carts);
+    for @sorted-carts -> $cart { $cart<crashed> = False }
 
     for 0 ..^ @sorted-carts.elems -> $n {
-        my $moved-cart = move-cart(@sorted-carts[$n], @map);
-        @sorted-carts[$n] = $moved-cart;
+        if (@sorted-carts[$n]<crashed> eq False) {
+            my $moved-cart = move-cart(@sorted-carts[$n], @map);
+            @sorted-carts[$n] = $moved-cart;
+
+            my @crashed = @sorted-carts.grep({ "$_<location>" eq "$moved-cart<location>" });
+            if @crashed.elems > 1 {
+                say "Boom";
+                for @crashed { $_<crashed> = True }
+            }
+        }
     }
 
-    remove-crashed(@sorted-carts);
+    return @sorted-carts.grep({ $_<crashed> eq False });
 }
 
 sub part1(@input) {
@@ -150,10 +160,11 @@ sub part1(@input) {
 
 sub part2(@input) {
     my @carts = get-carts(@input);
-    say "Total carts: {@carts.elems}";
+    say "Total carts: { @carts.elems }";
     my $i = 0;
     loop {
         $i += 1;
+        #        die if $i == 10;
         if $i %% 500 { say $i }
         @carts = tick2(@input, @carts);
         if @carts.elems == 1 {
@@ -164,4 +175,4 @@ sub part2(@input) {
 
 #part1(@input);
 say part2(@test-input2);
-#say part2(@input);
+say part2(@input);
