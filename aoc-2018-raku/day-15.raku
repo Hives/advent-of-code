@@ -15,6 +15,18 @@ my @test1 = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
 #######
 END
 
+my @movement-test = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+#########
+#G..G..G#
+#.......#
+#.......#
+#G..E..G#
+#.......#
+#.......#
+#G..G..G#
+#########
+END
+
 class Point does ValueType {
     has Int $.x;
     has Int $.y;
@@ -38,12 +50,13 @@ multi infix:<+> (Point \a, Point \b) {
 sub parse(@input) {
     my @units;
     my @map;
+    my $unit-count = 0;
     for 0 ..^ @input.elems -> $y {
         my $row;
         for 0 ..^ @input[$y].elems -> $x {
             my $square = @input[$y][$x];
             if $square eq "E" || $square eq "G" {
-                @units.append($%(type => $square, hitpoints => 200, location => pnt($x, $y)));
+                @units.append($%(:id($unit-count += 1), :type($square), :hitpoints(200), :location(pnt($x, $y))));
                 $row.append(".")
             } else {
                 $row.append($square)
@@ -56,6 +69,10 @@ sub parse(@input) {
 
 sub reading-order(@points) {
     @points.sort({ $_.y, $_.x })
+}
+
+sub order-units(@units) {
+    @units.sort: { $_<location>.y, $_<location>.x }
 }
 
 sub break-tie(@points) {
@@ -73,33 +90,81 @@ sub neighbours(@points, @map) {
     @neighbours.unique().&reading-order;
 }
 
-sub find-nearest-target($start, @targets, @map) {
+sub find-nearest($start, @endpoints, @occupied, @map) {
     my @visited;
     my @current = $start,;
 
     loop {
         @visited = flat(@visited, @current).unique;
-        @current = neighbours(@current, @map).grep({ $_ ∉ @visited });
-        my @found = @current.grep({ $_ ∈ @targets });
-        if ?@found {
-            return break-tie(@found)
-        }
+        @current = neighbours(@current, @map).grep({ $_ ∉ @visited && $_ ∉ @occupied });
+        return Nil if !@current;
+
+        my @found = @current.grep({ $_ ∈ @endpoints });
+        return break-tie(@found) if ?@found
     }
+
 }
 
-#sub choose-destination(%unit, @units, @map) {
-#    say @units;
-#    my @targets = @units.grep({ $_<type> !eq %unit<type> });
-#    my @in-range;
-#    for @targets -> %target {
-#        for neighbours(%target<location>, @map) -> $neighbour {
-#            @in-range.push($neighbour)
-#        }
-#    }
-#    #@targets.map({ neighbours($_<location>, @map) }).flat;
-#
-#    say @in-range;
-#}
+sub find-nearest-target(%unit, @units, @map) {
+    my $start = %unit<location>;
+    my @occupied = @units.map({ $_<location> });
+    my @enemy-locations = @units.grep({ $_<type> !eq %unit<type> }).map({ $_<location> });
+    my @targets = neighbours(@enemy-locations, @map);
+
+    find-nearest($start, @targets, @occupied, @map);
+}
+
+sub find-next-step(%unit, $target, @units, @map) {
+    my $possible-next-steps = neighbours(@(%unit<location>), @map).List;
+    return $target if $target ∈ $possible-next-steps;
+    my @occupied = @units.map({ $_<location> });
+    find-nearest($target, $possible-next-steps, @occupied, @map)
+}
+
+sub move(%unit is copy, @units, @map) {
+    my @enemy-locations =
+            @units.grep({ $_<type> !eq %unit<type> }).map({ $_<location> });
+    return %unit if %unit<location> (elem) neighbours(@enemy-locations, @map);
+
+    my $nearest-target = find-nearest-target(%unit, @units, @map);
+    return %unit if !$nearest-target;
+
+    my $next-step = find-next-step(%unit, $nearest-target, @units, @map);
+    %unit<location> = $next-step;
+    return %unit;
+}
+
+sub printy(@map, @units) {
+    my @map-mutable = @map.map({ $_.Array });
+    for @units -> %unit {
+        my $location = %unit<location>;
+        @map-mutable[$location.y][$location.x] = %unit<type>;
+    }
+    say "=====";
+    say "  { (0 ..^ @map[0].elems).values.map({ $_ % 10 }).join }";
+    for 0 ..^ @map-mutable.elems -> $col {
+        say "{ $col % 10 } { @map-mutable[$col].join }"
+    }
+    say "=====";
+}
+
+sub foo(@input) {
+    my ($units, $map) = parse(@input);
+    printy($map, $units);
+
+    my $n = 0;
+    while ($n += 1) < 5 {
+        my @order = order-units($units).map({ $_<id> });
+        my $units-map = Map.new($units.map({ $_<id> => $_ }));
+        for @order -> $id {
+            my $unit = $units-map{$id};
+            $units-map{$id} = move($unit, $units-map.values, $map);
+        }
+        $units = $units-map.values;
+        printy($map, $units);
+    }
+
+}
 
 DOC CHECK {
     my @test1 = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
@@ -112,13 +177,33 @@ DOC CHECK {
 
     my ($units, $map) = parse(@test1);
 
+    my @test2 = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+        #######
+        #E..#.#
+        #...#.#
+        #...#G#
+        #######
+        END
+
+    my $map2 = parse(@test2)[1];
+
+    my @test3 = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+        #######
+        #E..E.#
+        #..EGE#
+        #...E.#
+        #######
+        END
+
+    my ($units3, $map3) = parse(@test3);
+
     subtest 'Points', {
-        (pnt(1, 2).x).&is: 1;
-        (pnt(1, 2).y).&is: 2;
-        "{ pnt(1, 2) }".&is: "(1, 2)";
-        pnt(1, 2).&is: pnt(1, 2);
-        (pnt(1, 2) ∈ (pnt(1, 2), pnt(3, 4))).&is: True;
-        (pnt(1, 2) + pnt(10, 20)).&is: pnt(11, 22);
+        is(pnt(1, 2).x, 1, "x co-ord");
+        is(pnt(1, 2).y, 2, "y co-ord");
+        is(pnt(1, 2).Str, "(1, 2)", "to string");
+        is(pnt(1, 2), pnt(1, 2), "equality (think this test uses `eq`, which compares as strings)");
+        is(pnt(1, 2) ∈ (pnt(1, 2), pnt(-1, -1)), True, "can identify member of collection");
+        is(pnt(1, 2) + pnt(10, 20), pnt(11, 22), "addition");
     }
 
     subtest 'Reading order', {
@@ -137,17 +222,69 @@ DOC CHECK {
     }
 
     subtest 'Find nearest target', {
-        is(find-nearest-target(pnt(1, 1), (pnt(2, 2), pnt(1, 3), pnt(3, 1), pnt(3, 3)), $map),
+        my %unit = %(:location(pnt(1, 1)), :type("E"));
+        is(find-nearest-target(%unit, $units, $map),
                 pnt(3, 1),
-                "Tie-breaks nearest target if multiple targets exist"
-           );
-        # returns Nil if targets blocked by wall
-        # returns Nil if targets blocked by other units of same type
+                "Tie-breaks nearest target if multiple targets exist");
+        is(find-nearest-target(%unit, (%(:type("G"), :location(pnt(5, 3))),), $map2),
+                Nil,
+                "Returns Nil if no target can be reached");
+        is(find-nearest-target(%unit, $units3, $map3),
+                Nil,
+                "Returns Nil if target blocked by friendly units");
     }
 
-    #    subtest 'Choose destination', {
-    #        choose-destination(%( type => "E"), $units, $map).&is: "wtf";
-    #    }
+    subtest 'Find next step', {
+        my %unit = %(:location(pnt(2, 1)));
+        is(find-next-step(%unit, pnt(4, 2), (), $map3),
+                pnt(3, 1),
+                "Returns the next step towards a target"),
+
+        my @big-test = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+            #######
+            #.....#
+            #.....#
+            #.....#
+            #.....#
+            #.....#
+            #######
+            END
+
+        my ($, $big-map) = parse(@big-test);
+        is(find-next-step(%(:location(pnt(3, 2))), pnt(3, 1), (), $big-map),
+                pnt(3, 1),
+                "Can get the next step if target is a neighbour"),
+
+        # what if there are units in the way?
+    }
+
+    subtest 'Move', {
+        my @test = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+            #####
+            #EG.#
+            #..G#
+            #####
+            END
+
+        my ($units, $map) = parse(@test);
+        my %unit = $units.grep({ $_<type> eq "E" })[0];
+        is(move(%unit, $units, $map),
+                %unit,
+                "Unit doesn't move if in range of a target"),
+
+        my @test2 = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+            #####
+            #EG.#
+            #G.G#
+            #####
+            END
+
+        my ($units2, $map2) = parse(@test2);
+        my %unit2 = $units2.grep({ $_<id> == 4 })[0];
+        is(move(%unit2, $units2, $map2),
+                %unit2,
+                "Unit doesn't move if it can't find a path to an enemy"),
+    }
 }
 
-say parse(@test1);
+foo(@movement-test);
