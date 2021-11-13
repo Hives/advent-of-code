@@ -56,7 +56,13 @@ sub parse(@input) {
         for 0 ..^ @input[$y].elems -> $x {
             my $square = @input[$y][$x];
             if $square eq "E" || $square eq "G" {
-                @units.append($%(:id($unit-count += 1), :type($square), :hitpoints(200), :location(pnt($x, $y))));
+                @units.append($%(
+                    :id($unit-count += 1),
+                    :type($square),
+                    :location(pnt($x, $y)),
+                    :hitpoints(200),
+                    :attack-power(3)
+                ));
                 $row.append(".")
             } else {
                 $row.append($square)
@@ -121,17 +127,20 @@ sub find-next-step(%unit, $target, @units, @map) {
     find-nearest($target, $possible-next-steps, @occupied, @map)
 }
 
-sub move(%unit is copy, @units, @map) {
-    my @enemy-locations =
-            @units.grep({ $_<type> !eq %unit<type> }).map({ $_<location> });
-    return %unit if %unit<location> (elem) neighbours(@enemy-locations, @map);
+sub move($id, $units-map is copy, @map) {
+    my %unit = $units-map{$id};
+    my @enemy-locations = $units-map.values
+            .grep({ $_<type> !eq %unit<type> })
+            .map({ $_<location> });
+    return $units-map if %unit<location> (elem) neighbours(@enemy-locations, @map);
 
-    my $nearest-target = find-nearest-target(%unit, @units, @map);
-    return %unit if !$nearest-target;
+    my $nearest-target = find-nearest-target(%unit, $units-map.values, @map);
+    return $units-map if !$nearest-target;
 
-    my $next-step = find-next-step(%unit, $nearest-target, @units, @map);
+    my $next-step = find-next-step(%unit, $nearest-target, $units-map.values, @map);
     %unit<location> = $next-step;
-    return %unit;
+    $units-map{$id} = %unit;
+    return $units-map;
 }
 
 sub printy(@map, @units) {
@@ -157,8 +166,7 @@ sub foo(@input) {
         my @order = order-units($units).map({ $_<id> });
         my $units-map = Map.new($units.map({ $_<id> => $_ }));
         for @order -> $id {
-            my $unit = $units-map{$id};
-            $units-map{$id} = move($unit, $units-map.values, $map);
+            $units-map = move($id, $units-map, $map);
         }
         $units = $units-map.values;
         printy($map, $units);
@@ -259,32 +267,52 @@ DOC CHECK {
     }
 
     subtest 'Move', {
-        my @test = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
-            #####
-            #EG.#
-            #..G#
-            #####
-            END
+        subtest "Unit moves towards enemy", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                #####
+                #E..#
+                #..G#
+                #####
+                END
 
-        my ($units, $map) = parse(@test);
-        my %unit = $units.grep({ $_<type> eq "E" })[0];
-        is(move(%unit, $units, $map),
-                %unit,
-                "Unit doesn't move if in range of a target"),
+            my ($units, $map) = parse(@input);
+            my $units-map = Map.new($units.map({ $_<id> => $_ }));
+            my $moved-units-map = move(1, $units-map, $map);
 
-        my @test2 = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
-            #####
-            #EG.#
-            #G.G#
-            #####
-            END
+            $moved-units-map<1><location>.&is: pnt(2, 1)
+        }
 
-        my ($units2, $map2) = parse(@test2);
-        my %unit2 = $units2.grep({ $_<id> == 4 })[0];
-        is(move(%unit2, $units2, $map2),
-                %unit2,
-                "Unit doesn't move if it can't find a path to an enemy"),
+        subtest "Unit doesn't move if in range of a target", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                #####
+                #EG.#
+                #..G#
+                #####
+                END
+
+            my ($units, $map) = parse(@input);
+            my $units-map = Map.new($units.map({ $_<id> => $_ }));
+            my $moved-units-map = move(1, $units-map, $map);
+
+            $moved-units-map<1><location>.&is: pnt(1, 1)
+        }
+
+        subtest "Unit doesn't move if it can't find a path to an enemy", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                #####
+                #EG.#
+                #G.G#
+                #####
+                END
+
+            my ($units, $map) = parse(@input);
+            my $units-map = Map.new($units.map({ $_<id> => $_ }));
+            my $moved-units-map = move(1, $units-map, $map);
+
+            $moved-units-map<1><location>.&is: pnt(1, 1)
+        }
     }
+
 }
 
 foo(@movement-test);
