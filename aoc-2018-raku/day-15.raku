@@ -67,7 +67,7 @@ multi infix:<+> (Point \a, Point \b) {
     Point.new(x => a.x + b.x, y => a.y + b.y)
 }
 
-sub parse(@input) {
+sub parse(@input, $elves-attack-power = 3) {
     my @units;
     my @map;
     my $unit-count = 0;
@@ -81,7 +81,7 @@ sub parse(@input) {
                     :type($square),
                     :location(pnt($x, $y)),
                     :hitpoints(200),
-                    :attack-power(3)
+                    :attack-power($square eq "E" ?? $elves-attack-power !! 3)
                 ));
                 $row.append(".")
             } else {
@@ -136,8 +136,10 @@ sub find-nearest-target(%unit, @units, @map) {
     my @occupied = @units.map({ $_<location> });
     my @enemy-locations = @units.grep({ $_<type> !eq %unit<type> }).map({ $_<location> });
     my @targets = neighbours(@enemy-locations, @map);
+    my @unoccupied-targets = @targets.grep({ $_ ∉ @occupied });
+    return Nil if !@unoccupied-targets;
 
-    find-nearest($start, @targets, @occupied, @map);
+    find-nearest($start, @unoccupied-targets, @occupied, @map);
 }
 
 sub find-next-step(%unit, $target, @units, @map) {
@@ -201,10 +203,10 @@ sub printy(@map, @units) {
         @map-mutable[$location.y][$location.x] = %unit<type>;
     }
     say "=====";
-    say "  { (0 ..^ @map[0].elems).values.map({ $_ % 10 }).join }";
+    say "  { (0 ..^ @map[0].elems).values.map({ $_ % 10 }).join(" ") }";
     for 0 ..^ @map-mutable.elems -> $col {
         my $index = $col % 10;
-        my $row = @map-mutable[$col].join;
+        my $row = @map-mutable[$col].join(" ");
         my $unit-stats = @units
                 .grep({ $_<location>.y == $col })
                 .sort({ $_<location>.x })
@@ -214,9 +216,11 @@ sub printy(@map, @units) {
     }
 }
 
-sub foo(@input, $printy) {
-    my ($units, $map) = parse(@input);
+sub foo(@input, $elves-attack-power, $printy) {
+    my ($units, $map) = parse(@input, $elves-attack-power);
     $printy && printy($map, $units);
+
+    my $elf-count = $units.grep({ $_<type> eq "E" }).elems;
 
     my $round = 0;
     loop {
@@ -236,6 +240,7 @@ sub foo(@input, $printy) {
 
     my $evaluation = ($round - 1) * $units.map({ $_<hitpoints> }).sum;
     $printy && say "last round: $round";
+    $printy && say "dead elves: { $elf-count - $units.grep({ $_<type> eq "E" }).elems }";
     $printy && say "evaluation: $evaluation";
     return $evaluation;
 }
@@ -278,6 +283,11 @@ DOC CHECK {
         is(pnt(1, 2), pnt(1, 2), "equality (think this test uses `eq`, which compares as strings)");
         is(pnt(1, 2) ∈ (pnt(1, 2), pnt(-1, -1)), True, "can identify member of collection");
         is(pnt(1, 2) + pnt(10, 20), pnt(11, 22), "addition");
+    }
+
+    subtest 'All', {
+        my @evens = (2, 4, 6, 8);
+        (so @evens.all %% 2).&is: True;
     }
 
     subtest 'Reading order', {
@@ -509,7 +519,7 @@ DOC CHECK {
                         #######
                         END
 
-            foo(@input, False).&is: 27730;
+            foo(@input, 3, False).&is: 27730;
         }
 
         subtest "2", {
@@ -523,7 +533,7 @@ DOC CHECK {
                         #######
                         END
 
-            foo(@input, False).&is: 36334;
+            foo(@input, 3, False).&is: 36334;
         }
 
         subtest "3", {
@@ -537,7 +547,7 @@ DOC CHECK {
                         #######
                         END
 
-            foo(@input, False).&is: 39514;
+            foo(@input, 3, False).&is: 39514;
         }
 
         subtest "4", {
@@ -551,7 +561,7 @@ DOC CHECK {
                         #######
                         END
 
-            foo(@input, False).&is: 27755;
+            foo(@input, 3, False).&is: 27755;
         }
 
         subtest "5", {
@@ -565,7 +575,7 @@ DOC CHECK {
                         #######
                         END
 
-            foo(@input, False).&is: 28944;
+            foo(@input, 3, False).&is: 28944;
         }
 
         subtest "6", {
@@ -581,10 +591,10 @@ DOC CHECK {
                         #########
                         END
 
-            foo(@input, False).&is: 18740;
+            foo(@input, 3, False).&is: 18740;
         }
 
     }
 }
 
-foo(@input, True);
+say foo(@input, 3, True);
