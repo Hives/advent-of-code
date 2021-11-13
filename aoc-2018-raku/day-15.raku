@@ -3,9 +3,9 @@
 use Test;
 use ValueType;
 
-#my $input-file = open "inputs/day_XX.txt", :r;
-#my @input-lines = $input-file.slurp.trim().split("\n");
-#$input-file.close;
+my $input-file = open "inputs/day_15.txt", :r;
+my @input = $input-file.slurp.trim().split("\n").map({ $_.trim().comb });
+$input-file.close;
 
 my @test1 = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
 #######
@@ -25,6 +25,26 @@ my @movement-test = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
 #.......#
 #G..G..G#
 #########
+END
+
+my @combat-test = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+#######
+#.G...#
+#...EG#
+#.#.#G#
+#..G#E#
+#.....#
+#######
+END
+
+my @acceptance-test2 = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+#######
+#G..#E#
+#E#E.E#
+#G.##.#
+#...#E#
+#...E.#
+#######
 END
 
 class Point does ValueType {
@@ -128,6 +148,8 @@ sub find-next-step(%unit, $target, @units, @map) {
 }
 
 sub move($id, $units-map is copy, @map) {
+    return $units-map if ("$id" ∉ $units-map.keys);
+
     my %unit = $units-map{$id};
     my @enemy-locations = $units-map.values
             .grep({ $_<type> !eq %unit<type> })
@@ -143,6 +165,35 @@ sub move($id, $units-map is copy, @map) {
     return $units-map;
 }
 
+sub attack($id, $units-map is copy, @map) {
+    return $units-map if ("$id" ∉ $units-map.keys);
+
+    my %unit = $units-map{$id};
+    my $neighbouring-squares = neighbours((%unit<location>,), @map).List;
+    my @enemies = $units-map.values.grep({ $_<type> !eq %unit<type> });
+    my @attackable-enemies = @enemies.grep({ $_<location> ∈ $neighbouring-squares });
+
+    return $units-map if !@attackable-enemies;
+
+    my $lowest-hitpoints = @attackable-enemies
+            .map({ $_<hitpoints> }).min;
+    my @weakest-attackable-enemies = @attackable-enemies
+            .grep({ $_<hitpoints> == $lowest-hitpoints });
+
+    my %attacked-enemy = @weakest-attackable-enemies.&order-units[0];
+    %attacked-enemy<hitpoints> -= %unit<attack-power>;
+    if (%attacked-enemy<hitpoints> <= 0) {
+        $units-map = %(@$units-map.grep({ $_.key !eq %attacked-enemy<id> }));
+    } else {
+        $units-map{%attacked-enemy<id>} = %attacked-enemy;
+    }
+    return $units-map;
+}
+
+sub unit-stats(%unit) {
+    "{ %unit<type> }({ %unit<hitpoints> })"
+}
+
 sub printy(@map, @units) {
     my @map-mutable = @map.map({ $_.Array });
     for @units -> %unit {
@@ -152,26 +203,41 @@ sub printy(@map, @units) {
     say "=====";
     say "  { (0 ..^ @map[0].elems).values.map({ $_ % 10 }).join }";
     for 0 ..^ @map-mutable.elems -> $col {
-        say "{ $col % 10 } { @map-mutable[$col].join }"
+        my $index = $col % 10;
+        my $row = @map-mutable[$col].join;
+        my $unit-stats = @units
+                .grep({ $_<location>.y == $col })
+                .sort({ $_<location>.x })
+                .map(&unit-stats)
+                .join(", ");
+        say "$index $row $unit-stats"
     }
-    say "=====";
 }
 
-sub foo(@input) {
+sub foo(@input, $printy) {
     my ($units, $map) = parse(@input);
-    printy($map, $units);
+    $printy && printy($map, $units);
 
-    my $n = 0;
-    while ($n += 1) < 5 {
+    my $round = 0;
+    loop {
+        last if !$units.cache.grep({ $_<type> eq "E" }) || !$units.cache.grep({ $_<type> eq "G" });
+
+        $round++;
+
         my @order = order-units($units).map({ $_<id> });
         my $units-map = Map.new($units.map({ $_<id> => $_ }));
         for @order -> $id {
             $units-map = move($id, $units-map, $map);
+            $units-map = attack($id, $units-map, $map);
         }
         $units = $units-map.values;
-        printy($map, $units);
+        $printy && printy($map, $units);
     }
 
+    my $evaluation = ($round - 1) * $units.map({ $_<hitpoints> }).sum;
+    $printy && say "last round: $round";
+    $printy && say "evaluation: $evaluation";
+    return $evaluation;
 }
 
 DOC CHECK {
@@ -277,9 +343,9 @@ DOC CHECK {
 
             my ($units, $map) = parse(@input);
             my $units-map = Map.new($units.map({ $_<id> => $_ }));
-            my $moved-units-map = move(1, $units-map, $map);
+            my $result = move(1, $units-map, $map);
 
-            $moved-units-map<1><location>.&is: pnt(2, 1)
+            $result<1><location>.&is: pnt(2, 1)
         }
 
         subtest "Unit doesn't move if in range of a target", {
@@ -311,8 +377,214 @@ DOC CHECK {
 
             $moved-units-map<1><location>.&is: pnt(1, 1)
         }
+
+        subtest "Leaves as-is if unit doesn't exist", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                #####
+                #E..#
+                #..G#
+                #####
+                END
+
+            my ($units, $map) = parse(@input);
+            my $units-map = Map.new($units.map({ $_<id> => $_ }));
+            my $moved-units-map = move(100, $units-map, $map);
+
+            $moved-units-map.&is: $units-map;
+        }
     }
 
+    subtest 'Attack', {
+        subtest "Does nothing if unit doesn't exist", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                #####
+                #EE.#
+                #..G#
+                #####
+                END
+
+            my ($units, $map) = parse(@input);
+            my $units-map = Map.new($units.map({ $_<id> => $_ }));
+            my $result = attack(100, $units-map, $map);
+
+            $result.&is: $units-map;
+        }
+
+        subtest "Does nothing if no enemy in range", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                #####
+                #EE.#
+                #..G#
+                #####
+                END
+
+            my ($units, $map) = parse(@input);
+            my $units-map = Map.new($units.map({ $_<id> => $_ }));
+            my $result = attack(1, $units-map, $map);
+
+            $result.&is: $units-map;
+        }
+
+        subtest "Reduces enemy hitpoints by attack power", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                #####
+                #EG.#
+                #...#
+                #####
+                END
+
+            my ($units, $map) = parse(@input);
+            my $units-map = Map.new($units.map({ $_<id> => $_ }));
+            my $result = attack(1, $units-map, $map);
+
+            $result<2><hitpoints>.&is: 197;
+        }
+
+        subtest "Picks enemy with lowest hitpoints", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                #####
+                #.E.#
+                #EGE#
+                #.E.#
+                #####
+                END
+
+            my ($units, $map) = parse(@input);
+            my $units-map = Map.new($units.map({ $_<id> => $_ }));
+            $units-map<5><hitpoints> = 199;
+            my $result = attack(3, $units-map, $map);
+
+            $result<1><hitpoints>.&is: 200;
+            $result<2><hitpoints>.&is: 200;
+            $result<4><hitpoints>.&is: 200;
+            $result<5><hitpoints>.&is: 196;
+        }
+
+        subtest "Picks enemy by reading order if they have same hitpoints", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                #####
+                #.E.#
+                #EGE#
+                #.E.#
+                #####
+                END
+
+            my ($units, $map) = parse(@input);
+            my $units-map = Map.new($units.map({ $_<id> => $_ }));
+            $units-map<4><hitpoints> = 199;
+            $units-map<5><hitpoints> = 199;
+            my $result = attack(3, $units-map, $map);
+
+            $result<1><hitpoints>.&is: 200;
+            $result<2><hitpoints>.&is: 200;
+            $result<4><hitpoints>.&is: 196;
+            $result<5><hitpoints>.&is: 199;
+        }
+
+        subtest "Removes enemy if hitpoints < 0", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                        #####
+                        #GE.#
+                        #####
+                        END
+
+            my ($units, $map) = parse(@input);
+            my $units-map = Map.new($units.map({ $_<id> => $_ }));
+            $units-map<2><hitpoints> = 2;
+            my $result = attack(1, $units-map, $map);
+
+            ($result<2>:exists).&is: False;
+        }
+    }
+
+    subtest "Acceptance tests", {
+        subtest "1", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                        #######
+                        #.G...#
+                        #...EG#
+                        #.#.#G#
+                        #..G#E#
+                        #.....#
+                        #######
+                        END
+
+            foo(@input, False).&is: 27730;
+        }
+
+        subtest "2", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                        #######
+                        #G..#E#
+                        #E#E.E#
+                        #G.##.#
+                        #...#E#
+                        #...E.#
+                        #######
+                        END
+
+            foo(@input, False).&is: 36334;
+        }
+
+        subtest "3", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                        #######
+                        #E..EG#
+                        #.#G.E#
+                        #E.##E#
+                        #G..#.#
+                        #..E#.#
+                        #######
+                        END
+
+            foo(@input, False).&is: 39514;
+        }
+
+        subtest "4", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                        #######
+                        #E.G#.#
+                        #.#G..#
+                        #G.#.G#
+                        #G..#.#
+                        #...E.#
+                        #######
+                        END
+
+            foo(@input, False).&is: 27755;
+        }
+
+        subtest "5", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                        #######
+                        #.E...#
+                        #.#..G#
+                        #.###.#
+                        #E#G#G#
+                        #...#G#
+                        #######
+                        END
+
+            foo(@input, False).&is: 28944;
+        }
+
+        subtest "6", {
+            my @input = qq:to/END/.trim().split("\n").map({ $_.trim().comb });
+                        #########
+                        #G......#
+                        #.E.#...#
+                        #..##..G#
+                        #...##..#
+                        #...#...#
+                        #.G...G.#
+                        #.....G.#
+                        #########
+                        END
+
+            foo(@input, False).&is: 18740;
+        }
+
+    }
 }
 
-foo(@movement-test);
+foo(@input, True);
