@@ -31,6 +31,7 @@ class VectorKtTest : StringSpec({
     "rotatin" {
         val v = Vector(3, 2)
         forAll(
+            row(0, v),
             row(1, Vector(-2, 3)),
             row(2, Vector(-3, -2)),
             row(3, Vector(2, -3)),
