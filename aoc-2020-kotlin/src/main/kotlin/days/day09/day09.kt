@@ -1,5 +1,5 @@
-import days.day09.findContiguousLongsThatAddTo
-import days.day09.findTwoLongsThatAddTo
+package days.day09
+
 import lib.Reader
 import lib.time
 
