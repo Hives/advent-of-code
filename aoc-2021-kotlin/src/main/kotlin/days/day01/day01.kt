@@ -1,15 +1,18 @@
 package days.day01
 
 import lib.Reader
+import lib.time
 
 fun main() {
     val input = Reader("day01.txt").ints()
 
-    input.zipWithNext().fold(0) { acc, (prev, next) ->
-        if (next > prev) acc + 1 else acc
-    }.also { println(it) }
+    time(iterations = 10_000, warmUpIterations = 100) {
+        input.countIncreases()
+    }
 
-    input.windowed(3).zipWithNext().fold(0) { acc, (prev, next) ->
-        if (next.sum() > prev.sum()) acc + 1 else acc
-    }.also { println(it) }
+    time(iterations = 10_000, warmUpIterations = 100) {
+        input.windowed(3).map { it.sum() }.countIncreases()
+    }
 }
+
+fun Collection<Int>.countIncreases() = this.zipWithNext().count { (prev, next) -> next > prev }
