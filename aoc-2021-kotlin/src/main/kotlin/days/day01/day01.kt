@@ -15,4 +15,4 @@ fun main() {
     }
 }
 
-fun Collection<Int>.countIncreases() = this.zipWithNext().count { (prev, next) -> next > prev }
+private fun List<Int>.countIncreases() = this.zipWithNext().count { (prev, next) -> next > prev }
