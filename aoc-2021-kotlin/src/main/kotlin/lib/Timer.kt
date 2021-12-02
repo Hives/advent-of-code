@@ -4,7 +4,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode.HALF_DOWN
 import kotlin.system.measureNanoTime
 
-fun time(message: String? = null, iterations: Int = 100, warmUpIterations: Int = 15, f: () -> Any?) {
+fun time(message: String? = null, iterations: Int = 100, warmUpIterations: Int = 15, f: () -> Any?): Any {
     println()
     if (!message.isNullOrEmpty()) println(message)
 
@@ -26,6 +26,8 @@ fun time(message: String? = null, iterations: Int = 100, warmUpIterations: Int =
         }
 
     println("and the answer was: $answer")
+
+    return answer
 }
 
 private fun round(number: Double) = BigDecimal(number).setScale(2, HALF_DOWN)
