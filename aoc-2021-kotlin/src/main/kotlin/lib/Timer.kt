@@ -25,8 +25,6 @@ fun time(message: String? = null, iterations: Int = 100, warmUpIterations: Int =
             println("average time over $iterations iterations = $time")
         }
 
-    println("and the answer was: $answer")
-
     return answer
 }
 
