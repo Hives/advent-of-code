@@ -27,13 +27,18 @@ fun run(instructions: List<String>, initial: Submarine) =
         }
         .evaluate()
 
-fun parseInstruction(instruction: String): Pair<Direction, Int> =
-    instruction.split(" ")
-        .let { (direction, units) ->
-            Pair(Direction.valueOf(direction.uppercase()), units.toInt())
-        }
+fun parseInstruction(instruction: String): Pair<Direction, Int> {
+    val direction = when(instruction.first()) {
+        'f' -> Direction.FORWARD
+        'd' -> Direction.DOWN
+        'u' -> Direction.UP
+        else -> throw Exception("Unparseable direction in instruction $instruction")
+    }
+    val units = instruction.last().toString().toInt()
+    return Pair(direction, units)
+}
 
-enum class Direction { FORWARD, DOWN, UP }
+enum class Direction { FORWARD, DOWN, UP, }
 
 sealed class Submarine(
     open val depth: Int,

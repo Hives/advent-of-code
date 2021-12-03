@@ -34,15 +34,15 @@ fun part2(input: List<String>): Int =
     getOxygenGeneratorRating(input) * getC02ScrubberRating(input)
 
 fun getC02ScrubberRating(input: List<String>): Int =
-    filterByDigits(input, ::selectLeastCommonDigitAtIndex)
+    filterBySuccessiveIndexes(input, ::selectLeastCommonDigitAtIndex).toInt(2)
 
 fun getOxygenGeneratorRating(input: List<String>): Int =
-    filterByDigits(input, ::selectMostCommonDigitAtIndex)
+    filterBySuccessiveIndexes(input, ::selectMostCommonDigitAtIndex).toInt(2)
 
-fun filterByDigits(input: List<String>, filter: (List<String>, Int) -> List<String>): Int {
-    tailrec fun go(input: List<String>, index: Int): Int {
+fun filterBySuccessiveIndexes(input: List<String>, filter: (List<String>, Int) -> List<String>): String {
+    tailrec fun go(input: List<String>, index: Int): String {
         val filtered = filter(input, index)
-        return filtered.singleOrNull()?.toInt(2) ?: go(filtered, index + 1)
+        return filtered.singleOrNull() ?: go(filtered, index + 1)
     }
     return go(input, 0)
 }
