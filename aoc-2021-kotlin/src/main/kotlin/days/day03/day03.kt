@@ -7,11 +7,11 @@ import lib.time
 fun main() {
     val input = Reader("day03.txt").strings()
 
-    time(iterations = 10_000, warmUpIterations = 100) {
+    time(iterations = 10_000, warmUpIterations = 100, message = "Part 1") {
         part1(input)
     }.checkAnswer(2648450)
 
-    time(iterations = 10_000, warmUpIterations = 100) {
+    time(iterations = 10_000, warmUpIterations = 100, message = "Part 2") {
         part2(input)
     }.checkAnswer(2845944)
 }
@@ -19,9 +19,7 @@ fun main() {
 fun part1(input: List<String>): Int =
     (0 until input[0].length).map { index ->
         input.map { it[index] }
-            .fold(DigitCount()) { digits, next ->
-                if (next == '0') digits.inc0() else digits.inc1()
-            }
+            .countDigits()
             .let { digits ->
                 if (digits.zeros > digits.ones) '0' else '1'
             }
@@ -34,10 +32,10 @@ fun part2(input: List<String>): Int =
     getOxygenGeneratorRating(input) * getC02ScrubberRating(input)
 
 fun getC02ScrubberRating(input: List<String>): Int =
-    filterBySuccessiveIndexes(input, ::selectLeastCommonDigitAtIndex).toInt(2)
+    filterBySuccessiveIndexes(input, ::selectMostCommonDigitAtIndex).toInt(2)
 
 fun getOxygenGeneratorRating(input: List<String>): Int =
-    filterBySuccessiveIndexes(input, ::selectMostCommonDigitAtIndex).toInt(2)
+    filterBySuccessiveIndexes(input, ::selectLeastCommonDigitAtIndex).toInt(2)
 
 fun filterBySuccessiveIndexes(input: List<String>, filter: (List<String>, Int) -> List<String>): String {
     tailrec fun go(input: List<String>, index: Int): String {
@@ -47,7 +45,7 @@ fun filterBySuccessiveIndexes(input: List<String>, filter: (List<String>, Int) -
     return go(input, 0)
 }
 
-fun selectLeastCommonDigitAtIndex(input: List<String>, index: Int): List<String> =
+fun selectMostCommonDigitAtIndex(input: List<String>, index: Int): List<String> =
     countDigitsAtIndexAndSelect(input, index) { digits ->
         when {
             (digits.zeros > digits.ones) -> '0'
@@ -56,7 +54,7 @@ fun selectLeastCommonDigitAtIndex(input: List<String>, index: Int): List<String>
         }
     }
 
-fun selectMostCommonDigitAtIndex(input: List<String>, index: Int): List<String> =
+fun selectLeastCommonDigitAtIndex(input: List<String>, index: Int): List<String> =
     countDigitsAtIndexAndSelect(input, index) { digits ->
         when {
             (digits.zeros > digits.ones) -> '1'
@@ -68,19 +66,22 @@ fun selectMostCommonDigitAtIndex(input: List<String>, index: Int): List<String> 
 fun countDigitsAtIndexAndSelect(
     input: List<String>,
     index: Int,
-    selectByDigitCount: (DigitCount) -> Char
+    selectByDigitCount: (DigitCount) -> Char,
 ): List<String> {
-    val digitToSelectBy = input.map { it[index] }.fold(DigitCount()) { digits, next ->
-        if (next == '0') digits.inc0() else digits.inc1()
-    }
-        .let { selectByDigitCount(it) }
+    val digitToSelectBy =
+        input.map { it[index] }.countDigits()
+            .let { selectByDigitCount(it) }
 
     return input.filter { it[index] == digitToSelectBy }
 }
 
+fun List<Char>.countDigits() =
+    this.fold(DigitCount()) { digits, next -> digits.inc(next) }
+
 data class DigitCount(val zeros: Int = 0, val ones: Int = 0) {
-    fun inc0() = this.copy(zeros = zeros + 1)
-    fun inc1() = this.copy(ones = ones + 1)
+    fun inc(digit: Char) = if (digit == '0') inc0() else inc1()
+    private fun inc0() = this.copy(zeros = zeros + 1)
+    private fun inc1() = this.copy(ones = ones + 1)
 }
 
 fun String.invert() = this.map { if (it == '0') '1' else '0' }.joinToString("")

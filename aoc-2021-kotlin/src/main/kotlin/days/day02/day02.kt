@@ -7,11 +7,11 @@ import lib.time
 fun main() {
     val input = Reader("day02.txt").strings()
 
-    time(iterations = 10_000, warmUpIterations = 100) {
+    time(iterations = 10_000, warmUpIterations = 100, message = "Part 1") {
         run(input, Submarine.Part1())
     }.checkAnswer(1660158)
 
-    time(iterations = 10_000, warmUpIterations = 100) {
+    time(iterations = 10_000, warmUpIterations = 100, message = "Part 2") {
         run(input, Submarine.Part2())
     }.checkAnswer(1604592846)
 }
