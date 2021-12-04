@@ -4,15 +4,13 @@ import java.math.BigDecimal
 import java.math.RoundingMode.HALF_DOWN
 import kotlin.system.measureNanoTime
 
-fun time(message: String? = null, iterations: Int = 100, warmUpIterations: Int = 15, f: () -> Any?): Any {
+fun time(iterations: Int = 100, warmUpIterations: Int = 15, message: String? = null, f: () -> Any?): Any? {
     println()
     if (!message.isNullOrEmpty()) println(message)
 
     repeat(warmUpIterations) { f() }
 
-    lateinit var answer: Any
-
-    List(iterations) { measureNanoTime { answer = f() ?: "no answer" } }
+    List(iterations) { measureNanoTime { f() } }
         .also { times ->
             val average = times.average()
 
@@ -25,7 +23,7 @@ fun time(message: String? = null, iterations: Int = 100, warmUpIterations: Int =
             println("average time over $iterations iterations = $time")
         }
 
-    return answer
+    return f()
 }
 
 private fun round(number: Double) = BigDecimal(number).setScale(2, HALF_DOWN)
