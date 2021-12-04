@@ -8,19 +8,20 @@ fun main() {
     val exampleInput = Reader("day04-example.txt").string()
     val input = Reader("day04.txt").string()
 
-    time {
+    time(iterations = 1_000, warmUpIterations = 500, message = "Part 1") {
         part1(input)
     }.checkAnswer(72770)
 
-    time {
+    time(iterations = 500, warmUpIterations = 100, message = "Part 2") {
         part2(input)
     }.checkAnswer(13912)
 }
 
 fun part1(input: String): Int {
     val (order, boards) = parseInput(input)
-    (order.indices).forEach {
-        val draw = order.slice(0..it)
+
+    for (index in order.indices) {
+        val draw = order.slice(0..index)
         val winners = boards.find { board -> board.isWinning(draw) }
         if (winners != null) {
             return winners.score(draw)
@@ -30,39 +31,31 @@ fun part1(input: String): Int {
     throw Exception("Didn't get an answer :(")
 }
 
-fun part2(input: String): Int {
+fun part2(input: String): Int? {
     val (order, boards) = parseInput(input)
-    lateinit var loser: Board
 
-    (order.indices.reversed()).forEach {
-        val draw = order.slice(0..it)
-        val losers = boards.filter { board -> !board.isWinning(draw) }
-        if (losers.size == 1) {
-            loser = losers.single()
-            return@forEach
+    return boards
+        .map { board ->
+            for (index in (order.indices)) {
+                val draw = order.slice(0..index)
+                if (board.isWinning(draw)) return@map Pair(board, draw)
+            }
+            throw Exception("board never completed?!")
         }
-    }
-
-    (order.indices).forEach {
-        val draw = order.slice(0..it)
-        if (loser.isWinning(draw)) {
-            return loser.score(draw)
-        }
-    }
-
-    throw Exception("Didn't get an answer :(")
+        .maxByOrNull { (_, winningDraw) -> winningDraw.size }
+        ?.let { (board, winningDraw) -> board.score(winningDraw) }
 }
 
 fun parseInput(input: String): Pair<List<Int>, List<Board>> {
-    val blocks = input.split("\n\n")
-    val draw = blocks[0].trim().split(",").map { it.toInt() }
+    val blocks = input.split("\n\n").map { it.trim() }
+    val draw = blocks[0].split(",").map { it.toInt() }
     val boards = blocks.drop(1).map { block ->
-        block.trim()
+        block
             .replace("\n", " ")
             .replace("  ", " ")
             .split(" ")
             .map { it.toInt() }
-            .let { Board(it) }
+            .let(::Board)
     }
     return Pair(draw, boards)
 }
