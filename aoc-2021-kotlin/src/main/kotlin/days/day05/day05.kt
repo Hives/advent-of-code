@@ -6,6 +6,7 @@ import lib.checkAnswer
 import lib.time
 import java.lang.Integer.max
 import kotlin.math.absoluteValue
+import kotlin.math.sign
 
 fun main() {
     val input = Reader("day05.txt").strings()
@@ -42,22 +43,17 @@ fun parseInput(input: List<String>): List<Line> =
         }
 
 data class Line(val start: Vector, val end: Vector) {
-    val covers: List<Vector>
-        get() {
-            val difference = (this.end - this.start)
-            val distance = max(difference.x.absoluteValue, difference.y.absoluteValue)
-            val direction = difference.normalise()
-            return (0..distance)
-                .map { steps -> start + (direction * steps) }
-        }
+    val covers: List<Vector> = run {
+        val difference = (end - start)
+        val direction = difference.normalise()
+        val distance = max(difference.x.absoluteValue, difference.y.absoluteValue)
+        (0..distance)
+            .map { steps -> start + (direction * steps) }
+    }
 
-    val isHorizontalOrVertical
-        get() = isHorizontal || isVertical
-    private val isVertical
-        get() = start.x == end.x
-    private val isHorizontal
-        get() = start.y == end.y
+    private val isVertical = start.x == end.x
+    private val isHorizontal = start.y == end.y
+    val isHorizontalOrVertical = isHorizontal || isVertical
 }
 
-private fun Vector.normalise() = Vector(normalise(x), normalise(y))
-private fun normalise(n: Int) = if (n == 0) 0 else n / n.absoluteValue
+fun Vector.normalise() = Vector(x.sign, y.sign)
