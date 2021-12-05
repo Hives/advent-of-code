@@ -31,9 +31,8 @@ fun part2(input: List<String>) =
 
 fun List<Line>.countPointsCoveredByMoreThanOneLine() =
     this.flatMap { it.covers }
-        .groupingBy { it }
-        .eachCount()
-        .count { (_, count) -> count > 1 }
+        .groupBy { it }
+        .count { (_, vectors) -> vectors.size > 1 }
 
 fun parseInput(input: List<String>): List<Line> =
     input
@@ -46,11 +45,10 @@ data class Line(val start: Vector, val end: Vector) {
     val covers: List<Vector>
         get() {
             val difference = (this.end - this.start)
-            val steps = max(difference.x.absoluteValue, difference.y.absoluteValue)
-            val xInc = normalise(difference.x)
-            val yInc = normalise(difference.y)
-            return (0..steps)
-                .map { Vector(start.x + (it * xInc), start.y + (it * yInc)) }
+            val distance = max(difference.x.absoluteValue, difference.y.absoluteValue)
+            val direction = difference.normalise()
+            return (0..distance)
+                .map { steps -> start + (direction * steps) }
         }
 
     val isHorizontalOrVertical
@@ -61,4 +59,5 @@ data class Line(val start: Vector, val end: Vector) {
         get() = start.y == end.y
 }
 
-fun normalise(n: Int) = if (n == 0) 0 else n / n.absoluteValue
+private fun Vector.normalise() = Vector(normalise(x), normalise(y))
+private fun normalise(n: Int) = if (n == 0) 0 else n / n.absoluteValue
