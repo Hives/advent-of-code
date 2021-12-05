@@ -49,7 +49,6 @@ fun selectMostCommonDigitAtIndex(input: List<String>, index: Int): List<String> 
     countDigitsAtIndexAndSelect(input, index) { digits ->
         when {
             (digits.zeros > digits.ones) -> '0'
-            (digits.ones > digits.zeros) -> '1'
             else -> '1'
         }
     }
@@ -58,7 +57,6 @@ fun selectLeastCommonDigitAtIndex(input: List<String>, index: Int): List<String>
     countDigitsAtIndexAndSelect(input, index) { digits ->
         when {
             (digits.zeros > digits.ones) -> '1'
-            (digits.ones > digits.zeros) -> '0'
             else -> '0'
         }
     }

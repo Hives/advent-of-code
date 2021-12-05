@@ -5,6 +5,7 @@ import lib.Vector
 import lib.checkAnswer
 import lib.time
 import java.lang.Integer.max
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 
@@ -12,11 +13,11 @@ fun main() {
     val input = Reader("day05.txt").strings()
     val exampleInput = Reader("day05-example.txt").strings()
 
-    time {
+    time(message = "Part 1") {
         part1(input)
     }.checkAnswer(4873)
 
-    time {
+    time(message = "Part 2") {
         part2(input)
     }.checkAnswer(19472)
 }
@@ -31,7 +32,7 @@ fun part2(input: List<String>) =
         .countPointsCoveredByMoreThanOneLine()
 
 fun List<Line>.countPointsCoveredByMoreThanOneLine() =
-    this.flatMap { it.covers }
+    this.flatMap { it.points }
         .groupBy { it }
         .count { (_, vectors) -> vectors.size > 1 }
 
@@ -43,7 +44,7 @@ fun parseInput(input: List<String>): List<Line> =
         }
 
 data class Line(val start: Vector, val end: Vector) {
-    val covers: List<Vector> = run {
+    val points: List<Vector> = run {
         val difference = (end - start)
         val direction = difference.normalise()
         val distance = max(difference.x.absoluteValue, difference.y.absoluteValue)
