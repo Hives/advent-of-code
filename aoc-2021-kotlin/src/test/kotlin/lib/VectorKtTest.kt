@@ -59,6 +59,8 @@ class VectorKtTest : StringSpec({
         forAll(
             row(topLeft, LESS_THAN, topRight),
             row(topRight, GREATER_THAN, topLeft),
+            row(topLeft, LESS_THAN, bottomLeft),
+            row(bottomLeft, GREATER_THAN, topLeft),
             row(topRight, LESS_THAN, bottomLeft),
             row(bottomLeft, GREATER_THAN, topLeft),
             row(topLeft, EQUAL, topLeft)
