@@ -11,9 +11,14 @@ data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
         y = y * n
     )
 
-    operator fun plus(vector: Vector) = Vector(
-        x = this.x + vector.x,
-        y = this.y + vector.y
+    operator fun plus(other: Vector) = Vector(
+        x = this.x + other.x,
+        y = this.y + other.y
+    )
+
+    operator fun minus(other: Vector) = Vector(
+        x = this.x - other.x,
+        y = this.y - other.y
     )
 
     fun rotateQuarterTurnsCCW(quarterTurns: Int = 1) =

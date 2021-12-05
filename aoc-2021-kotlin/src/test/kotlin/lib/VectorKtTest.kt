@@ -31,6 +31,10 @@ class VectorKtTest : StringSpec({
         Vector(3, -2) + Vector(-1, 5) shouldBe Vector(2, 3)
     }
 
+    "minusin" {
+        Vector(3, -2) - Vector(-1, 5) shouldBe Vector(4, -7)
+    }
+
     "rotatin" {
         val v = Vector(3, 2)
         forAll(
