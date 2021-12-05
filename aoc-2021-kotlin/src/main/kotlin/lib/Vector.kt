@@ -2,7 +2,7 @@ package lib
 
 import kotlin.math.abs
 
-data class Vector(val x: Int, val y: Int) {
+data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
     val manhattanDistance: Int
         get() = abs(x) + abs(y)
 
@@ -23,6 +23,14 @@ data class Vector(val x: Int, val y: Int) {
                 y = it.x
             )
         }
+
+    override fun compareTo(other: Vector): Int {
+        if (this.y > other.y) return 1
+        if (this.y < other.y) return -1
+        if (this.x > other.x) return 1
+        if (this.x < other.x) return -1
+        return 0
+    }
 }
 
 enum class UnitVector(val vector: Vector) {

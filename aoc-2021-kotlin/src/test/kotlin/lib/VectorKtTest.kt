@@ -4,6 +4,9 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.data.forAll
 import io.kotest.data.row
 import io.kotest.matchers.shouldBe
+import lib.Comparisons.EQUAL
+import lib.Comparisons.GREATER_THAN
+import lib.Comparisons.LESS_THAN
 
 class VectorKtTest : StringSpec({
     "manhattan distance" {
@@ -44,4 +47,34 @@ class VectorKtTest : StringSpec({
         }
     }
 
+    "orderin" {
+        // order in reading order
+        val topLeft = Vector(0, 0)
+        val topRight = Vector(1, 0)
+        val bottomLeft = Vector(0, 1)
+        forAll(
+            row(topLeft, LESS_THAN, topRight),
+            row(topRight, GREATER_THAN, topLeft),
+            row(topRight, LESS_THAN, bottomLeft),
+            row(bottomLeft, GREATER_THAN, topLeft),
+            row(topLeft, EQUAL, topLeft)
+        ) { v1, comparison, v2 ->
+            comparison.compare(v1, v2) shouldBe true
+        }
+    }
+
 })
+
+private enum class Comparisons {
+    GREATER_THAN {
+        override fun <T : Comparable<T>> compare(left: T, right: T) = left > right
+    },
+    LESS_THAN {
+        override fun <T : Comparable<T>> compare(left: T, right: T) = left < right
+    },
+    EQUAL {
+        override fun <T : Comparable<T>> compare(left: T, right: T) = left == right
+    };
+
+    abstract fun <T : Comparable<T>> compare(left: T, right: T): Boolean
+}
