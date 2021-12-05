@@ -2,6 +2,7 @@ package days.day04
 
 import lib.Reader
 import lib.checkAnswer
+import lib.flip
 import lib.time
 
 fun main() {
@@ -71,10 +72,6 @@ data class Board(
         return uncalled.sum() * draw.last()
     }
 
-    private val rows: List<List<Int>> =
-        (0..4).map { row -> (0..4).map { col -> get(row, col) } }
-    private val cols: List<List<Int>> =
-        (0..4).map { col -> (0..4).map { row -> get(row, col) } }
-
-    private fun get(row: Int, col: Int) = numbers[row * 5 + col]
+    private val rows: List<List<Int>> = numbers.windowed(5, 5)
+    private val cols: List<List<Int>> = rows.flip()
 }
