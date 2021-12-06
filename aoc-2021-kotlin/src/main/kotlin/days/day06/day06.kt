@@ -31,9 +31,7 @@ fun runGenerations(initialAges: List<Long>, requiredDays: Int): Long {
     return go(initialAges, requiredDays)
 }
 
-fun <T> List<T>.rotateLeft() = this.subList(1, this.size) + this[0]
-
-fun parseInput(input: String) =
+fun parseInput(input: String): List<Long> =
     input.split(",").map { it.toInt() }
         .groupingBy { it }.eachCount()
         .let { agesCount ->
@@ -43,3 +41,5 @@ fun parseInput(input: String) =
             }
             agesList.toList()
         }
+
+fun <T> List<T>.rotateLeft() = this.subList(1, this.size) + this[0]

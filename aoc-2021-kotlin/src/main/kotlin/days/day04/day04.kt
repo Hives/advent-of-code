@@ -47,7 +47,7 @@ fun part2(input: String): Int? {
         ?.let { (board, winningDraw) -> board.score(winningDraw) }
 }
 
-fun parseInput(input: String): Pair<List<Int>, List<Board>> {
+fun parseInput(input: String): Pair<List<Int>, List<BingoCard>> {
     val blocks = input.split("\n\n").map { it.trim() }
     val draw = blocks[0].split(",").map { it.toInt() }
     val boards = blocks.drop(1).map { block ->
@@ -56,12 +56,12 @@ fun parseInput(input: String): Pair<List<Int>, List<Board>> {
             .replace("  ", " ")
             .split(" ")
             .map { it.toInt() }
-            .let(::Board)
+            .let(::BingoCard)
     }
     return Pair(draw, boards)
 }
 
-data class Board(
+data class BingoCard(
     private val numbers: List<Int>,
 ) {
     fun isWinning(draw: List<Int>): Boolean =
