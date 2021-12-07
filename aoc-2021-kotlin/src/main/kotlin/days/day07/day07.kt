@@ -1,35 +1,41 @@
 package days.day07
 
 import lib.Reader
+import lib.checkAnswer
+import lib.time
 import kotlin.math.absoluteValue
 
 fun main() {
     val input = Reader("day07.txt").string()
     val exampleInput = Reader("day07-example.txt").string()
 
-    part1(input)
-    part2(input)
+    time(message = "Part 1") {
+        part1(input)
+    }.checkAnswer(356992)
+
+    time(message = "Part 2") {
+        part2(input)
+    }.checkAnswer(101268110)
 }
 
-fun part1(input: String) {
-    val crabs = parseInput(input)
+fun part1(input: String): Int? =
+    solve(parseInput(input), ::getSimpleFuelConsumption)
 
-    (crabs.minOrNull()!!..crabs.maxOrNull()!!).associateWith { origin ->
-        crabs.sumOf { (it - origin).absoluteValue }
-    }.minByOrNull { (_, fuel) -> fuel }
-        .also { println(it) }
-}
+fun part2(input: String): Int? =
+    solve(parseInput(input), ::getIncreasingFuelConsumption)
 
-fun part2(input: String) {
-    val crabs = parseInput(input)
+inline fun solve(positions: List<Int>, calculateFuel: (Int, Int) -> Int): Int? =
+    (0..positions.maxOrNull()!!)
+        .map { destination ->
+            positions.sumOf { position -> calculateFuel(position, destination) }
+        }.minOrNull()
 
-    (crabs.minOrNull()!!..crabs.maxOrNull()!!).associateWith { origin ->
-        crabs.sumOf {
-            val n = (origin - it).absoluteValue
-            n * (n + 1) / 2
-        }
-    }.minByOrNull { (_, fuel) -> fuel }
-        .also { println(it) }
+fun getSimpleFuelConsumption(start: Int, destination: Int): Int =
+    (start - destination).absoluteValue
+
+fun getIncreasingFuelConsumption(start: Int, destination: Int): Int {
+    val n = (start - destination).absoluteValue
+    return n * (n + 1) / 2
 }
 
 fun parseInput(input: String) = input.split(",").map { it.toInt() }
