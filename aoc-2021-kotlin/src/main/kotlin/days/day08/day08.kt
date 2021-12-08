@@ -41,11 +41,11 @@ fun createPatternMap(patterns: List<Set<Char>>): Map<Set<Char>, Int> {
     val onePattern = segmentCountMap[2]!!.single()
     val sevenPattern = segmentCountMap[3]!!.single()
     val fourPattern = segmentCountMap[4]!!.single()
-    val threePattern = segmentCountMap[5]!!.single { (onePattern - it).isEmpty() }
-    val ninePattern = segmentCountMap[6]!!.single { (it - threePattern).size == 1 }
-    val twoPattern = segmentCountMap[5]!!.single { (it - ninePattern).size == 1 }
-    val fivePattern = segmentCountMap[5]!!.single { (it - ninePattern).isEmpty() && it != threePattern }
     val eightPattern = segmentCountMap[7]!!.single()
+    val threePattern = segmentCountMap[5]!!.single { it.containsAll(onePattern) }
+    val ninePattern = segmentCountMap[6]!!.single { (it - threePattern).size == 1 }
+    val fivePattern = segmentCountMap[5]!!.single { (it - ninePattern).isEmpty() && it != threePattern }
+    val twoPattern = segmentCountMap[5]!!.single { (it - ninePattern).size == 1 }
     val zeroPattern = segmentCountMap[6]!!.single { (it - fivePattern).size == 2 }
     val sixPattern = segmentCountMap[6]!!.single { it !== zeroPattern && it !== ninePattern }
 
