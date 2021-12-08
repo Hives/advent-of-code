@@ -1,39 +1,41 @@
 package days.day08
 
 import lib.Reader
+import lib.checkAnswer
+import lib.time
 
 fun main() {
     val input = Reader("day08.txt").strings()
     val exampleInput = Reader("day08-example.txt").strings()
 
-    println(part1(input))
-    println(part2(input))
+    time(iterations = 1_000, warmUpIterations = 100, message = "Part 1") {
+        part1(input)
+    }.checkAnswer(381)
+
+    time(iterations = 1_000, warmUpIterations = 100, message = "Part 2") {
+        part2(input)
+    }.checkAnswer(1023686)
 }
 
-fun part1(strings: List<String>): Int {
-    val input = strings.map(::parseInput)
+fun part1(lines: List<String>): Int {
+    val input = lines.map(::parseInput)
 
     return input.sumOf { (tenSignalPatterns, fourDigits) ->
-        val mappy = foo(tenSignalPatterns)
-        fourDigits.map { mappy[it] }.count { it == 1 || it == 4 || it == 7 || it == 8 }
+        val patternMap = createPatternMap(tenSignalPatterns)
+        fourDigits.map { patternMap[it] }.count { it == 1 || it == 4 || it == 7 || it == 8 }
     }
 }
 
-fun part2(strings: List<String>): Int {
-    val input = strings.map(::parseInput)
+fun part2(lines: List<String>): Int {
+    val input = lines.map(::parseInput)
 
     return input.sumOf { (tenSignalPatterns, fourDigits) ->
-        val mappy = foo(tenSignalPatterns)
-        println(mappy)
-        digitsToNumber(fourDigits.map { mappy[it]!! })
+        val patternMap = createPatternMap(tenSignalPatterns)
+        fourDigits.map { patternMap[it]!! }.let(::digitsToNumber)
     }
 }
 
-fun digitsToNumber(digits: List<Int>) = digits[3] + (10 * digits[2]) + (100 * digits[1]) + (1_000 * digits[0])
-
-fun foo(patterns: List<Set<Char>>): Map<Set<Char>, Int> {
-    val map = mutableMapOf<Set<Char>, Int>()
-
+fun createPatternMap(patterns: List<Set<Char>>): Map<Set<Char>, Int> {
     val segmentCountMap = patterns.groupBy { it.size }
 
     val onePattern = segmentCountMap[2]!!.single()
@@ -60,6 +62,8 @@ fun foo(patterns: List<Set<Char>>): Map<Set<Char>, Int> {
         ninePattern to 9
     )
 }
+
+fun digitsToNumber(digits: List<Int>) = digits[3] + (10 * digits[2]) + (100 * digits[1]) + (1_000 * digits[0])
 
 fun parseInput(line: String): Pair<List<Set<Char>>, List<Set<Char>>> {
     val splitty = { string: String ->
