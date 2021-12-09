@@ -36,6 +36,11 @@ data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
         if (this.x < other.x) return -1
         return 0
     }
+
+    val neighbours: Set<Vector>
+        get() = UnitVector.values().map { unit -> unit.vector + this }.toSet()
+
+    override fun toString() = "V[$x, $y]"
 }
 
 enum class UnitVector(val vector: Vector) {
