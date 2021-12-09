@@ -17,17 +17,38 @@ fun part1(input: List<String>): Int {
     return heightMap.getLowpoints().sumOf { heightMap.at(it)!! + 1 }
 }
 
+fun part2(input: List<String>) {
+    val heightMap = HeightMap(input)
+    val lowPoints = heightMap.getLowpoints()
+}
+
+fun HeightMap.getBasin(lowpoint: Vector) {
+    fun go(basin: Set<Vector>, neighbours: Set<Vector>) {
+        neighbours.map { neighbour ->
+            val neighboursOfNeighbour = neighbour.neighbours
+            val notInBasin = neighbour.neighbours - basin
+        }
+    }
+
+    val neighbours = lowpoint.neighbours
+}
+
 class HeightMap(input: List<String>) {
     private val heights = input.map { row -> row.toCharArray().map { cell -> cell.digitToInt() } }
     private val cols = heights[0].size
     private val rows = heights.size
 
+    fun Vector.isInHeightMap() = this.x in 0 until cols && this.y in 0 until rows
+
     fun getLowpoints(): List<Vector> =
         (0 until cols).flatMap { x ->
             (0 until rows).mapNotNull { y ->
                 val location = Vector(x, y)
-                val neighbourHeights = location.neighbours.mapNotNull { at(it) }
-                if (neighbourHeights.all { it > at(location)!! }) location
+                if (
+                    location.neighbours
+                        .filter { it.isInHeightMap() }
+                        .all { neighbour -> location.isLowerThan(neighbour, this) }
+                ) location
                 else null
             }
         }
@@ -40,3 +61,5 @@ class HeightMap(input: List<String>) {
         }
     }
 }
+
+fun Vector.isLowerThan(other: Vector, heightMap: HeightMap) = heightMap.at(this)!! < heightMap.at(other)!!
