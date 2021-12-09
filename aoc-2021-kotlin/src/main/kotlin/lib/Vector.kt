@@ -40,7 +40,7 @@ data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
     val neighbours: Set<Vector>
         get() = UnitVector.values().map { unit -> unit.vector + this }.toSet()
 
-    override fun toString() = "V[$x, $y]"
+    override fun toString() = "v{$x, $y}"
 }
 
 enum class UnitVector(val vector: Vector) {
