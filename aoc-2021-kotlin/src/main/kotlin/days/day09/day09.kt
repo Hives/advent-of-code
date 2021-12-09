@@ -9,28 +9,53 @@ fun main() {
     val exampleInput = Reader("day09-example.txt").strings()
 
     part1(input).checkAnswer(530)
+
+    part2(input)
 }
 
 fun part1(input: List<String>): Int {
     val heightMap = HeightMap(input)
 
-    return heightMap.getLowpoints().sumOf { heightMap.at(it)!! + 1 }
+    return heightMap.getLowpoints().sumOf { heightMap.heightAt(it)!! + 1 }
 }
 
 fun part2(input: List<String>) {
     val heightMap = HeightMap(input)
-    val lowPoints = heightMap.getLowpoints()
+    val lowpoints = heightMap.getLowpoints()
+    lowpoints.map { heightMap.getBasin(it).size }
+        .sortedDescending()
+        .let { it[0] * it[1] * it[2] }
+        .also { println(it) }
 }
 
-fun HeightMap.getBasin(lowpoint: Vector) {
-    fun go(basin: Set<Vector>, neighbours: Set<Vector>) {
-        neighbours.map { neighbour ->
-            val neighboursOfNeighbour = neighbour.neighbours
-            val notInBasin = neighbour.neighbours - basin
+fun HeightMap.getBasin(lowpoint: Vector): Set<Vector> {
+    tailrec fun go(basinPoints: Set<Vector>, testPoints: Set<Vector>): Set<Vector> {
+        println("-- go --")
+        println("---- basin: $basinPoints")
+        val expansion = testPoints.flatMap { point ->
+            println("---- $point")
+            val neighbours = point.neighbours
+            println("---- $neighbours")
+            neighbours
+                .filter { it.isInHeightMap() }
+                .also {
+                    println("---- in heightmap $it")
+                }
+                .filterNot { it in basinPoints }
+                .filterNot { heightAt(it) == 9 }
+                .filter { heightAt(it)!! > heightAt(point)!! }
+        }.toSet()
+        println("---- expansion: $expansion")
+
+        return if (expansion.isEmpty()) run {
+            println("-- final basin: $basinPoints")
+            println("-- size: ${basinPoints.size}\n")
+            basinPoints
         }
+        else go(basinPoints + expansion, expansion)
     }
 
-    val neighbours = lowpoint.neighbours
+    return go(setOf(lowpoint), setOf(lowpoint))
 }
 
 class HeightMap(input: List<String>) {
@@ -53,7 +78,7 @@ class HeightMap(input: List<String>) {
             }
         }
 
-    fun at(location: Vector): Int? {
+    fun heightAt(location: Vector): Int? {
         return when {
             (location.x < 0 || location.x >= cols) -> null
             (location.y < 0 || location.y >= rows) -> null
@@ -62,4 +87,4 @@ class HeightMap(input: List<String>) {
     }
 }
 
-fun Vector.isLowerThan(other: Vector, heightMap: HeightMap) = heightMap.at(this)!! < heightMap.at(other)!!
+fun Vector.isLowerThan(other: Vector, heightMap: HeightMap) = heightMap.heightAt(this)!! < heightMap.heightAt(other)!!
