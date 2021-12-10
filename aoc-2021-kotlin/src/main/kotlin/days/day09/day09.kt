@@ -13,7 +13,7 @@ fun main() {
         part1(input)
     }.checkAnswer(530)
 
-    time(iterations = 1_000, warmUpIterations = 100, message = "Part 2") {
+    time(iterations = 500, warmUpIterations = 20, message = "Part 2") {
         part2(input)
     }.checkAnswer(1019494)
 }
@@ -46,17 +46,15 @@ class HeightMap(input: List<String>) {
     }
 
     fun getLowpoints(): List<Vector> =
-        (heights.indices).flatMap { x ->
-            (heights[x].indices).mapNotNull { y ->
-                val location = Vector(x, y)
+        (heights.indices).flatMap { x -> (heights[x].indices).map { y -> Vector(x, y) } }
+            .mapNotNull { point ->
                 if (
-                    location.neighbours
+                    point.neighbours
                         .filter { it.isInHeightMap() }
-                        .all { neighbour -> location.isLowerThan(neighbour, this) }
-                ) location
+                        .all { neighbour -> point.isLowerThan(neighbour, this) }
+                ) point
                 else null
             }
-        }
 
     fun getBasin(startingPoint: Vector): Set<Vector> {
         tailrec fun go(basinPoints: Set<Vector>, lastExpansion: Set<Vector>): Set<Vector> {
