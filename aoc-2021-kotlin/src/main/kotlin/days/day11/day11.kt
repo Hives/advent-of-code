@@ -2,38 +2,54 @@ package days.day11
 
 import lib.Reader
 import lib.Vector
+import lib.checkAnswer
+import lib.time
 
 fun main() {
     val input = Reader("day11.txt").strings()
     val exampleInput = Reader("day11-example.txt").strings()
 
-    println(part1(input))
+    time(message = "Part 1") {
+        part1(input)
+    }.checkAnswer(1640)
+
+    time(message = "Part 2") {
+        part2(input)
+    }.checkAnswer(312)
 }
 
 fun part1(input: List<String>): Int {
-    tailrec fun go(octopuses: Octopuses, flashes: Int, steps: Int): Int =
-        if (steps == 0) flashes
+    tailrec fun go(octopuses: Octopuses, flashCount: Int, steps: Int): Int =
+        if (steps == 0) flashCount
         else {
             val (newOctopuses, newFlashes) = step(octopuses)
-            go(newOctopuses, flashes + newFlashes, steps - 1)
+            go(newOctopuses, flashCount + newFlashes, steps - 1)
         }
 
-    val initial = Octopuses(parse(input))
-
-    return go(initial, 0, 100)
+    return go(Octopuses(parse(input)), 0, 100)
 }
+
+fun part2(input: List<String>): Int {
+    tailrec fun go(octopuses: Octopuses, steps: Int): Int {
+        val (newOctopuses, flashCount) = step(octopuses)
+
+        return if (flashCount == octopuses.count) steps + 1
+        else {
+            go(newOctopuses, steps + 1)
+        }
+    }
+
+    return go(Octopuses(parse(input)), 0)
+}
+
+fun parse(input: List<String>) = input.map { row -> row.toList().map { cell -> cell.digitToInt() } }
 
 fun step(octopuses: Octopuses): Pair<Octopuses, Int> {
     tailrec fun flash(octopuses: Octopuses, flashed: Set<Vector>): Pair<Octopuses, Int> {
-//        octopuses.pp()
-//        println(flashed)
-//        println(flashed.size)
-
         val flashables = octopuses.flashables(flashed)
-        return if (flashables.isEmpty()) {
-//            println("returning with ${flashed.size}")
-            Pair(octopuses, flashed.size)
-        } else {
+
+        return if (flashables.isEmpty()) Pair(octopuses, flashed.size)
+        else {
             val flashableAdjacent = flashables.flatMap { it.surrounding }
             flash(octopuses.increment(flashableAdjacent), flashed + flashables)
         }
@@ -41,22 +57,21 @@ fun step(octopuses: Octopuses): Pair<Octopuses, Int> {
 
     val incremented = octopuses.incrementAll()
 
-    val (final, flashedCount) = flash(incremented, emptySet())
+    val (afterFlash, flashedCount) = flash(incremented, emptySet())
 
-    return Pair(final.resetFlashed(), flashedCount)
+    return Pair(afterFlash.resetFlashed(), flashedCount)
 }
-
-fun parse(input: List<String>) = input.map { row -> row.toList().map { cell -> cell.digitToInt() } }
 
 data class Octopuses(private val cells: List<List<Int>>) {
     private val cols = cells[0].size
     private val rows = cells.size
 
+    val count: Int
+        get() = rows * cols
+
     fun incrementAll() = Octopuses(cells.map { row -> row.map { cell -> cell + 1 } })
 
     fun increment(some: List<Vector>): Octopuses {
-//        println("incrementing:")
-//        println(some)
         val counts = some.groupingBy { it }.eachCount()
 
         return Octopuses(
@@ -86,21 +101,10 @@ data class Octopuses(private val cells: List<List<Int>>) {
         }
     })
 
-    fun pp() {
-        println("---")
+    fun printy() {
+        println("")
         cells.forEach { row ->
-            row.map { cell ->
-                if (cell > 9) "*"
-                else cell.toString()
-            }.also {
-                println(it.joinToString(""))
-            }
+            println(row.joinToString(""))
         }
     }
 }
-
-private val example2 = """11111
-19991
-19191
-19991
-11111""".lines()
