@@ -38,16 +38,30 @@ data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
     }
 
     val neighbours: Set<Vector>
-        get() = UnitVector.values().map { unit -> unit.vector + this }.toSet()
+        get() = CompassDirections.values().map { unit -> unit.vector + this }.toSet()
+
+    val surrounding: Set<Vector>
+        get() = AllDirections.values().map { unit -> unit.vector + this }.toSet()
 
     override fun toString() = "v{$x, $y}"
 }
 
-enum class UnitVector(val vector: Vector) {
+enum class CompassDirections(val vector: Vector) {
     N(Vector(0, 1)),
     S(Vector(0, -1)),
     E(Vector(1, 0)),
     W(Vector(-1, 0))
+}
+
+enum class AllDirections(val vector: Vector) {
+    N(Vector(0, 1)),
+    NE(Vector(1, 1)),
+    E(Vector(1, 0)),
+    SE(Vector(1, -1)),
+    S(Vector(0, -1)),
+    SW(Vector(-1, -1)),
+    W(Vector(-1, 0)),
+    NW(Vector(-1, 1))
 }
 
 private tailrec fun <T> T.repeatedlyApply(n: Int, f: (T) -> T): T =
