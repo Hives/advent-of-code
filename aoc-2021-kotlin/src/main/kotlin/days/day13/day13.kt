@@ -8,6 +8,7 @@ import lib.time
 fun main() {
     val input = Reader("day13.txt").string()
     val exampleInput = Reader("day13-example.txt").string()
+    val jakubInput = Reader("day13-jakub.txt").string()
 
     time(message = "Part 1", iterations = 1_000, warmUpIterations = 30) {
         part1(input)
@@ -16,15 +17,23 @@ fun main() {
     time(message = "Part 2", iterations = 1_000, warmUpIterations = 30) {
         part2(input).let { "\n" + it }
     }.checkAnswer("\n" + part2Solution)
+
+    // funsies
+    part2(jakubInput)
+        .also {
+            println()
+            println(it)
+        }
 }
 
 val part2Solution =
-    """###..#....###...##....##..##..#....#..#
-      |#..#.#....#..#.#..#....#.#..#.#....#..#
-      |#..#.#....###..#.......#.#....#....#..#
-      |###..#....#..#.#.......#.#.##.#....#..#
-      |#.#..#....#..#.#..#.#..#.#..#.#....#..#
-      |#..#.####.###...##...##...###.####..##.""".trimMargin()
+    """
+    |███..█....███...██....██..██..█....█..█
+    |█..█.█....█..█.█..█....█.█..█.█....█..█
+    |█..█.█....███..█.......█.█....█....█..█
+    |███..█....█..█.█.......█.█.██.█....█..█
+    |█.█..█....█..█.█..█.█..█.█..█.█....█..█
+    |█..█.████.███...██...██...███.████..██.""".trimMargin()
 
 
 fun part1(input: String): Int {
@@ -60,7 +69,7 @@ fun format(points: List<Vector>): String {
     val maxX = points.maxOf { it.x }
     val maxY = points.maxOf { it.y }
     val output = MutableList(maxY + 1) { MutableList(maxX + 1) { '.' } }
-    points.forEach { output[it.y][it.x] = '#' }
+    points.forEach { output[it.y][it.x] = '█' }
     return output.joinToString("\n") { it.joinToString("") }
 }
 
