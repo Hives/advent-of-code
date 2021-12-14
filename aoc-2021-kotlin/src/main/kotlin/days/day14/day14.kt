@@ -17,44 +17,37 @@ fun main() {
     }.checkAnswer(3724343376942)
 }
 
-fun solve(input: String, totalSteps: Int): Long {
+fun solve(input: String, steps: Int): Long {
     val (template, rules) = parse(input)
 
-    fun go(countMap: Map<Pair<Char, Char>, Long>, steps: Int): Map<Pair<Char, Char>, Long> {
-        if (steps == 0) return countMap
+    fun go(pairCounts: Map<Pair<Char, Char>, Long>, step: Int): Map<Pair<Char, Char>, Long> {
+        if (step == 0) return pairCounts
 
-        val newCountMap = mutableMapOf<Pair<Char, Char>, Long>()
-
-        countMap.forEach { (chars, count) ->
+        val newPairCount = pairCounts.flatMap { (chars, count) ->
+            val (char1, char2) = chars
             val insertion = rules[chars]!!
-            val pair1 = Pair(chars.first, insertion)
-            val pair2 = Pair(insertion, chars.second)
-            newCountMap[pair1] = (newCountMap[pair1] ?: 0).plus(count)
-            newCountMap[pair2] = (newCountMap[pair2] ?: 0).plus(count)
+            listOf(
+                Pair(char1, insertion) to count,
+                Pair(insertion, char2) to count,
+            )
         }
+            .groupBy(keySelector = { (chars, _) -> chars }, valueTransform = { (_, count) -> count })
+            .mapValues { (_, counts) -> counts.sum() }
 
-        return go(newCountMap, steps - 1)
+        return go(newPairCount, step - 1)
     }
 
-    val initialCountMap =
-        template.zipWithNext().groupingBy { it }.eachCount().mapValues { (_, count) -> count.toLong() }
+    val finalPairCounts = go(countPairs(template), steps)
 
-    val finalCountMap = go(initialCountMap, totalSteps)
-
-    return finalCountMap.toList().map { (chars, count) ->
-        chars.first to count
-    }
-        .groupBy { it.first }
-        .map { (char, listy) ->
-            char to listy.sumOf { it.second }
-        }
-        .map { (char, count) ->
-            if (char == template.last()) count + 1 else count
-        }
-        .let {
-            it.maxOrNull()!! - it.minOrNull()!!
-        }
+    return finalPairCounts.toList()
+        .groupBy(keySelector = { (chars, _) -> chars.first }, valueTransform = { (_, count) -> count })
+        .mapValues { (_, counts) -> counts.sum() }
+        .map { (char, count) -> if (char == template.last()) count + 1 else count }
+        .let { it.maxOrNull()!! - it.minOrNull()!! }
 }
+
+fun countPairs(chars: List<Char>) =
+    chars.zipWithNext().groupingBy { it }.eachCount().mapValues { (_, count) -> count.toLong() }
 
 fun parse(input: String): Pair<List<Char>, Map<Pair<Char, Char>, Char>> {
     val (template, rules) = input.split("\n\n")
