@@ -56,25 +56,13 @@ fun solve(input: String, totalSteps: Int): Long {
         }
 }
 
-fun List<Char>.mostMinusLeast() =
-    groupingBy { it }.eachCount().toList().let {
-        val max = it.maxByOrNull { (_, count) -> count }!!
-        val min = it.minByOrNull { (_, count) -> count }!!
-        max.second - min.second
-    }
-
-fun tick(polymer: List<Char>, rules: Map<Pair<Char, Char>, Char>): List<Char> =
-    polymer.zipWithNext().flatMap {
-        listOf(it.first, rules[it]!!)
-    } + polymer.last()
-
 fun parse(input: String): Pair<List<Char>, Map<Pair<Char, Char>, Char>> {
     val (template, rules) = input.split("\n\n")
-    val rulesMap = rules.lines().map {
+    val rulesMap = rules.lines().associate {
         it.split(" -> ").let { (from, to) ->
             val foo = from.toList()
             Pair(foo[0], foo[1]) to to.toList().single()
         }
-    }.toMap()
+    }
     return Pair(template.toList(), rulesMap)
 }
