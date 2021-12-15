@@ -14,40 +14,37 @@ fun main() {
         part1(input)
     }.checkAnswer(696)
 
-    time(message = "Part 2", iterations = 3, warmUpIterations = 0) {
+    time(message = "Part 2", iterations = 5, warmUpIterations = 5) {
         part2(input)
     }.checkAnswer(2952)
 }
 
-fun part1(input: List<String>) = solve(RiskLevels(parse(input)))
-fun part2(input: List<String>) = solve(RiskLevels(expandGrid(parse(input))))
+fun part1(input: List<String>) = solve(parse(input))
+fun part2(input: List<String>) = solve(expandGrid(parse(input)))
 
-fun solve(riskLevels: RiskLevels): Int {
-    val maxX = riskLevels.values.first().lastIndex
-    val maxY = riskLevels.values.lastIndex
+fun solve(riskLevels: List<List<Int>>): Int {
+    val maxX = riskLevels.first().lastIndex
+    val maxY = riskLevels.lastIndex
 
     val start = Vector(0, 0)
     val end = Vector(maxX, maxY)
 
-    val queue = PriorityQueue<Pair<Vector, Int>> { a, b -> a.second - b.second }
-    queue.add(Pair(start, 0))
-    val cameFrom = mutableMapOf<Vector, Vector?>()
     val riskSoFar = mutableMapOf<Vector, Int>()
-    cameFrom[start] = null
+    val queue = PriorityQueue<Vector> { a, b -> riskSoFar[a]!! - riskSoFar[b]!! }
+    queue.add(start)
     riskSoFar[start] = 0
 
     while (queue.isNotEmpty()) {
-        val (current, _) = queue.remove()
+        val current = queue.remove()
 
         if (current == end) break
 
         current.neighboursInBounds(maxX, maxY)
             .forEach { next ->
-                val newRisk = riskSoFar[current]!! + riskLevels.at(next)
+                val newRisk = riskSoFar[current]!! + riskLevels[next.y][next.x]
                 if (next !in riskSoFar || newRisk < riskSoFar[next]!!) {
                     riskSoFar[next] = newRisk
-                    queue.add(Pair(next, newRisk))
-                    cameFrom[next] = current
+                    queue.add(next)
                 }
             }
     }
@@ -59,10 +56,6 @@ fun Vector.neighboursInBounds(maxX: Int, maxY: Int) =
     neighbours
         .filterNot { it.x < 0 || it.x > maxX }
         .filterNot { it.y < 0 || it.y > maxY }
-
-data class RiskLevels(val values: List<List<Int>>) {
-    fun at(point: Vector) = values[point.y][point.x]
-}
 
 fun expandGrid(grid: List<List<Int>>): List<List<Int>> {
     val top = grid.map { one ->
