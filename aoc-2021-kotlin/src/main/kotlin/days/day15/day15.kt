@@ -4,6 +4,7 @@ import lib.Reader
 import lib.Vector
 import lib.checkAnswer
 import lib.time
+import java.util.PriorityQueue
 
 fun main() {
     val input = Reader("day15.txt").strings()
@@ -28,15 +29,15 @@ fun solve(riskLevels: RiskLevels): Int {
     val start = Vector(0, 0)
     val end = Vector(maxX, maxY)
 
-    val queue = PriorityQueue<Vector>()
-    queue.put(start, 0)
+    val queue = PriorityQueue<Pair<Vector, Int>> { a, b -> a.second - b.second }
+    queue.add(Pair(start, 0))
     val cameFrom = mutableMapOf<Vector, Vector?>()
     val riskSoFar = mutableMapOf<Vector, Int>()
     cameFrom[start] = null
     riskSoFar[start] = 0
 
     while (queue.isNotEmpty()) {
-        val current = queue.get()!!
+        val (current, _) = queue.remove()
 
         if (current == end) break
 
@@ -45,7 +46,7 @@ fun solve(riskLevels: RiskLevels): Int {
                 val newRisk = riskSoFar[current]!! + riskLevels.at(next)
                 if (next !in riskSoFar || newRisk < riskSoFar[next]!!) {
                     riskSoFar[next] = newRisk
-                    queue.put(next, newRisk)
+                    queue.add(Pair(next, newRisk))
                     cameFrom[next] = current
                 }
             }
@@ -59,49 +60,30 @@ fun Vector.neighboursInBounds(maxX: Int, maxY: Int) =
         .filterNot { it.x < 0 || it.x > maxX }
         .filterNot { it.y < 0 || it.y > maxY }
 
-class PriorityQueue<T> private constructor(private val queue: MutableMap<T, Int>) {
-    fun put(value: T, priority: Int) {
-        queue[value] = priority
-    }
-
-    fun get(): T? {
-        val next = queue.minByOrNull { it.value }
-        if (next != null) queue.remove(next.key)
-        return next?.key
-    }
-
-    fun isNotEmpty() = queue.isNotEmpty()
-
-    companion object {
-        operator fun <S> invoke() = PriorityQueue(mutableMapOf<S, Int>())
-    }
-}
-
 data class RiskLevels(val values: List<List<Int>>) {
     fun at(point: Vector) = values[point.y][point.x]
 }
 
 fun expandGrid(grid: List<List<Int>>): List<List<Int>> {
-    val top = grid.map { row ->
-        val one = row
-        val two = incRow(one)
-        val three = incRow(two)
-        val four = incRow(three)
-        val five = incRow(four)
+    val top = grid.map { one ->
+        val two = one.incRow()
+        val three = two.incRow()
+        val four = three.incRow()
+        val five = four.incRow()
         one + two + three + four + five
     }
 
     val one = top
-    val two = incGrid(one)
-    val three = incGrid(two)
-    val four = incGrid(three)
-    val five = incGrid(four)
+    val two = one.incGrid()
+    val three = two.incGrid()
+    val four = three.incGrid()
+    val five = four.incGrid()
 
     return one + two + three + four + five
 }
 
-fun incRow(row: List<Int>) = row.map { it % 9 + 1 }
-fun incGrid(grid: List<List<Int>>) = grid.map { row -> incRow(row) }
+fun List<Int>.incRow() = map { it % 9 + 1 }
+fun List<List<Int>>.incGrid() = map { row -> row.incRow() }
 
 fun parse(input: List<String>): List<List<Int>> =
     input.map { row -> row.toList().map { cell -> cell.digitToInt() } }
