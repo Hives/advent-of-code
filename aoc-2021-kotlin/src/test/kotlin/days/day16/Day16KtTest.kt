@@ -6,7 +6,7 @@ import io.kotest.matchers.shouldBe
 class Day16KtTest : StringSpec({
 
     "Making a value literal" {
-        val (packet, remaining) = parseOnePacket("D2FE28F".toBinary())
+        val (packet, remaining) = parsePacket("D2FE28F".toBinary())
 
         packet shouldBe Packet.Literal(
             version = 6,
@@ -15,8 +15,8 @@ class Day16KtTest : StringSpec({
         remaining shouldBe "0001111".toList()
     }
 
-    "example 1" {
-        val (packet, remaining) = parseOnePacket("38006F45291200".toBinary())
+    "operator example 1" {
+        val (packet, remaining) = parsePacket("38006F45291200".toBinary())
 
         packet shouldBe Packet.Operator.LessThan(
             version = 1,
@@ -34,8 +34,8 @@ class Day16KtTest : StringSpec({
         remaining shouldBe "0000000".toList()
     }
 
-    "example 2" {
-        val (packet, remaining) = parseOnePacket("EE00D40C823060".toBinary())
+    "operator example 2" {
+        val (packet, remaining) = parsePacket("EE00D40C823060".toBinary())
 
         packet shouldBe Packet.Operator.Maximum(
             version = 7,
