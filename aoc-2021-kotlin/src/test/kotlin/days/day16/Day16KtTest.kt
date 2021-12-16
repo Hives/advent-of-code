@@ -10,27 +10,23 @@ class Day16KtTest : StringSpec({
 
         packet shouldBe Packet.Literal(
             version = 6,
-            typeID = 4,
             value = 2021
         )
-        remaining shouldBe "1111".toList()
+        remaining shouldBe "0001111".toList()
     }
 
     "example 1" {
         val (packet, remaining) = parseOnePacket("38006F45291200".toBinary())
 
-        packet shouldBe Packet.Operator(
+        packet shouldBe Packet.Operator.LessThan(
             version = 1,
-            typeID = 6,
             subpackets = listOf(
                 Packet.Literal(
                     version = 6,
-                    typeID = 4,
                     value = 10
                 ),
                 Packet.Literal(
                     version = 2,
-                    typeID = 4,
                     value = 20
                 )
             )
@@ -41,23 +37,19 @@ class Day16KtTest : StringSpec({
     "example 2" {
         val (packet, remaining) = parseOnePacket("EE00D40C823060".toBinary())
 
-        packet shouldBe Packet.Operator(
+        packet shouldBe Packet.Operator.Maximum(
             version = 7,
-            typeID = 3,
             subpackets = listOf(
                 Packet.Literal(
                     version = 2,
-                    typeID = 4,
                     value = 1
                 ),
                 Packet.Literal(
                     version = 4,
-                    typeID = 4,
                     value = 2
                 ),
                 Packet.Literal(
                     version = 1,
-                    typeID = 4,
                     value = 3
                 )
             )
