@@ -7,37 +7,45 @@ import lib.time
 fun main() {
     val input = Reader("day16.txt").string()
 
-    time(message = "Part 1", warmUpIterations = 50) {
+    time(message = "Part 1", iterations = 1_000, warmUpIterations = 100) {
         part1(input)
     }.checkAnswer(986)
 
-    time(message = "Part 2", warmUpIterations = 50) {
+    time(message = "Part 2", iterations = 1_000, warmUpIterations = 100) {
         part2(input)
     }.checkAnswer(18234816469452)
 }
 
-fun part1(input: String) = parsePacket(input.toBinary()).first.versionSum()
-fun part2(input: String) = parsePacket(input.toBinary()).first.value
+fun part1(input: String): Int {
+    val (outerPacket, _) = parsePacket(input.toBinary())
+    return outerPacket.versionSum()
+}
 
-fun parsePacket(binary: List<Char>): Pair<Packet, List<Char>> {
-    val version = binary.subList(0, 3).joinToString("").toInt(2)
-    val typeID = binary.subList(3, 6).joinToString("").toInt(2)
+fun part2(input: String): Long {
+    val (outerPacket, _) = parsePacket(input.toBinary())
+    return outerPacket.value
+}
 
-    val body = binary.drop(6)
+fun parsePacket(binary: String): Pair<Packet, String> {
+    val version = binary.take(3).toInt(2)
+    val typeID = binary.substring(3..5).toInt(2)
+
+    val body = binary.substring(6)
 
     return when (typeID) {
         4 -> {
             val (value, unprocessed) = parseValue(body)
+
             Pair(Packet.Literal(version, value), unprocessed)
         }
         else -> {
-            val lengthType = body.first()
+            val lengthType = body[0]
             val rest = body.drop(1)
 
             val (subpackets, unprocessed) = when (lengthType) {
                 '0' -> {
                     val lengthFieldSize = 15
-                    val subpacketsSize = rest.take(lengthFieldSize).joinToString("").toInt(2)
+                    val subpacketsSize = rest.take(lengthFieldSize).toInt(2)
                     val encodedSubpackets = rest.drop(lengthFieldSize).take(subpacketsSize)
                     val remainder = rest.drop(lengthFieldSize + subpacketsSize)
                     val subpackets = parseAllSubpackets(encodedSubpackets)
@@ -46,12 +54,12 @@ fun parsePacket(binary: List<Char>): Pair<Packet, List<Char>> {
                 }
                 '1' -> {
                     val lengthFieldSize = 11
-                    val subpacketsCount = rest.take(lengthFieldSize).joinToString("").toInt(2)
+                    val subpacketsCount = rest.take(lengthFieldSize).toInt(2)
                     val (subpackets, remainder) = parseNSubpackets(rest.drop(lengthFieldSize), subpacketsCount)
 
                     Pair(subpackets, remainder)
                 }
-                else -> throw Exception ("Unknown lengthType: $lengthType")
+                else -> throw Exception("Unknown lengthType: $lengthType")
             }
 
             val packet = when (typeID) {
@@ -71,13 +79,13 @@ fun parsePacket(binary: List<Char>): Pair<Packet, List<Char>> {
 }
 
 tailrec fun parseValue(
-    unprocessed: List<Char>,
-    processed: List<Char> = emptyList(),
+    unprocessed: String,
+    processed: String = "",
     position: Int = 6,
-): Pair<Long, List<Char>> {
+): Pair<Long, String> {
     val chunk = unprocessed.take(5)
-    return if (chunk.first() == '0') {
-        val value = (processed + chunk.drop(1)).joinToString("").toLong(2)
+    return if (chunk[0] == '0') {
+        val value = (processed + chunk.drop(1)).toLong(2)
         val finalUnprocessed = unprocessed.drop(5)
         Pair(value, finalUnprocessed)
     } else {
@@ -86,7 +94,7 @@ tailrec fun parseValue(
 }
 
 tailrec fun parseAllSubpackets(
-    unprocessed: List<Char>,
+    unprocessed: String,
     subpackets: List<Packet> = emptyList(),
 ): List<Packet> =
     if (unprocessed.isEmpty()) subpackets
@@ -96,10 +104,10 @@ tailrec fun parseAllSubpackets(
     }
 
 tailrec fun parseNSubpackets(
-    unprocessed: List<Char>,
+    unprocessed: String,
     n: Int,
     subpackets: List<Packet> = emptyList(),
-): Pair<List<Packet>, List<Char>> {
+): Pair<List<Packet>, String> {
     return if (n == 0) Pair(subpackets, unprocessed)
     else {
         val (subpacket, remaining) = parsePacket(unprocessed)
@@ -133,7 +141,7 @@ sealed class Packet(open val version: Int) {
             override val subpackets: List<Packet>,
         ) : Operator(version, subpackets) {
             override val value
-                get() = subpackets.fold(1L) { runningTotal, packet -> runningTotal * packet.value }
+                get() = subpackets.fold(1L) { acc, packet -> acc * packet.value }
         }
 
         data class Minimum(
@@ -184,10 +192,8 @@ sealed class Packet(open val version: Int) {
         }
 }
 
-
-fun String.toBinary() = flatMap {
+fun String.toBinary() = map {
     val int = Integer.parseInt(it.toString(), 16)
-    val bin = Integer.toBinaryString(int).padStart(4, '0')
-    bin.toList()
-}
+    Integer.toBinaryString(int).padStart(4, '0')
+}.joinToString("")
 
