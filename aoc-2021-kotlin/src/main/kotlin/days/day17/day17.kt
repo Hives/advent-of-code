@@ -31,8 +31,8 @@ fun part1(input: String): Int? {
 fun part2(input: String): Int {
     val target = parse(input)
 
-    return (-500..500).flatMap { y ->
-        (0..500).map { x ->
+    return (-250..250).flatMap { y ->
+        (0..200).map { x ->
             Vector(x, y)
         }
     }.map { launch(it, target) }
