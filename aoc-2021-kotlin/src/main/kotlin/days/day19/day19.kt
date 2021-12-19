@@ -43,7 +43,7 @@ fun part2(stuff: List<Triple<Scanner, Orientation, Vector3>>): Int? {
         offsets.map { offset2 ->
             (offset2 - offset1).manhattanDistance
         }
-    }.maxOrNull().also { println(it) }
+    }.maxOrNull()
 }
 
 tailrec fun orientScanners(
@@ -111,77 +111,35 @@ data class Scanner(val id: Int, val beacons: List<ScannedBeacon>) {
 }
 
 enum class Orientation(val orient: (ScannedBeacon) -> Vector3) {
-    // facing y, z is up
-    A({ (one, two, three) -> Vector3(one, two, three) }),
+    A({ (one, two, three) -> Vector3(one, two, three) }), // facing y, z is up
+    B({ (one, two, three) -> Vector3(-three, two, one) }), // facing y, x is up
+    C({ (one, two, three) -> Vector3(-one, two, -three) }), // facing y, z is down
+    D({ (one, two, three) -> Vector3(three, two, -one) }), // facing y, x is down
 
-    // facing y, x is up
-    B({ (one, two, three) -> Vector3(-three, two, one) }),
+    E({ (one, two, three) -> Vector3(-one, -two, three) }), // facing -y, z is up
+    F({ (one, two, three) -> Vector3(three, -two, one) }), // facing -y, x is up
+    G({ (one, two, three) -> Vector3(one, -two, -three) }), // facing -y, z is down
+    H({ (one, two, three) -> Vector3(-three, -two, -one) }), // facing -y, x is down
 
-    // facing y, z is down
-    C({ (one, two, three) -> Vector3(-one, two, -three) }),
+    I({ (one, two, three) -> Vector3(-two, one, three) }), // facing x, z is up
+    J({ (one, two, three) -> Vector3(-three, one, -two) }), // facing x, y is down
+    K({ (one, two, three) -> Vector3(two, one, -three) }), // facing x, z is down
+    L({ (one, two, three) -> Vector3(three, one, two) }), // facing x, y is up
 
-    // facing y, x is down
-    D({ (one, two, three) -> Vector3(three, two, -one) }),
+    M({ (one, two, three) -> Vector3(two, -one, three) }), // facing -x, z is up
+    N({ (one, two, three) -> Vector3(three, -one, -two) }), // facing -x, y is down
+    O({ (one, two, three) -> Vector3(-two, -one, -three) }), // facing -x, z is down
+    P({ (one, two, three) -> Vector3(-three, -one, two) }), // facing -x, y is up
 
-    // facing -y, z is up
-    E({ (one, two, three) -> Vector3(-one, -two, three) }),
+    Q({ (one, two, three) -> Vector3(two, three, one) }), // facing z, x is up
+    R({ (one, two, three) -> Vector3(-one, three, two) }), // facing z, y is up
+    S({ (one, two, three) -> Vector3(-two, three, -one) }), // facing z, x is down
+    T({ (one, two, three) -> Vector3(one, three, -two) }), // facing z, y is down
 
-    // facing -y, x is up
-    F({ (one, two, three) -> Vector3(three, -two, one) }),
-
-    // facing -y, z is down
-    G({ (one, two, three) -> Vector3(one, -two, -three) }),
-
-    // facing -y, x is down
-    H({ (one, two, three) -> Vector3(-three, -two, -one) }),
-
-    // facing x, z is up
-    I({ (one, two, three) -> Vector3(-two, one, three) }),
-
-    // facing x, y is down
-    J({ (one, two, three) -> Vector3(-three, one, -two) }),
-
-    // facing x, z is down
-    K({ (one, two, three) -> Vector3(two, one, -three) }),
-
-    // facing x, y is up
-    L({ (one, two, three) -> Vector3(three, one, two) }),
-
-    // facing -x, z is up
-    M({ (one, two, three) -> Vector3(two, -one, three) }),
-
-    // facing -x, y is down
-    N({ (one, two, three) -> Vector3(three, -one, -two) }),
-
-    // facing -x, z is down
-    O({ (one, two, three) -> Vector3(-two, -one, -three) }),
-
-    // facing -x, y is up
-    P({ (one, two, three) -> Vector3(-three, -one, two) }),
-
-    // facing z, x is up
-    Q({ (one, two, three) -> Vector3(two, three, one) }),
-
-    // facing z, y is up
-    R({ (one, two, three) -> Vector3(-one, three, two) }),
-
-    // facing z, x is down
-    S({ (one, two, three) -> Vector3(-two, three, -one) }),
-
-    // facing z, y is down
-    T({ (one, two, three) -> Vector3(one, three, -two) }),
-
-    // facing -z, x is up
-    U({ (one, two, three) -> Vector3(-two, -three, one) }),
-
-    // facing -z, y is up
-    V({ (one, two, three) -> Vector3(one, -three, two) }),
-
-    // facing -z, x is down
-    W({ (one, two, three) -> Vector3(two, -three, -one) }),
-
-    // facing -z, y is down
-    X({ (one, two, three) -> Vector3(-one, -three, -two) }),
+    U({ (one, two, three) -> Vector3(-two, -three, one) }), // facing -z, x is up
+    V({ (one, two, three) -> Vector3(one, -three, two) }), // facing -z, y is up
+    W({ (one, two, three) -> Vector3(two, -three, -one) }), // facing -z, x is down
+    X({ (one, two, three) -> Vector3(-one, -three, -two) }), // facing -z, y is down
 }
 
 typealias ScannedBeacon = Triple<Int, Int, Int>
