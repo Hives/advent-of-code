@@ -1,8 +1,8 @@
 package days.day18
 
-import days.day18.Node.Bracket.Close
-import days.day18.Node.Bracket.Open
-import days.day18.Node.Value
+import days.day18.Token.Bracket.Close
+import days.day18.Token.Bracket.Open
+import days.day18.Token.Value
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
