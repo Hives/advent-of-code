@@ -9,9 +9,13 @@ fun main() {
     val input = Reader("day19.txt").string()
     val exampleInput = Reader("day19-example.txt").string()
 
-    val stuff = firstThing(input)
-    part1(stuff).checkAnswer(398)
-    part2(stuff).checkAnswer(10965)
+    val exampleStuff = firstThing(exampleInput)
+    part1(exampleStuff).checkAnswer(79)
+    part2(exampleStuff).checkAnswer(3621)
+
+//    val stuff = firstThing(input)
+//    part1(stuff).checkAnswer(398)
+//    part2(stuff).checkAnswer(10965)
 }
 
 fun firstThing(input: String): List<Triple<Scanner, Orientation, Vector3>> {
@@ -97,7 +101,7 @@ tailrec fun orientScanners(
     }
 }
 
-data class Scanner(val id: Int, val beacons: List<ScannedBeacon>) {
+data class Scanner(val beacons: List<Vector3>) {
     fun getRelativeDistances(orientation: Orientation): Map<Set<Vector3>, Vector3> {
         val orientedBeacons = beacons.map(orientation.orient)
 
@@ -110,50 +114,44 @@ data class Scanner(val id: Int, val beacons: List<ScannedBeacon>) {
     }
 }
 
-enum class Orientation(val orient: (ScannedBeacon) -> Vector3) {
-    A({ (one, two, three) -> Vector3(one, two, three) }), // facing y, z is up
-    B({ (one, two, three) -> Vector3(-three, two, one) }), // facing y, x is up
-    C({ (one, two, three) -> Vector3(-one, two, -three) }), // facing y, z is down
-    D({ (one, two, three) -> Vector3(three, two, -one) }), // facing y, x is down
+enum class Orientation(val orient: (Vector3) -> Vector3) {
+    A({ Vector3(it.x, it.y, it.z) }), // facing y, z is up
+    B({ Vector3(-it.z, it.y, it.x) }), // facing y, x is up
+    C({ Vector3(-it.x, it.y, -it.z) }), // facing y, z is down
+    D({ Vector3(it.z, it.y, -it.x) }), // facing y, x is down
 
-    E({ (one, two, three) -> Vector3(-one, -two, three) }), // facing -y, z is up
-    F({ (one, two, three) -> Vector3(three, -two, one) }), // facing -y, x is up
-    G({ (one, two, three) -> Vector3(one, -two, -three) }), // facing -y, z is down
-    H({ (one, two, three) -> Vector3(-three, -two, -one) }), // facing -y, x is down
+    E({ Vector3(-it.x, -it.y, it.z) }), // facing -y, z is up
+    F({ Vector3(it.z, -it.y, it.x) }), // facing -y, x is up
+    G({ Vector3(it.x, -it.y, -it.z) }), // facing -y, z is down
+    H({ Vector3(-it.z, -it.y, -it.x) }), // facing -y, x is down
 
-    I({ (one, two, three) -> Vector3(-two, one, three) }), // facing x, z is up
-    J({ (one, two, three) -> Vector3(-three, one, -two) }), // facing x, y is down
-    K({ (one, two, three) -> Vector3(two, one, -three) }), // facing x, z is down
-    L({ (one, two, three) -> Vector3(three, one, two) }), // facing x, y is up
+    I({ Vector3(-it.y, it.x, it.z) }), // facing x, z is up
+    J({ Vector3(-it.z, it.x, -it.y) }), // facing x, y is down
+    K({ Vector3(it.y, it.x, -it.z) }), // facing x, z is down
+    L({ Vector3(it.z, it.x, it.y) }), // facing x, y is up
 
-    M({ (one, two, three) -> Vector3(two, -one, three) }), // facing -x, z is up
-    N({ (one, two, three) -> Vector3(three, -one, -two) }), // facing -x, y is down
-    O({ (one, two, three) -> Vector3(-two, -one, -three) }), // facing -x, z is down
-    P({ (one, two, three) -> Vector3(-three, -one, two) }), // facing -x, y is up
+    M({ Vector3(it.y, -it.x, it.z) }), // facing -x, z is up
+    N({ Vector3(it.z, -it.x, -it.y) }), // facing -x, y is down
+    O({ Vector3(-it.y, -it.x, -it.z) }), // facing -x, z is down
+    P({ Vector3(-it.z, -it.x, it.y) }), // facing -x, y is up
 
-    Q({ (one, two, three) -> Vector3(two, three, one) }), // facing z, x is up
-    R({ (one, two, three) -> Vector3(-one, three, two) }), // facing z, y is up
-    S({ (one, two, three) -> Vector3(-two, three, -one) }), // facing z, x is down
-    T({ (one, two, three) -> Vector3(one, three, -two) }), // facing z, y is down
+    Q({ Vector3(it.y, it.z, it.x) }), // facing z, x is up
+    R({ Vector3(-it.x, it.z, it.y) }), // facing z, y is up
+    S({ Vector3(-it.y, it.z, -it.x) }), // facing z, x is down
+    T({ Vector3(it.x, it.z, -it.y) }), // facing z, y is down
 
-    U({ (one, two, three) -> Vector3(-two, -three, one) }), // facing -z, x is up
-    V({ (one, two, three) -> Vector3(one, -three, two) }), // facing -z, y is up
-    W({ (one, two, three) -> Vector3(two, -three, -one) }), // facing -z, x is down
-    X({ (one, two, three) -> Vector3(-one, -three, -two) }), // facing -z, y is down
+    U({ Vector3(-it.y, -it.z, it.x) }), // facing -z, x is up
+    V({ Vector3(it.x, -it.z, it.y) }), // facing -z, y is up
+    W({ Vector3(it.y, -it.z, -it.x) }), // facing -z, x is down
+    X({ Vector3(-it.x, -it.z, -it.y) }), // facing -z, y is down
 }
-
-typealias ScannedBeacon = Triple<Int, Int, Int>
 
 fun parse(input: String): List<Scanner> =
     input.split("\n\n")
         .map { block ->
-            val id = block.lines().first().substringAfter("--- scanner ").substringBefore(" ---").toInt()
-
-            val points = block.lines().drop(1).map { position ->
-                position.split(",")
+            block.lines().drop(1).map { line ->
+                line.split(",")
                     .map(String::toInt)
-                    .let { (a, b, c) -> Triple(a, b, c) }
-            }
-
-            Scanner(id, points)
+                    .let { (x, y, z) -> Vector3(x, y, z) }
+            }.let(::Scanner)
         }
