@@ -63,7 +63,3 @@ enum class AllDirections(val vector: Vector) {
     W(Vector(-1, 0)),
     NW(Vector(-1, 1))
 }
-
-private tailrec fun <T> T.repeatedlyApply(n: Int, f: (T) -> T): T =
-    if (n == 0) this
-    else f(this).repeatedlyApply(n - 1, f)
