@@ -19,29 +19,31 @@ fun main() {
     part2(stuff).checkAnswer(10965)
 }
 
-fun firstThing(input: String): List<Triple<Scanner, Orientation, Vector3>> {
+fun firstThing(input: String): List<Triple<List<Vector3>, Orientation, Vector3>> {
     val scanners = parse(input)
-
-    val scanner0 = scanners[0]
-    val coupleDistances0 = scanner0.getPairwiseDistances(Orientation.A)
 
     val unorientedScanners = scanners.drop(1).associateWith { scanner ->
         Orientation.values().map { orientation ->
-            Triple(scanner, orientation, scanner.getPairwiseDistances(orientation))
+            Triple(scanner, orientation, getPairwiseDistances(scanner, orientation))
         }
     }
 
-    val orientedScanners = mutableListOf(Tuple4(scanner0, Orientation.A, coupleDistances0, Vector3(0, 0, 0)))
+    val orientedScanners = mutableListOf(Tuple4(
+        scanners[0],
+        Orientation.A,
+        getPairwiseDistances(scanners[0], Orientation.A),
+        Vector3(0, 0, 0)
+    ))
 
     return orientScanners(orientedScanners, unorientedScanners)
 }
 
-fun part1(scannerStuff: List<Triple<Scanner, Orientation, Vector3>>) =
+fun part1(scannerStuff: List<Triple<List<Vector3>, Orientation, Vector3>>) =
     scannerStuff.flatMap { (scanner, orientation, offset) ->
-        scanner.beacons.map { orientation.orient(it) - offset }
+        scanner.map { orientation.orient(it) - offset }
     }.distinct().size
 
-fun part2(scannerStuff: List<Triple<Scanner, Orientation, Vector3>>): Int? =
+fun part2(scannerStuff: List<Triple<List<Vector3>, Orientation, Vector3>>): Int? =
     scannerStuff.map { (_, _, offset) -> offset }
         .combinations(2)
         .map { (first, second) -> second - first }
@@ -49,19 +51,19 @@ fun part2(scannerStuff: List<Triple<Scanner, Orientation, Vector3>>): Int? =
         .maxOrNull()
 
 tailrec fun orientScanners(
-    orientedScanners: List<Tuple4<Scanner, Orientation, Map<Set<Vector3>, Vector3>, Vector3>>,
-    unorientedScanners: Map<Scanner, List<Triple<Scanner, Orientation, Map<Set<Vector3>, Vector3>>>>,
-): List<Triple<Scanner, Orientation, Vector3>> {
+    orientedScanners: List<Tuple4<List<Vector3>, Orientation, Map<Set<Vector3>, Vector3>, Vector3>>,
+    unorientedScanners: Map<List<Vector3>, List<Triple<List<Vector3>, Orientation, Map<Set<Vector3>, Vector3>>>>,
+): List<Triple<List<Vector3>, Orientation, Vector3>> {
     println("unoriented: ${unorientedScanners.size}")
     if (unorientedScanners.isEmpty()) {
         return orientedScanners.map { (scanner, orientation, _, offset) ->
             Triple(scanner, orientation, offset)
         }
     } else {
-        val newlyOriented = mutableListOf<Tuple4<Scanner, Orientation, Map<Set<Vector3>, Vector3>, Vector3>>()
+        val newlyOriented = mutableListOf<Tuple4<List<Vector3>, Orientation, Map<Set<Vector3>, Vector3>, Vector3>>()
 
         unorientedScanners.values.forEach {
-            var match: Tuple4<Scanner, Orientation, Map<Set<Vector3>, Vector3>, Vector3>? = null
+            var match: Tuple4<List<Vector3>, Orientation, Map<Set<Vector3>, Vector3>, Vector3>? = null
 
             it.forEach outer@{ (scanner, orientation, coupleDistances) ->
                 orientedScanners.forEach { (_, _, establishedCoupleDistances, establishedOffset) ->
@@ -87,7 +89,7 @@ tailrec fun orientScanners(
             }
 
             if (match != null) {
-                newlyOriented.add(match as Tuple4<Scanner, Orientation, Map<Set<Vector3>, Vector3>, Vector3>)
+                newlyOriented.add(match as Tuple4<List<Vector3>, Orientation, Map<Set<Vector3>, Vector3>, Vector3>)
             }
         }
 
@@ -99,14 +101,12 @@ tailrec fun orientScanners(
     }
 }
 
-data class Scanner(val beacons: List<Vector3>) {
-    fun getPairwiseDistances(orientation: Orientation): Map<Set<Vector3>, Vector3> =
-        beacons.map(orientation.orient).sorted()
-            .combinations(2)
-            .associate { (first, second) ->
-                setOf(first, second) to second - first
-            }
-}
+fun getPairwiseDistances(beacons: List<Vector3>, orientation: Orientation): Map<Set<Vector3>, Vector3> =
+    beacons.map(orientation.orient).sorted()
+        .combinations(2)
+        .associate { (first, second) ->
+            setOf(first, second) to second - first
+        }
 
 enum class Orientation(val orient: (Vector3) -> Vector3) {
     A({ Vector3(it.x, it.y, it.z) }), // facing y, z is up
@@ -140,12 +140,12 @@ enum class Orientation(val orient: (Vector3) -> Vector3) {
     X({ Vector3(-it.x, -it.z, -it.y) }), // facing -z, y is down
 }
 
-fun parse(input: String): List<Scanner> =
+fun parse(input: String): List<List<Vector3>> =
     input.split("\n\n")
         .map { block ->
             block.lines().drop(1).map { line ->
                 line.split(",")
                     .map(String::toInt)
                     .let { (x, y, z) -> Vector3(x, y, z) }
-            }.let(::Scanner)
+            }
         }
