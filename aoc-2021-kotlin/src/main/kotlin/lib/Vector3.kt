@@ -2,23 +2,23 @@ package lib
 
 import kotlin.math.abs
 
-data class Vector3D(val x: Int, val y: Int, val z: Int) : Comparable<Vector3D> {
+data class Vector3(val x: Int, val y: Int, val z: Int) : Comparable<Vector3> {
     val manhattanDistance: Int
         get() = abs(x) + abs(y) + abs(z)
 
-    operator fun times(n: Int) = Vector3D(
+    operator fun times(n: Int) = Vector3(
         x = x * n,
         y = y * n,
         z = y * n
     )
 
-    operator fun plus(other: Vector3D) = Vector3D(
+    operator fun plus(other: Vector3) = Vector3(
         x = this.x + other.x,
         y = this.y + other.y,
         z = this.z + other.z,
     )
 
-    operator fun minus(other: Vector3D) = Vector3D(
+    operator fun minus(other: Vector3) = Vector3(
         x = this.x - other.x,
         y = this.y - other.y,
         z = this.z - other.z,
@@ -26,7 +26,7 @@ data class Vector3D(val x: Int, val y: Int, val z: Int) : Comparable<Vector3D> {
 
     override fun toString() = "v{$x, $y, $z}"
 
-    override fun compareTo(other: Vector3D): Int {
+    override fun compareTo(other: Vector3): Int {
         return metric() - other.metric()
     }
 
