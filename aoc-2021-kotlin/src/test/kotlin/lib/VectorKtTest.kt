@@ -69,6 +69,22 @@ class VectorKtTest : StringSpec({
         }
     }
 
+    "should sort into 'read order'" {
+        val topLeft = Vector(4, 9)
+        val middleLeft = Vector(4, 10)
+        val bottomLeft = Vector(4, 11)
+        val topMiddle = Vector(5, 9)
+        val middleMiddle = Vector(5, 10)
+        val bottomMiddle = Vector(5, 11)
+        val topRight = Vector(6, 9)
+        val middleRight = Vector(6, 10)
+        val bottomRight = Vector(6, 11)
+
+        val sortedPoints = listOf(topLeft, topMiddle, topRight, middleLeft, middleMiddle, middleRight, bottomLeft, bottomMiddle, bottomRight)
+
+        sortedPoints.shuffled().sorted() shouldBe sortedPoints
+    }
+
 })
 
 private enum class Comparisons {
