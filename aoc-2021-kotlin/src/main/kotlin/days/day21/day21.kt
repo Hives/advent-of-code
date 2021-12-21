@@ -3,8 +3,6 @@ package days.day21
 import lib.checkAnswer
 import lib.time
 import java.lang.Integer.min
-import kotlin.system.exitProcess
-import kotlin.system.measureTimeMillis
 
 fun main() {
     val input = Pair(7, 10)
@@ -25,22 +23,18 @@ fun part1(input: Pair<Int, Int>): Int {
     val player1 = Player(player1Start, 0)
     val player2 = Player(player2Start, 0)
 
-    tailrec fun go(player1: Player, player2: Player, die: Int, turn: Int): Triple<Player, Player, Int> {
+    val die = DeterministicDie(100)
+
+    tailrec fun go(player1: Player, player2: Player, turn: Int): Triple<Player, Player, Int> {
         return if (player1.score >= 1000 || player2.score >= 1000) Triple(player1, player2, turn)
         else {
-            val roll1 = die
-            val roll2 = if (roll1 == 100) 1 else roll1 + 1
-            val roll3 = if (roll2 == 100) 1 else roll2 + 1
-            val roll = roll1 + roll2 + roll3
-
-            val newDie = if (roll3 == 100) 1 else roll3 + 1
-
-            if (turn % 2 == 0) go(player1, player2.move(roll), newDie, turn + 1)
-            else go(player1.move(roll), player2, newDie, turn + 1)
+            val roll = die.take3()
+            if (turn % 2 == 0) go(player1, player2.move(roll), turn + 1)
+            else go(player1.move(roll), player2, turn + 1)
         }
     }
 
-    val (player1Final, player2Final, turn) = go(player1, player2, 1, 1)
+    val (player1Final, player2Final, turn) = go(player1, player2, 1)
 
     return min(player1Final.score, player2Final.score) * ((turn - 1) * 3)
 }
@@ -114,6 +108,18 @@ fun part2(input: Pair<Int, Int>): Long {
     go(listOf(initialState), 1)
 
     return maxOf(player1Wins, player2Wins)
+}
+
+data class DeterministicDie(val max: Int) {
+    private var value = max
+
+    fun take3() = next() + next() + next()
+
+    private fun next(): Int {
+        val next = if (value == max) 1 else value + 1
+        value = next
+        return value
+    }
 }
 
 data class State(val player1: Player, val player2: Player, val count: Long)
