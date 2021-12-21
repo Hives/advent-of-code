@@ -12,7 +12,7 @@ fun main() {
         part1(input)
     }.checkAnswer(802452)
 
-    time(message = "Part 2", iterations = 1, warmUpIterations = 0) {
+    time(message = "Part 2", iterations = 3, warmUpIterations = 0) {
         part2(input)
     }.checkAnswer(270005289024391)
 }
@@ -43,14 +43,8 @@ fun part2(input: Pair<Int, Int>): Long {
     val (player1Start, player2Start) = input
 
     val initialState = State(
-        player1 = Player(
-            position = player1Start,
-            score = 0
-        ),
-        player2 = Player(
-            position = player2Start,
-            score = 0
-        ),
+        player1 = Player(player1Start),
+        player2 = Player(player2Start),
         count = 1
     )
 
@@ -67,12 +61,12 @@ fun part2(input: Pair<Int, Int>): Long {
     var player1Wins = 0L
     var player2Wins = 0L
 
-    tailrec fun go(unfinishedStates: List<State>, turn: Int): Unit =
-        if (unfinishedStates.isEmpty()) Unit
+    tailrec fun go(unfinishedGames: List<State>, turn: Int): Unit =
+        if (unfinishedGames.isEmpty()) Unit
         else {
-//            println("turn: $turn, unfinished states: ${unfinishedStates.size}")
+//            println("turn: $turn, unfinished states: ${unfinishedGames.size}")
 
-            val newStates = unfinishedStates.flatMap { oldState ->
+            val newUnfinishedGames = unfinishedGames.flatMap { oldState ->
                 rolls.mapNotNull { (roll, count) ->
                     val newCount = oldState.count * count
 
@@ -102,7 +96,7 @@ fun part2(input: Pair<Int, Int>): Long {
                 }
             }
 
-            go(newStates, turn + 1)
+            go(newUnfinishedGames, turn + 1)
         }
 
     go(listOf(initialState), 1)
@@ -124,7 +118,7 @@ data class DeterministicDie(val max: Int) {
 
 data class State(val player1: Player, val player2: Player, val count: Long)
 
-data class Player(val position: Int, val score: Int) {
+data class Player(val position: Int, val score: Int = 0) {
     fun move(roll: Int): Player {
         val newPosition = (((position - 1) + roll) % 10) + 1
         return Player(newPosition, score + newPosition)
