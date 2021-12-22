@@ -12,6 +12,8 @@ fun main() {
     val exampleInput = Reader("day22-example.txt").strings()
     val exampleInput2 = Reader("day22-example-2.txt").strings()
 
+    // Part 1 lost in the mists of time
+
     time(message = "Part2") {
         part2(input)
     }.checkAnswer(1267133912086024)
@@ -32,68 +34,49 @@ fun parse(input: String) =
             RebootStep(
                 Status.from(action),
                 Cuboid(
-                    xRange = x1.toInt()..x2.toInt(),
-                    yRange = y1.toInt()..y2.toInt(),
-                    zRange = z1.toInt()..z2.toInt(),
+                    x1.toInt(), x2.toInt(),
+                    y1.toInt(), y2.toInt(),
+                    z1.toInt(), z2.toInt(),
                 )
             )
         }
 
-data class Cuboid(val xRange: IntRange, val yRange: IntRange, val zRange: IntRange) {
+data class Cuboid(val x1: Int, val x2: Int, val y1: Int, val y2: Int, val z1: Int, val z2: Int) {
     fun minus(other: Cuboid): List<Cuboid> {
         if (!overlapsWith(other)) return listOf(this)
 
-        val front = if (other.zRange.first > zRange.first) {
-            Cuboid(xRange, yRange, zRange.first until other.zRange.first)
+        val front = if (other.z1 > z1) Cuboid(x1, x2, y1, y2, z1, other.z1 - 1) else null
+
+        val back = if (other.z2 < z2) Cuboid(x1, x2, y1, y2, other.z2 + 1, z2) else null
+
+        val bottom = if (other.y1 > y1) {
+            Cuboid(x1, x2, y1, other.y1 - 1, max(z1, other.z1), min(z2, other.z2))
         } else null
 
-        val back = if (other.zRange.last < zRange.last) {
-            Cuboid(xRange, yRange, (other.zRange.last + 1)..zRange.last)
+        val top = if (other.y2 < y2) {
+            Cuboid(x1, x2, (other.y2 + 1), y2, max(z1, other.z1), min(z2, other.z2))
         } else null
 
-        val bottom = if (other.yRange.first > yRange.first) {
-            Cuboid(
-                xRange = xRange,
-                yRange = yRange.first until other.yRange.first,
-                zRange = max(zRange.first, other.zRange.first)..min(zRange.last, other.zRange.last)
-            )
+        val left = if (other.x1 > x1) {
+            Cuboid(x1, other.x1 - 1, max(y1, other.y1), min(y2, other.y2), max(z1, other.z1), min(z2, other.z2))
         } else null
 
-        val top = if (other.yRange.last < yRange.last) {
-            Cuboid(
-                xRange = xRange,
-                yRange = (other.yRange.last + 1)..yRange.last,
-                zRange = max(zRange.first, other.zRange.first)..min(zRange.last, other.zRange.last)
-            )
+        val right = if (other.x2 < x2) {
+            Cuboid((other.x2 + 1), x2, max(y1, other.y1), min(y2, other.y2), max(z1, other.z1), min(z2, other.z2))
         } else null
 
-        val left = if (other.xRange.first > xRange.first) {
-            Cuboid(
-                xRange = xRange.first until other.xRange.first,
-                yRange = max(yRange.first, other.yRange.first)..min(yRange.last, other.yRange.last),
-                zRange = max(zRange.first, other.zRange.first)..min(zRange.last, other.zRange.last)
-            )
-        } else null
-
-        val right = if (other.xRange.last < xRange.last) {
-            Cuboid(
-                xRange = (other.xRange.last + 1)..xRange.last,
-                yRange = max(yRange.first, other.yRange.first)..min(yRange.last, other.yRange.last),
-                zRange = max(zRange.first, other.zRange.first)..min(zRange.last, other.zRange.last)
-            )
-        } else null
-
-        return listOf(front, back, bottom, top, left, right).filterNotNull().filterNot { it.isEmpty }
+        return listOfNotNull(front, back, bottom, top, left, right)
     }
-
-    fun overlapsWith(other: Cuboid) =
-        xRange.overlapsWith(other.xRange) && yRange.overlapsWith(other.yRange) && zRange.overlapsWith(other.zRange)
 
     val size: Long
         get() = xRange.size().toLong() * yRange.size() * zRange.size()
 
-    val isEmpty: Boolean
-        get() = xRange.isEmpty() || yRange.isEmpty() || zRange.isEmpty()
+    private fun overlapsWith(other: Cuboid) =
+        xRange.overlapsWith(other.xRange) && yRange.overlapsWith(other.yRange) && zRange.overlapsWith(other.zRange)
+
+    private val xRange = x1..x2
+    private val yRange = y1..y2
+    private val zRange = z1..z2
 }
 
 fun IntRange.size() = this.last - this.first + 1
