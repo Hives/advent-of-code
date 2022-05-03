@@ -108,22 +108,28 @@ sub tick($program, $state, $pointer-register) {
     my ($function, $inputs) = $program[$pointer];
     my $output = $function($inputs, $state);
 
+    my $new-pointer = $output[$pointer-register];
+    if $pointer != $new-pointer {
+#        say "jumped from $pointer to $new-pointer";
+}
+
     return increment-pointer($output, $pointer-register);
 }
 
 sub part1(@input) {
     my ($pointer-register, $program) = parse(@input);
 
-    my $state = (0, 0, 0, 0, 0, 0);
+    my $state = (1, 0, 0, 0, 0, 0);
 
     my $count = 0;
 
     while $state[$pointer-register] < $program.elems {
-        $count++;
-        if $count %% 10_000 {
-            say $count;
-            say $state;
-        }
+        say $state[1];
+#        $count++;
+#        if $count %% 10_000 {
+#            say $count;
+#            say $state;
+#        }
         $state = tick($program, $state, $pointer-register);
     }
 
