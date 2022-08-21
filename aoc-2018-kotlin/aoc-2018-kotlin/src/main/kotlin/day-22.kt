@@ -1,7 +1,8 @@
+import lib.Vector
 import java.util.PriorityQueue
 
 fun main() {
-//    val target = Vector(10, 10)
+//    val target = lib.Vector(10, 10)
 //    val depth = 510
 
     val target = Vector(14, 778)

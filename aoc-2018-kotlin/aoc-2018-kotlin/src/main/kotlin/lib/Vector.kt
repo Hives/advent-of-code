@@ -1,3 +1,5 @@
+package lib
+
 import kotlin.math.abs
 
 data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
@@ -53,4 +55,3 @@ enum class AllDirections(val vector: Vector) {
     W(Vector(-1, 0)),
     NW(Vector(-1, 1))
 }
-
