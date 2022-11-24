@@ -2,8 +2,8 @@
 
 # inputs;
 my $players = 413;
-#my $last-marble = 71082;
-my $last-marble = 22;
+my $last-marble = 7108200;
+#my $last-marble = 25;
 
 class Node {
     has $.value is required;
@@ -66,6 +66,33 @@ class Circle {
         }
     }
 
+    method delete-current() {
+        my $value = self.current.value;
+
+        my $prev = self.current.prev;
+        my $next = self.current.next;
+
+        if ($prev) {
+            $prev.next = $next
+        } else {
+            self.head = $next
+        }
+
+        if ($next) {
+            $next.prev = $prev
+        } else {
+            self.tail = $prev
+        }
+
+        if ($next) {
+            self.current = $next
+        } else {
+            self.current = self.head
+        }
+
+        return $value;
+    }
+
     method print() {
         if (!self.head) {
             say "empty";
@@ -83,9 +110,27 @@ class Circle {
 my $circle = Circle.new();
 $circle.push(0);
 
-for (1 .. $last-marble) -> $marble {
-    $circle.rotate(2);
-    $circle.insert-after-current($marble);
+my %scores;
+sub add-score($round, $marble) {
+    my $player = $round % $players;
+    if (%scores{$player}) {
+        %scores{$player}+= $marble;
+    } else {
+        %scores{$player} = $marble;
+    }
 }
 
-$circle.current.print()
+for (1 .. $last-marble) -> $marble {
+    if ($marble %% 23) {
+        $circle.rotate(-6);
+        add-score($marble, $circle.delete-current());
+        $circle.rotate(-1);
+        add-score($marble, $marble);
+    } else {
+        $circle.rotate(2);
+        $circle.insert-after-current($marble);
+    }
+    #    $circle.print();
+}
+
+%scores.max({ $_.value }).say;
