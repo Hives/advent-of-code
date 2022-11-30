@@ -1,0 +1,8 @@
+package days.day${DAY}
+
+import lib.Reader
+
+fun main() {
+    val input = Reader("day${DAY}.txt").strings()
+    val exampleInput = Reader("day${DAY}-example.txt").strings()
+}
