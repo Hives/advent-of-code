@@ -11,7 +11,7 @@ fun main() {
     time(message = "Part 1") {
         Part1(input).go()
     }.checkAnswer(8933)
-    
+
     time(message = "Part 2") {
         Part2(input).go()
     }.checkAnswer(11998)
