@@ -20,32 +20,19 @@ fun main() {
 fun part1(lines: List<String>): Int =
     lines.sumOf { line ->
         line.toList()
-            .let {
-                val length = it.size
-                it.chunked(length / 2)
-            }.let { (first, second) ->
-                first.intersect(second.toSet())
-            }
+            .chunked(line.length / 2)
+            .let { (first, second) -> first.intersect(second.toSet()) }
             .single()
-            .code
-            .let {
-                if (it >= 97) it - 96
-                else it - 38
-            }
+            .priority()
     }
 
 fun part2(lines: List<String>): Int =
-    lines.chunked(3) { group ->
+    lines.chunked(3).sumOf { group ->
         group
             .map { it.toList() }
-            .let { (first, second, third) ->
-                first.intersect(second.toSet()).intersect(third.toSet())
-            }
+            .let { (first, second, third) -> first.intersect(second.toSet()).intersect(third.toSet()) }
             .single()
-            .code
-            .let {
-                if (it >= 97) it - 96
-                else it - 38
-            }
-    }.sum()
+            .priority()
+    }
 
+fun Char.priority() = if (this.isUpperCase()) code - 38 else code - 96
