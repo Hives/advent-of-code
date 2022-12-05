@@ -19,30 +19,21 @@ fun main() {
 
 fun part1(input: String): String {
     val (state, moves) = parse(input)
-    moves.forEach { move ->
-        repeat(move.count) {
-            state[move.to].add(state[move.from].removeLast())
-        }
-    }
-    return state.map { it.last() }.joinToString("")
+    moves.forEach { it.applyPt1(state) }
+    return state.getEnds()
 }
 
 fun part2(input: String): String {
     val (state, moves) = parse(input)
-    moves.forEach { move ->
-        val stack = mutableListOf<Char>()
-        repeat(move.count) {
-            stack.add(state[move.from].removeLast())
-        }
-        stack.reversed().forEach { state[move.to].add(it) }
-    }
-    return state.map { it.last() }.joinToString("")
+    moves.forEach { it.applyPt2(state) }
+    return state.getEnds()
 }
 
 fun parse(input: String): Pair<List<MutableList<Char>>, List<Move>> {
     val (configLines, movesLines) = input.split("\n\n")
 
     val stackCount = configLines.last().toString().toInt()
+
     val stacks = List(stackCount) { mutableListOf<Char>() }
     configLines.lines().dropLast(1).reversed().forEach { row ->
         row.forEachIndexed { index, c ->
@@ -58,13 +49,20 @@ fun parse(input: String): Pair<List<MutableList<Char>>, List<Move>> {
     return Pair(stacks, moves)
 }
 
-data class Move(val count: Int, val from: Int, val to: Int)
-
-fun List<List<Char>>.flipNotSquare(): List<List<Char>> {
-    val cols = this.maxOfOrNull { it.size }!! - 1
-    return (0..cols).map { col ->
-        (this.indices).map { row ->
-            this[row].getOrElse(col) { ' ' }
+data class Move(val count: Int, val from: Int, val to: Int) {
+    fun applyPt1(state: List<MutableList<Char>>) {
+        repeat(count) {
+            state[to].add(state[from].removeLast())
         }
     }
+
+    fun applyPt2(state: List<MutableList<Char>>) {
+        val stack = mutableListOf<Char>()
+        repeat(count) {
+            stack.add(state[from].removeLast())
+        }
+        stack.reversed().forEach { state[to].add(it) }
+    }
 }
+
+fun Iterable<Iterable<Char>>.getEnds() = map(Iterable<Char>::last).joinToString("")
