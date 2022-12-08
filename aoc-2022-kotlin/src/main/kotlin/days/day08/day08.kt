@@ -17,7 +17,7 @@ fun main() {
     }.checkAnswer(440640)
 }
 
-fun part1(input: List<List<Int>>): Int {
+private fun part1(input: List<List<Int>>): Int {
     val visible = mutableSetOf<Pair<Int, Int>>()
 
     // from left
@@ -67,11 +67,11 @@ fun part1(input: List<List<Int>>): Int {
     return visible.size
 }
 
-fun part2(input: List<List<Int>>): Int =
+private fun part2(input: List<List<Int>>): Int =
     input.indices.map { y -> input[y].indices.map { x -> Pair(x, y) } }.flatten()
         .maxOf { point -> point.scenicScore(input) }
 
-fun Pair<Int, Int>.scenicScore(map: List<List<Int>>): Int {
+private fun Pair<Int, Int>.scenicScore(map: List<List<Int>>): Int {
     val tree = map[second][first]
 
     // up
@@ -125,7 +125,7 @@ fun Pair<Int, Int>.scenicScore(map: List<List<Int>>): Int {
     return up * left * right * down
 }
 
-fun Pair<Int, Int>.up() = Pair(first, second - 1)
-fun Pair<Int, Int>.down() = Pair(first, second + 1)
-fun Pair<Int, Int>.left() = Pair(first - 1, second)
-fun Pair<Int, Int>.right() = Pair(first + 1, second)
+private fun Pair<Int, Int>.up() = Pair(first, second - 1)
+private fun Pair<Int, Int>.down() = Pair(first, second + 1)
+private fun Pair<Int, Int>.left() = Pair(first - 1, second)
+private fun Pair<Int, Int>.right() = Pair(first + 1, second)
