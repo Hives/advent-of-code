@@ -1,5 +1,6 @@
 package days.day09
 
+import lib.CompassDirection
 import lib.Direction
 import lib.Reader
 import lib.Vector
@@ -45,15 +46,14 @@ fun dragTheRope(length: Int, input: List<String>): Int {
 }
 
 fun parse(line: String): Pair<Direction, Int> =
-    line.split(" ").let {
-        Pair(Direction.valueOf(it[0]), it[1].toInt())
-    }
+    line.split(" ")
+        .let { (dir, dist) -> Pair(CompassDirection.from(dir), dist.toInt()) }
 
 fun drag(rope: List<Vector>, dir: Direction): List<Vector> =
-   rope.fold(emptyList()) { acc, nextKnot ->
-       if (acc.isEmpty()) listOf(nextKnot + dir.vector)
-       else acc + nextKnot.resolve(acc.last())
-   }
+    rope.fold(emptyList()) { acc, nextKnot ->
+        if (acc.isEmpty()) listOf(nextKnot + dir)
+        else acc + nextKnot.resolve(acc.last())
+    }
 
 fun Vector.resolve(head: Vector) =
     if (this.isAdjacentTo(head)) this

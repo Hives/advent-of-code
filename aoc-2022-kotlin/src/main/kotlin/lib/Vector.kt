@@ -16,6 +16,8 @@ data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
         y = this.y + other.y
     )
 
+    operator fun plus(other: Direction) = this + other.vector
+
     operator fun minus(other: Vector) = Vector(
         x = this.x - other.x,
         y = this.y - other.y
@@ -51,21 +53,28 @@ data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
     override fun toString() = "v{$x, $y}"
 }
 
-enum class Direction(val vector: Vector) {
-    U(Vector(0, 1)),
-    D(Vector(0, -1)),
-    R(Vector(1, 0)),
-    L(Vector(-1, 0))
+interface Direction {
+   val vector: Vector
 }
 
-enum class CompassDirection(val vector: Vector) {
+enum class CompassDirection(override val vector: Vector): Direction {
     N(Vector(0, 1)),
     S(Vector(0, -1)),
     E(Vector(1, 0)),
-    W(Vector(-1, 0))
+    W(Vector(-1, 0));
+
+    companion object {
+        fun from(input: String) = when (input) {
+            "N", "U" -> N
+            "S", "D" -> S
+            "E", "R" -> E
+            "W", "L" -> W
+            else -> throw Exception("Unknown direction: $input")
+        }
+    }
 }
 
-enum class AllCompassDirection(val vector: Vector) {
+enum class AllCompassDirection(override val vector: Vector): Direction {
     N(Vector(0, 1)),
     NE(Vector(1, 1)),
     E(Vector(1, 0)),
