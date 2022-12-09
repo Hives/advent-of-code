@@ -21,6 +21,11 @@ data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
         y = this.y - other.y
     )
 
+    fun isAdjacentTo(other: Vector): Boolean {
+        val diff = this - other
+        return abs(diff.x) <= 1 && abs(diff.y) <= 1
+    }
+
     fun rotateQuarterTurnsCCW(quarterTurns: Int = 1) =
         this.repeatedlyApply(quarterTurns % 4) {
             Vector(

@@ -25,7 +25,7 @@ fun part2(input: List<String>) = dragTheRope(10, input)
 
 fun dragTheRope(length: Int, input: List<String>): Int {
     val initial = List(length) { Vector(0, 0) }
-    val visited = mutableSetOf<Vector>()
+    val visitedByTail = mutableSetOf<Vector>()
 
     input.fold(initial) { rope, line ->
         val (dir, distance) = parse(line)
@@ -34,14 +34,14 @@ fun dragTheRope(length: Int, input: List<String>): Int {
             if (n == 0) r
             else {
                 val newRope = drag(r, dir)
-                visited.add(newRope.last())
+                visitedByTail.add(newRope.last())
                 go(newRope, n - 1)
             }
 
         go(rope, distance)
     }
 
-    return visited.size
+    return visitedByTail.size
 }
 
 fun parse(line: String): Pair<Direction, Int> =
@@ -56,5 +56,5 @@ fun drag(rope: List<Vector>, dir: Direction): List<Vector> =
    }
 
 fun Vector.resolve(head: Vector) =
-    if (head.surrounding.contains(this)) this
+    if (this.isAdjacentTo(head)) this
     else this + Vector((head.x - x).sign, (head.y - y).sign)

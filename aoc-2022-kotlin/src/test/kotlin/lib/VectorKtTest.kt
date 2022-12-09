@@ -46,8 +46,24 @@ class VectorKtTest : StringSpec({
             row(-2, Vector(-3, -2)),
             row(-3, Vector(-2, 3)),
             row(400, v)
-        ) { ccwQuarterTurns, expected ->
-            v.rotateQuarterTurnsCCW(ccwQuarterTurns) shouldBe expected
+        ) { quarterTurns, expected ->
+            v.rotateQuarterTurnsCCW(quarterTurns) shouldBe expected
+        }
+    }
+
+    "isAdjacentTo" {
+        forAll(
+            row(Vector(0, 0), Vector(0, 1), true),
+            row(Vector(0, 0), Vector(1, 0), true),
+            row(Vector(0, 0), Vector(1, 1), true),
+            row(Vector(0, 0), Vector(1, -1), true),
+            row(Vector(0, 0), Vector(0, 2), false),
+            row(Vector(0, 0), Vector(-2, 0), false),
+            row(Vector(0, 0), Vector(2, 2), false),
+            row(Vector(0, 0), Vector(2, -2), false),
+        ) { v1, v2, expected ->
+            v1.isAdjacentTo(v2) shouldBe expected
+            v2.isAdjacentTo(v1) shouldBe expected
         }
     }
 
