@@ -17,43 +17,37 @@ fun main() {
         part2(input)
     }.checkAnswer(
         """
-         ███...██..█..█.████..██..█....█..█..██..
-         █..█.█..█.█..█.█....█..█.█....█..█.█..█.
-         █..█.█....████.███..█....█....█..█.█....
-         ███..█.██.█..█.█....█.██.█....█..█.█.██.
-         █....█..█.█..█.█....█..█.█....█..█.█..█.
-         █.....███.█..█.█.....███.████..██...███.
-    """.trimIndent()
+        ███...██..█..█.████..██..█....█..█..██..
+        █..█.█..█.█..█.█....█..█.█....█..█.█..█.
+        █..█.█....████.███..█....█....█..█.█....
+        ███..█.██.█..█.█....█.██.█....█..█.█.██.
+        █....█..█.█..█.█....█..█.█....█..█.█..█.
+        █.....███.█..█.█.....███.████..██...███.
+        """.trimIndent()
     )
 }
 
 fun part1(input: List<String>): Int {
-    val cycleMap = generateCycleMap(input)
+    val registerValues = generateRegisterValues(input)
     val requestedCycles = listOf(20, 60, 100, 140, 180, 220)
-    return requestedCycles.sumOf { c -> cycleMap[c]!! * c }
+    return requestedCycles.sumOf { c -> registerValues[c] * c }
 }
 
 fun part2(input: List<String>): String {
-    val cycleMap = generateCycleMap(input)
-    return (1..240).chunked(40).joinToString("\n") { row ->
-        row.joinToString("") { cycle ->
-            val position = (cycle - 1) % 40
-            if (abs(cycleMap[cycle]!! - position) < 2) "█" else "."
-        }
-    }
+    val registerValues = generateRegisterValues(input)
+    return (1..240).map { cycle ->
+        val position = (cycle - 1) % 40
+        if (abs(registerValues[cycle] - position) < 2) "█" else "."
+    }.chunked(40).joinToString("\n") { it.joinToString("") }
 }
 
-fun generateCycleMap(input: List<String>): Map<Int, Int> {
-    val cycleMap = mutableMapOf(1 to 1)
-    input.fold(1) { cycle, line ->
+fun generateRegisterValues(input: List<String>): List<Int> =
+    input.fold(listOf(1, 1)) { registerValues, line ->
+        val last = registerValues.last()
         if (line.startsWith("noop")) {
-            cycleMap[cycle + 1] = cycleMap[cycle]!!
-            cycle + 1
+            registerValues + last
         } else {
-            cycleMap[cycle + 1] = cycleMap[cycle]!!
-            cycleMap[cycle + 2] = cycleMap[cycle + 1]!! + line.split(" ")[1].toInt()
-            cycle + 2
+            val x = line.split(" ").last().toInt()
+            registerValues + last + (last + x)
         }
     }
-    return cycleMap
-}
