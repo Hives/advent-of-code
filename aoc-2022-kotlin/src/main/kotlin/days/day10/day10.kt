@@ -9,21 +9,22 @@ fun main() {
     val input = Reader("day10.txt").strings()
     val exampleInput = Reader("day10-example.txt").strings()
 
-    time(message = "Part 1", warmUpIterations = 100, iterations = 5000) {
+    time(message = "Part 1", warmUpIterations = 10_000, iterations = 1_000) {
         part1(input)
     }.checkAnswer(15260)
 
-    time(message = "Part 2", warmUpIterations = 100, iterations = 5000) {
+    time(message = "Part 2", warmUpIterations = 10_000, iterations = 1_000) {
         part2(input)
     }.checkAnswer(
         """
-         ███   ██  █  █ ████  ██  █    █  █  ██  
-         █  █ █  █ █  █ █    █  █ █    █  █ █  █ 
-         █  █ █    ████ ███  █    █    █  █ █    
-         ███  █ ██ █  █ █    █ ██ █    █  █ █ ██ 
-         █    █  █ █  █ █    █  █ █    █  █ █  █ 
-         █     ███ █  █ █     ███ ████  ██   ███ 
-    """.trimIndent())
+         ███...██..█..█.████..██..█....█..█..██..
+         █..█.█..█.█..█.█....█..█.█....█..█.█..█.
+         █..█.█....████.███..█....█....█..█.█....
+         ███..█.██.█..█.█....█.██.█....█..█.█.██.
+         █....█..█.█..█.█....█..█.█....█..█.█..█.
+         █.....███.█..█.█.....███.████..██...███.
+    """.trimIndent()
+    )
 }
 
 fun part1(input: List<String>): Int {
@@ -34,17 +35,12 @@ fun part1(input: List<String>): Int {
 
 fun part2(input: List<String>): String {
     val cycleMap = generateCycleMap(input)
-    return List(6) { it }.map { row ->
-        List(40) { col ->
-            val cycle = 40 * row + col + 1
-            Pair(cycle, col)
+    return (1..240).chunked(40).joinToString("\n") { row ->
+        row.joinToString("") { cycle ->
+            val position = (cycle - 1) % 40
+            if (abs(cycleMap[cycle]!! - position) < 2) "█" else "."
         }
     }
-        .map {
-            it.map { (cycle, position) ->
-                if (abs(cycleMap[cycle]!! - position) < 2) '█' else ' '
-            }.joinToString("")
-        }.joinToString("\n")
 }
 
 fun generateCycleMap(input: List<String>): Map<Int, Int> {
