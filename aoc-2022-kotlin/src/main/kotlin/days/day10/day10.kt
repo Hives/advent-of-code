@@ -36,8 +36,8 @@ fun part1(input: List<String>): Int {
 fun part2(input: List<String>): String {
     val registerValues = generateRegisterValues(input)
     return (1..240).map { cycle ->
-        val position = (cycle - 1) % 40
-        if (abs(registerValues[cycle] - position) < 2) "█" else "."
+        val xPosition = (cycle - 1) % 40
+        if (abs(registerValues[cycle] - xPosition) < 2) "█" else "."
     }.chunked(40).joinToString("\n") { it.joinToString("") }
 }
 
