@@ -13,9 +13,15 @@ else
     mkdir -p $path
 fi;
 
-echo "Creating empty input files"
+echo "Downloading input"
+# requires COOKIE to be defined in .env
+source ./.env
+curl 'https://adventofcode.com/2022/day/13/input' \
+  -H "cookie: ${COOKIE}" \
+  -o "${input_path}/day${DAY}.txt"
+
+echo "Creating empty example input file"
 touch "${input_path}/day${DAY}.txt"
-touch "${input_path}/day${DAY}-example.txt"
 
 if [ -f "${path}/${file}" ]; then
     echo "File ${path}/${file} already exists"
