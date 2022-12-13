@@ -1,8 +1,5 @@
 package days.day13
 
-import days.day13.Foo.OrderStatus.DONT_KNOW
-import days.day13.Foo.OrderStatus.RIGHT_ORDER
-import days.day13.Foo.OrderStatus.WRONG_ORDER
 import lib.Reader
 import lib.checkAnswer
 import lib.time
@@ -11,22 +8,21 @@ fun main() {
     val input = Reader("day13.txt").string()
     val exampleInput = Reader("day13-example.txt").string()
 
-    time(message = "Part 1") {
-        Foo.part1(input)
+    time(message = "Part 1", iterations = 500) {
+        Bar.part1(input)
     }.checkAnswer(5684)
 
-    time(message = "Part 2") {
-        Foo.part2(input)
+    time(message = "Part 2", iterations = 500) {
+        Bar.part2(input)
     }.checkAnswer(22932)
 }
 
-object Foo {
+object Bar {
     fun part1(input: String) =
-        parse(input).map { it.compare() }
-            .foldIndexed(0) { index, acc, orderStatus ->
-                if (orderStatus == RIGHT_ORDER) acc + (index + 1)
-                else acc
-            }
+        parse(input).foldIndexed(0) { index, acc, (first, second) ->
+            if (first < second) acc + (index + 1)
+            else acc
+        }
 
     fun part2(input: String): Int {
         val packets = input.replace("\n\n", "\n").split("\n").map(::parsePacket)
@@ -38,39 +34,6 @@ object Foo {
             (it.indexOf(dividerPacket1) + 1) * (it.indexOf(dividerPacket2) + 1)
         }
     }
-
-    fun Pair<Element, Element>.compare(): OrderStatus {
-        val (left, right) = this
-        return when {
-            left is Element.Number && right is Element.Number -> {
-                when {
-                    left.value < right.value -> RIGHT_ORDER
-                    left.value > right.value -> WRONG_ORDER
-                    else -> DONT_KNOW
-                }
-            }
-
-            left is Element.ElementList && right is Element.ElementList -> {
-                when {
-                    left.elements.isEmpty() && right.elements.isEmpty() -> DONT_KNOW
-                    left.elements.isEmpty() -> RIGHT_ORDER
-                    right.elements.isEmpty() -> WRONG_ORDER
-                    else -> {
-                        when (Pair(left.head, right.head).compare()) {
-                            RIGHT_ORDER -> RIGHT_ORDER
-                            WRONG_ORDER -> WRONG_ORDER
-                            DONT_KNOW -> Pair(left.tail, right.tail).compare()
-                        }
-                    }
-                }
-            }
-
-            left is Element.Number -> Pair(Element.ElementList(listOf(left)), right).compare()
-            else -> Pair(left, Element.ElementList(listOf(right))).compare()
-        }
-    }
-
-    enum class OrderStatus { RIGHT_ORDER, WRONG_ORDER, DONT_KNOW }
 
     fun parse(input: String): List<Pair<Element, Element>> =
         input.split("\n\n")
@@ -100,19 +63,50 @@ object Foo {
             .let { Element.ElementList(it) }
 
     sealed class Element : Comparable<Element> {
-        override fun compareTo(other: Element): Int =
-            when (Pair(this, other).compare()) {
-                RIGHT_ORDER -> -1
-                WRONG_ORDER -> 1
-                DONT_KNOW -> 0
-            }
-
         data class Number(val value: Int) : Element()
+
         data class ElementList(val elements: List<Element>) : Element() {
             val head
                 get() = elements.first()
             val tail
                 get() = ElementList(elements.drop(1))
+        }
+
+        override fun compareTo(other: Element): Int {
+            val (left, right) = Pair(this, other)
+
+            return when {
+                left is Number && right is Number -> left.value.compareTo(right.value)
+
+                left is ElementList && right is ElementList -> {
+                    when {
+                        left.elements.isNotEmpty() && right.elements.isNotEmpty() -> {
+                            left.head.compareTo(right.head).let {
+                                if (it != 0) it
+                                else left.tail.compareTo(right.tail)
+                            }
+                        }
+
+                        left.elements.isEmpty() && right.elements.isEmpty() -> {
+                            0
+                        }
+
+                        else -> {
+                            if (left.elements.isEmpty()) -1 else 1
+                        }
+                    }
+                }
+
+                left is Number -> {
+                    val leftWrapped = ElementList(listOf(left))
+                    leftWrapped.compareTo(right)
+                }
+
+                else -> {
+                    val rightWrapped = ElementList(listOf(right))
+                    left.compareTo(rightWrapped)
+                }
+            }
         }
     }
 }
