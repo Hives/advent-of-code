@@ -19,10 +19,13 @@ fun main() {
 
 object Bar {
     fun part1(input: String) =
-        parse(input).foldIndexed(0) { index, acc, (first, second) ->
-            if (first < second) acc + (index + 1)
-            else acc
-        }
+        input.split("\n\n")
+            .map { lines ->
+                lines.split("\n").map(::parsePacket)
+            }.foldIndexed(0) { index, acc, (first, second) ->
+                if (first < second) acc + (index + 1)
+                else acc
+            }
 
     fun part2(input: String): Int {
         val packets = input.replace("\n\n", "\n").split("\n").map(::parsePacket)
@@ -34,13 +37,6 @@ object Bar {
             (it.indexOf(dividerPacket1) + 1) * (it.indexOf(dividerPacket2) + 1)
         }
     }
-
-    fun parse(input: String): List<Pair<Element, Element>> =
-        input.split("\n\n")
-            .map {
-                it.split("\n")
-                    .map(::parsePacket).let { (first, second) -> Pair(first, second) }
-            }
 
     fun parsePacket(input: String): Element =
         input.fold(Pair("", 0)) { (acc, bracketDepth), c ->
