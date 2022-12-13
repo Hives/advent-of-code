@@ -69,7 +69,8 @@ object Bar {
         }
 
         override fun compareTo(other: Element): Int {
-            val (left, right) = Pair(this, other)
+            val left = this
+            val right = other
 
             return when {
                 left is Number && right is Number -> left.value.compareTo(right.value)
@@ -77,19 +78,15 @@ object Bar {
                 left is ElementList && right is ElementList -> {
                     when {
                         left.elements.isNotEmpty() && right.elements.isNotEmpty() -> {
-                            left.head.compareTo(right.head).let {
-                                if (it != 0) it
-                                else left.tail.compareTo(right.tail)
-                            }
+                            val headComparison = left.head.compareTo(right.head)
+
+                            if (headComparison != 0) headComparison
+                            else left.tail.compareTo(right.tail)
                         }
 
-                        left.elements.isEmpty() && right.elements.isEmpty() -> {
-                            0
-                        }
+                        left.elements.isEmpty() && right.elements.isEmpty() -> 0
 
-                        else -> {
-                            if (left.elements.isEmpty()) -1 else 1
-                        }
+                        else -> if (left.elements.isEmpty()) -1 else 1
                     }
                 }
 
