@@ -61,13 +61,13 @@ fun parse(input: List<String>, addFloor: Boolean = false): Cave {
     }
 
     val grid = Cave(
-        grid = MutableList(maxY + 1) { MutableList(maxX - minX + 1) { '.' } },
+        mutableGrid = MutableList(maxY + 1) { MutableList(maxX - minX + 1) { AIR } },
         minX = minX
     )
 
     paths.forEach { path ->
         path.windowed(2, 1).forEach { (start, end) ->
-            start.pathTo(end).forEach { grid.set(it, '#') }
+            start.pathTo(end).forEach { grid.set(it, ROCK) }
         }
     }
 
@@ -78,24 +78,27 @@ fun parse(input: List<String>, addFloor: Boolean = false): Cave {
     return grid
 }
 
-data class Cave(val grid: MutableList<MutableList<Char>>, val minX: Int) {
-    fun print() = grid.forEach { println(it.joinToString("")) }
+data class Cave(private val mutableGrid: MutableList<MutableList<Char>>, val minX: Int) {
+    val grid: List<List<Char>>
+        get() = mutableGrid.map { it.toList() }
 
-    fun set(point: Vector, char: Char = 'o') {
-        grid[point.y][point.x - minX] = char
+    fun print() = mutableGrid.forEach { println(it.joinToString("")) }
+
+    fun set(point: Vector, char: Char = SAND) {
+        mutableGrid[point.y][point.x - minX] = char
     }
 
-    fun at(point: Vector) = grid[point.y][point.x - minX]
+    fun at(point: Vector) = mutableGrid[point.y][point.x - minX]
 
     fun produce(): Vector? {
         val start = Vector(500, 0)
 
         fun fall(point: Vector): Vector? {
             return when {
-                point.y >= grid.size - 1 -> null
-                at(point + down) == '.' -> fall(point + down)
-                at(point + downLeft) == '.' -> fall(point + downLeft)
-                at(point + downRight) == '.' -> fall(point + downRight)
+                point.y >= mutableGrid.size - 1 -> null
+                at(point + down) == AIR -> fall(point + down)
+                at(point + downLeft) == AIR -> fall(point + downLeft)
+                at(point + downRight) == AIR -> fall(point + downRight)
                 else -> point
             }
         }
@@ -109,14 +112,18 @@ data class Cave(val grid: MutableList<MutableList<Char>>, val minX: Int) {
         return final
     }
 
-    fun count() = grid.flatten().count { it == 'o' }
+    fun count() = mutableGrid.flatten().count { it == SAND }
 
     fun addFloor() {
-        val maxY = grid.indexOfLast { row -> row.any { it == '#' } }
-        grid[maxY + 2].indices.forEach { x -> grid[maxY + 2][x] = '#' }
+        val maxY = mutableGrid.indexOfLast { row -> row.any { it == ROCK } }
+        mutableGrid[maxY + 2].indices.forEach { x -> mutableGrid[maxY + 2][x] = ROCK }
     }
 
     private val down = AllCompassDirection.N.vector
     private val downLeft = AllCompassDirection.NW.vector
     private val downRight = AllCompassDirection.NE.vector
 }
+
+const val AIR = '.'
+const val SAND = 'o'
+const val ROCK = '#'
