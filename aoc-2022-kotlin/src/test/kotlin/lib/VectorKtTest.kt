@@ -1,5 +1,6 @@
 package lib
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.data.forAll
 import io.kotest.data.row
@@ -67,6 +68,23 @@ class VectorKtTest : StringSpec({
         }
     }
 
+    "path to" {
+        forAll(
+            row(Vector(0, 1), Vector(0, 3), listOf(Vector(0, 1), Vector(0, 2), Vector(0, 3))),
+            row(Vector(0, 3), Vector(0, 1), listOf(Vector(0, 3), Vector(0, 2), Vector(0, 1))),
+            row(Vector(1, 0), Vector(3, 0), listOf(Vector(1, 0), Vector(2, 0), Vector(3, 0))),
+            row(Vector(3, 0), Vector(1, 0), listOf(Vector(3, 0), Vector(2, 0), Vector(1, 0))),
+        ) { start, end, expected ->
+            start.pathTo(end) shouldBe expected
+        }
+    }
+
+    "pathTo throws if points aren't horizontally or vertically aligned" {
+        shouldThrow<Exception> {
+            Vector(0, 0).pathTo(Vector(1, 2))
+        }
+    }
+
     "orderin" {
         // order in reading order
         val topLeft = Vector(0, 0)
@@ -96,7 +114,17 @@ class VectorKtTest : StringSpec({
         val middleRight = Vector(6, 10)
         val bottomRight = Vector(6, 11)
 
-        val sortedPoints = listOf(topLeft, topMiddle, topRight, middleLeft, middleMiddle, middleRight, bottomLeft, bottomMiddle, bottomRight)
+        val sortedPoints = listOf(
+            topLeft,
+            topMiddle,
+            topRight,
+            middleLeft,
+            middleMiddle,
+            middleRight,
+            bottomLeft,
+            bottomMiddle,
+            bottomRight
+        )
 
         sortedPoints.shuffled().sorted() shouldBe sortedPoints
     }

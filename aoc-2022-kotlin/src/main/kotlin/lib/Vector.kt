@@ -1,6 +1,7 @@
 package lib
 
 import kotlin.math.abs
+import kotlin.math.sign
 
 data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
     val manhattanDistance: Int
@@ -35,6 +36,15 @@ data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
                 y = it.x
             )
         }
+
+    fun pathTo(other: Vector): List<Vector> {
+        val direction = (other - this).let { Vector(it.x.sign, it.y.sign) }
+        require(direction in CompassDirection.values().map { it.vector }) { "Vectors must be in a horizontal or vertical line" }
+
+        val path = mutableListOf(this)
+        while (path.last() != other) path.add(path.last() + direction)
+        return path.toList()
+    }
 
     override fun compareTo(other: Vector): Int {
         if (this.y > other.y) return 1
