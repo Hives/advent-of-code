@@ -4,11 +4,11 @@ import java.math.BigDecimal
 import java.math.RoundingMode.HALF_DOWN
 import kotlin.system.measureNanoTime
 
-fun time(iterations: Int = 100, warmUpIterations: Int = 15, message: String? = null, f: () -> Any?): Any? {
+fun <T> time(iterations: Int = 100, warmUpIterations: Int = 15, message: String? = null, f: () -> T?): T? {
     println()
     if (!message.isNullOrEmpty()) println(message)
 
-    var answer = null as Any?
+    var answer: T? = null
 
     repeat(warmUpIterations) { f() }
 
