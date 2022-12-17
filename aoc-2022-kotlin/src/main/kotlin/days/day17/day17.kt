@@ -3,54 +3,57 @@ package days.day17
 import lib.Reader
 import lib.Vector
 import lib.checkAnswer
+import lib.time
 
 fun main() {
     val input = Reader("day17.txt").chars()
     val exampleInput = Reader("day17-example.txt").chars()
 
-//    part1(input).checkAnswer(3067L)
+    time(message = "Part 1") {
+        part1(input)
+    }.checkAnswer(3_067L)
 
-//    time(warmUpIterations = 2, iterations = 5) {
-//        findHeight(input, 10_000)
-//    }.checkAnswer(15155)
-
-    findHeight(input, 10_000).checkAnswer(15155)
+    time(message = "Part 2") {
+        part2(input)
+    }.checkAnswer(1_514_369_501_484L)
 }
 
 fun part1(input: List<Char>): Long =
     findHeight(input, 2022)
 
-//fun part2(input: List<Char>) {
-//    val repeatTime = input.size * 5
-//    val heightAfterFirstRepeat = findHeight(input, repeatTime)
-//    println(heightAfterFirstRepeat)
-//}
+fun part2(input: List<Char>): Long =
+    findHeight(input, 1_000_000_000_000L)
 
-fun findHeight(input: List<Char>, iterations: Int): Long {
-    val landed = (0L..6L).map { VectorL(it, 0) }.toMutableSet()
-    var highest = 0L
-    var count = 0L
+fun findHeight(input: List<Char>, iterations: Long): Long {
+    val numberOfRowsToKeep = 40
+
+    var landed = (0..6).map { Vector(it, 0) }.toMutableSet()
+    var offset = 0L
+    var rockCount = 0
+    val states = mutableMapOf<State, Pair<Int, Long>>()
 
     var rockIndex = -1
-    fun nextRock(): Set<VectorL> {
+    fun nextRock(): Set<Vector> {
         rockIndex = (rockIndex + 1) % rocks.size
         return rocks[rockIndex]
     }
 
     val jets = parse(input)
     var jetIndex = -1
-    fun nextJet(): VectorL {
+    fun nextJet(): Vector {
         jetIndex = (jetIndex + 1) % jets.size
         return jets[jetIndex]
     }
 
     fun discardLowerRows() {
-        val rowsToKeep = 40
         val topY = landed.maxOf { it.y }
-        landed.removeIf { it.y < topY - rowsToKeep }
+        landed.removeIf { it.y < topY - numberOfRowsToKeep }
+        val minY = landed.minOf { it.y }
+        offset += minY
+        landed = landed.map { it - Vector(0, minY) }.toMutableSet()
     }
 
-    fun applyNextJet(rock: Set<VectorL>): Set<VectorL> {
+    fun applyNextJet(rock: Set<Vector>): Set<Vector> {
         val jet = nextJet()
         val newRock = rock.translate(jet)
         return if (
@@ -61,13 +64,13 @@ fun findHeight(input: List<Char>, iterations: Int): Long {
         else rock
     }
 
-    fun moveDown(rock: Set<VectorL>): Set<VectorL> {
-        val newRock = rock.translate(VectorL(0, -1))
+    fun moveDown(rock: Set<Vector>): Set<Vector> {
+        val newRock = rock.translate(Vector(0, -1))
         return if (newRock.intersect(landed).isEmpty()) newRock
         else rock
     }
 
-    tailrec fun findRestingPlace(rock: Set<VectorL>): Set<VectorL> {
+    tailrec fun findRestingPlace(rock: Set<Vector>): Set<Vector> {
         val jettedRock = applyNextJet(rock)
         val downedRock = moveDown(jettedRock)
         return if (downedRock == jettedRock) downedRock
@@ -75,8 +78,8 @@ fun findHeight(input: List<Char>, iterations: Int): Long {
     }
 
     fun placeNextRock() {
-        val topLandedY = landed.maxOf { it.y }
-        val initialOffset = VectorL(2, topLandedY + 4)
+        val maxLandedY = landed.maxOf { it.y }
+        val initialOffset = Vector(2, maxLandedY + 4)
         val rock = nextRock().translate(initialOffset)
 
         val restingPlace = findRestingPlace(rock)
@@ -84,35 +87,58 @@ fun findHeight(input: List<Char>, iterations: Int): Long {
 
         discardLowerRows()
 
-        count++
+        rockCount++
     }
 
-    repeat(iterations) {
+    tailrec fun findLoop(): Pair<Int, Int> {
         placeNextRock()
+        val state = State(
+            rockIndex = rockIndex,
+            jetIndex = jetIndex,
+            rocks = landed.toSet()
+        )
+        return if (state in states) {
+            val loopStart = states[state]!!.first
+            val loopEnd = rockCount
+            Pair(loopStart, loopEnd)
+        } else {
+            states[state] = Pair(rockCount, offset)
+            findLoop()
+        }
     }
 
-    return landed.maxOf { it.y }.toLong()
+    val (loopStart, loopEnd) = findLoop()
+
+    val finalIndex = (iterations - loopStart) % (loopEnd - loopStart) + loopStart
+    val loopIterations = (iterations - loopStart) / (loopEnd - loopStart)
+
+    val loopStartOffset = states.values.first { it.first == loopStart }.second
+    val loopEndOffset = offset
+    val offsetIncreaseOverOneLoop = loopEndOffset - loopStartOffset
+    val offsetIncreaseToFinalIndex = states.values.first { it.first == finalIndex.toInt() }.second - loopStartOffset
+
+    return loopStartOffset + (offsetIncreaseOverOneLoop * loopIterations) + offsetIncreaseToFinalIndex + landed.maxOf { it.y }
 }
 
-data class State(val rockIndex: Int, val jetIndex: Int, val rocks: Set<VectorL>)
+data class State(val rockIndex: Int, val jetIndex: Int, val rocks: Set<Vector>)
 
 fun parse(input: List<Char>) =
     input.map {
         when (it) {
-            '>' -> VectorL(1, 0)
-            '<' -> VectorL(-1, 0)
+            '>' -> Vector(1, 0)
+            '<' -> Vector(-1, 0)
             else -> throw Exception("Bad direction: $it")
         }
     }
 
-fun Set<VectorL>.translate(v: VectorL) = map { it + v }.toSet()
+fun Set<Vector>.translate(v: Vector) = map { it + v }.toSet()
 
 val rocks = listOf(
-    setOf(VectorL(0, 0), VectorL(1, 0), VectorL(2, 0), VectorL(3, 0)),
-    setOf(VectorL(1, 0), VectorL(0, 1), VectorL(1, 1), VectorL(2, 1), VectorL(1, 2)),
-    setOf(VectorL(0, 0), VectorL(1, 0), VectorL(2, 0), VectorL(2, 1), VectorL(2, 2)),
-    setOf(VectorL(0, 0), VectorL(0, 1), VectorL(0, 2), VectorL(0, 3)),
-    setOf(VectorL(0, 0), VectorL(0, 1), VectorL(1, 0), VectorL(1, 1)),
+    setOf(Vector(0, 0), Vector(1, 0), Vector(2, 0), Vector(3, 0)),
+    setOf(Vector(1, 0), Vector(0, 1), Vector(1, 1), Vector(2, 1), Vector(1, 2)),
+    setOf(Vector(0, 0), Vector(1, 0), Vector(2, 0), Vector(2, 1), Vector(2, 2)),
+    setOf(Vector(0, 0), Vector(0, 1), Vector(0, 2), Vector(0, 3)),
+    setOf(Vector(0, 0), Vector(0, 1), Vector(1, 0), Vector(1, 1)),
 )
 
 fun Collection<Vector>.print() {
@@ -128,11 +154,4 @@ fun Collection<Vector>.print() {
         grid[it.y - yRange.first][it.x - xRange.first] = '#'
     }
     grid.reversed().forEach { println(it.joinToString("")) }
-}
-
-data class VectorL(val x: Long, val y: Long) {
-    operator fun plus(other: VectorL) = VectorL(
-        x = this.x + other.x,
-        y = this.y + other.y
-    )
 }
