@@ -1,14 +1,14 @@
 package days.day16_part2
 
 import lib.Reader
-import lib.checkAnswer
-import kotlin.system.exitProcess
+import kotlin.math.max
 
 fun main() {
     val input = Reader("day16.txt").strings()
     val exampleInput = Reader("day16-example.txt").strings()
 
-    part2(exampleInput).checkAnswer(1707)
+    // very slow - i left this running overnight and it still hadn't finished,
+    // although the last number it spat out was the right one
     println(part2(input))
 }
 
@@ -29,7 +29,7 @@ fun part2(input: List<String>): Int {
     val start = listOf("AA")
     var bestScore = 0
 
-    var pathPairs = mutableSetOf(Pair(start, start))
+    val pathPairQueue = mutableSetOf(Pair(start, start))
 
     val pressures = mutableMapOf(start to 0)
     fun getPressure(path: List<String>) =
@@ -41,6 +41,7 @@ fun part2(input: List<String>): Int {
             pressures[path] = pressure
             pressure
         }
+
     fun getPressure(pathPair: Pair<List<String>, List<String>>) =
         getPressure(pathPair.first) + getPressure(pathPair.second)
 
@@ -65,42 +66,87 @@ fun part2(input: List<String>): Int {
         return potentialPressure
     }
 
-    while (pathPairs.isNotEmpty()) {
-        val nextToTry = pathPairs.maxBy(::getPressure)
-        pathPairs.remove(nextToTry)
+    while (pathPairQueue.isNotEmpty()) {
+//        println(pathPairQueue.size)
+        val nextToTry = pathPairQueue.maxBy(::getPressure)
+        pathPairQueue.remove(nextToTry)
 
-        val (first, second) = nextToTry
-        val reachableFromFirst = findReachable(
-            path = first,
-            visited = first + second,
-            totalTime = TOTAL_MINUTES_PART_2,
-            miniMap = miniMap
-        )
-        val extensionsOfFirst = reachableFromFirst.map { first + it }
+        val unopened = miniMap.keys - nextToTry.first.toSet() - nextToTry.second.toSet()
+        val newPairPaths = unopened.flatMap {
+            listOf(Pair(nextToTry.first + it, nextToTry.second), Pair(nextToTry.first, nextToTry.second + it))
+        }.filter {
+            max(getTime(it.first), getTime(it.second)) < TOTAL_MINUTES_PART_2
+        }
 
-        val reachableFromSecond = findReachable(
-            path = second,
-            visited = first + second,
-            totalTime = TOTAL_MINUTES_PART_2,
-            miniMap = miniMap
-        )
-        val extensionsOfSecond = reachableFromSecond.map { second + it }
-
-        val newPathPairs =
-            extensionsOfFirst.map { new -> Pair(new, second) } +
-                    extensionsOfSecond.map { new -> Pair(first, new) }
-
-        newPathPairs.forEach { pathPair ->
+        newPairPaths.forEach { pathPair ->
             val pressure = getPressure(pathPair.first) + getPressure(pathPair.second)
 
             if (pressure > bestScore) {
                 bestScore = pressure
-                println("new best score: $bestScore")
-                pathPairs = pathPairs.filter { potentialPressure(it) > bestScore }.toMutableSet()
+                println("new best score: $bestScore for $pathPair")
+                pathPairQueue.removeIf { potentialPressure(it) < bestScore }
             }
 
-            if (potentialPressure(pathPair) > bestScore) pathPairs.add(pathPair)
+            if (potentialPressure(pathPair) > bestScore) pathPairQueue.add(pathPair)
         }
+
+//        val extended = unopened.asSequence()
+//            .flatMap {
+//                listOf(Pair(nextToTry.first + it, nextToTry.second), Pair(nextToTry.first, nextToTry.second + it))
+//            }
+//            .filter { it !in visitedPathPairs }
+//            .maxByOrNull(::getPressure)
+////        println("extended: $extended")
+//
+//        if (extended == null) pathPairQueue.remove(nextToTry)
+//        else {
+//            visitedPathPairs.add(extended)
+//            val pressure = getPressure(extended)
+//            if (pressure > bestScore) {
+//                bestScore = pressure
+//                println("new best score: $bestScore for $extended")
+//                pathPairQueue.removeIf { potentialPressure(it) < bestScore }
+//            }
+//            val potentialPressure = potentialPressure(extended)
+//            if (potentialPressure > bestScore) {
+////                println("adding $extended to queue")
+//                pathPairQueue.add(extended)
+//            }
+//        }
+
+//
+//        val (first, second) = nextToTry
+//        val reachableFromFirst = findReachable(
+//            path = first,
+//            visited = first + second,
+//            totalTime = TOTAL_MINUTES_PART_2,
+//            miniMap = miniMap
+//        )
+//        val extensionsOfFirst = reachableFromFirst.map { first + it }
+//
+//        val reachableFromSecond = findReachable(
+//            path = second,
+//            visited = first + second,
+//            totalTime = TOTAL_MINUTES_PART_2,
+//            miniMap = miniMap
+//        )
+//        val extensionsOfSecond = reachableFromSecond.map { second + it }
+//
+//        val newPathPairs =
+//            extensionsOfFirst.map { new -> Pair(new, second) } +
+//                    extensionsOfSecond.map { new -> Pair(first, new) }
+//
+//        newPathPairs.forEach { pathPair ->
+//            val pressure = getPressure(pathPair.first) + getPressure(pathPair.second)
+//
+//            if (pressure > bestScore) {
+//                bestScore = pressure
+//                println("new best score: $bestScore")
+//                pathPairQueue = pathPairQueue.filter { potentialPressure(it) > bestScore }.toMutableSet()
+//            }
+//
+//            if (potentialPressure(pathPair) > bestScore) pathPairQueue.add(pathPair)
+//        }
     }
 
     return bestScore
