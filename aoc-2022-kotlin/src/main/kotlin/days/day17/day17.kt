@@ -1,6 +1,5 @@
 package days.day17
 
-import lib.CompassDirection
 import lib.Reader
 import lib.Vector
 import lib.checkAnswer
@@ -9,7 +8,13 @@ fun main() {
     val input = Reader("day17.txt").chars()
     val exampleInput = Reader("day17-example.txt").chars()
 
-    part1(input).checkAnswer(3067L)
+//    part1(input).checkAnswer(3067L)
+
+//    time(warmUpIterations = 2, iterations = 5) {
+//        findHeight(input, 10_000)
+//    }.checkAnswer(15155)
+
+    findHeight(input, 10_000).checkAnswer(15155)
 }
 
 fun part1(input: List<Char>): Long =
@@ -23,11 +28,30 @@ fun part1(input: List<Char>): Long =
 
 fun findHeight(input: List<Char>, iterations: Int): Long {
     val landed = (0L..6L).map { VectorL(it, 0) }.toMutableSet()
-    val rockRepeater = Repeater(rocks)
-    val jetRepeater = Repeater(parse(input))
+    var highest = 0L
+    var count = 0L
+
+    var rockIndex = -1
+    fun nextRock(): Set<VectorL> {
+        rockIndex = (rockIndex + 1) % rocks.size
+        return rocks[rockIndex]
+    }
+
+    val jets = parse(input)
+    var jetIndex = -1
+    fun nextJet(): VectorL {
+        jetIndex = (jetIndex + 1) % jets.size
+        return jets[jetIndex]
+    }
+
+    fun discardLowerRows() {
+        val rowsToKeep = 40
+        val topY = landed.maxOf { it.y }
+        landed.removeIf { it.y < topY - rowsToKeep }
+    }
 
     fun applyNextJet(rock: Set<VectorL>): Set<VectorL> {
-        val jet = jetRepeater.next()
+        val jet = nextJet()
         val newRock = rock.translate(jet)
         return if (
             newRock.minOf { it.x } >= 0 &&
@@ -43,7 +67,7 @@ fun findHeight(input: List<Char>, iterations: Int): Long {
         else rock
     }
 
-    fun findRestingPlace(rock: Set<VectorL>): Set<VectorL> {
+    tailrec fun findRestingPlace(rock: Set<VectorL>): Set<VectorL> {
         val jettedRock = applyNextJet(rock)
         val downedRock = moveDown(jettedRock)
         return if (downedRock == jettedRock) downedRock
@@ -53,10 +77,14 @@ fun findHeight(input: List<Char>, iterations: Int): Long {
     fun placeNextRock() {
         val topLandedY = landed.maxOf { it.y }
         val initialOffset = VectorL(2, topLandedY + 4)
-        val rock = rockRepeater.next().translate(initialOffset)
+        val rock = nextRock().translate(initialOffset)
 
         val restingPlace = findRestingPlace(rock)
         landed.addAll(restingPlace)
+
+        discardLowerRows()
+
+        count++
     }
 
     repeat(iterations) {
@@ -65,6 +93,8 @@ fun findHeight(input: List<Char>, iterations: Int): Long {
 
     return landed.maxOf { it.y }.toLong()
 }
+
+data class State(val rockIndex: Int, val jetIndex: Int, val rocks: Set<VectorL>)
 
 fun parse(input: List<Char>) =
     input.map {
@@ -76,14 +106,6 @@ fun parse(input: List<Char>) =
     }
 
 fun Set<VectorL>.translate(v: VectorL) = map { it + v }.toSet()
-
-class Repeater<T>(private val items: List<T>) {
-    var i = -1
-    fun next(): T {
-        i = (i + 1) % items.size
-        return items[i]
-    }
-}
 
 val rocks = listOf(
     setOf(VectorL(0, 0), VectorL(1, 0), VectorL(2, 0), VectorL(3, 0)),
