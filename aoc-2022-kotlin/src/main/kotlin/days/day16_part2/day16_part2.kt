@@ -2,6 +2,7 @@ package days.day16_part2
 
 import lib.Reader
 import lib.checkAnswer
+import kotlin.system.exitProcess
 
 fun main() {
     val input = Reader("day16.txt").strings()
@@ -13,6 +14,7 @@ fun main() {
 
 fun part2(input: List<String>): Int {
     val valveData = parse(input)
+
     val valvesWithNonZeroFlow =
         valveData.filter { it.value.first > 0 }.map { it.key }.toSet()
 
@@ -27,17 +29,20 @@ fun part2(input: List<String>): Int {
     val start = listOf("AA")
     var bestScore = 0
 
-    val paths = mutableSetOf(listOf(start, start))
+    var pathPairs = mutableSetOf(Pair(start, start))
 
     val pressures = mutableMapOf(start to 0)
-    fun evaluatePressure(path: List<String>) =
-        days.day16_part1.evaluatePressure(path, TOTAL_MINUTES_PART_2, miniMap, valveData)
     fun getPressure(path: List<String>) =
         pressures[path] ?: run {
-            val score = evaluatePressure(path)
-            pressures[path] = score
-            score
+            val previousPressure = pressures[path.subList(0, path.size - 1)]!!
+            val remainingTime = TOTAL_MINUTES_PART_2 - path.time(miniMap)
+            val additionalPressure = valveData[path.last()]!!.first * remainingTime
+            val pressure = previousPressure + additionalPressure
+            pressures[path] = pressure
+            pressure
         }
+    fun getPressure(pathPair: Pair<List<String>, List<String>>) =
+        getPressure(pathPair.first) + getPressure(pathPair.second)
 
     val times = mutableMapOf(start to 0)
     fun getTime(path: List<String>) =
@@ -49,9 +54,20 @@ fun part2(input: List<String>): Int {
             newTime
         }
 
-    while (paths.isNotEmpty()) {
-        val nextToTry = paths.maxBy { getPressure(it[0]) + getPressure(it[1]) }
-        paths.remove(nextToTry)
+    fun potentialPressure(pathPair: Pair<List<String>, List<String>>): Int {
+        val pressure = getPressure(pathPair)
+        val closedValves = valvesWithNonZeroFlow - pathPair.first.toSet() - pathPair.second.toSet()
+        val shorterPath = listOf(pathPair.first, pathPair.second).minBy(::getTime)
+        val remainingTime = TOTAL_MINUTES_PART_2 - getTime(shorterPath)
+        val potentialPressure = pressure + closedValves.sumOf { v ->
+            remainingTime * valveData[v]!!.first
+        }
+        return potentialPressure
+    }
+
+    while (pathPairs.isNotEmpty()) {
+        val nextToTry = pathPairs.maxBy(::getPressure)
+        pathPairs.remove(nextToTry)
 
         val (first, second) = nextToTry
         val reachableFromFirst = findReachable(
@@ -70,24 +86,20 @@ fun part2(input: List<String>): Int {
         )
         val extensionsOfSecond = reachableFromSecond.map { second + it }
 
-        val newPathses =
-            extensionsOfFirst.map { new -> listOf(new, second) } +
-                    extensionsOfSecond.map { new -> listOf(first, new) }
+        val newPathPairs =
+            extensionsOfFirst.map { new -> Pair(new, second) } +
+                    extensionsOfSecond.map { new -> Pair(first, new) }
 
-        newPathses.forEach {
-            val pressure = getPressure(it[0]) + getPressure(it[1])
+        newPathPairs.forEach { pathPair ->
+            val pressure = getPressure(pathPair.first) + getPressure(pathPair.second)
+
             if (pressure > bestScore) {
                 bestScore = pressure
+                println("new best score: $bestScore")
+                pathPairs = pathPairs.filter { potentialPressure(it) > bestScore }.toMutableSet()
             }
 
-            val shorterPath = it.minBy { getTime(it) }
-
-            val remainingTime = TOTAL_MINUTES_PART_2 - getTime(shorterPath)
-            val closedValves = valvesWithNonZeroFlow - it[0].toSet() - it[1].toSet()
-            val potentialPressure = pressure + closedValves.sumOf { v ->
-                (remainingTime - miniMap[shorterPath.last()]!![v]!!) * valveData[v]!!.first
-            }
-            if (potentialPressure > bestScore) paths.add(it)
+            if (potentialPressure(pathPair) > bestScore) pathPairs.add(pathPair)
         }
     }
 
@@ -110,7 +122,7 @@ fun findReachable(
 
 fun List<String>.time(miniMap: Map<String, Map<String, Int>>) =
     this.windowed(2, 1).fold(0) { acc, (from, to) ->
-        acc + miniMap[from]!![to]!! + 1
+        acc + miniMap[from]!![to]!!
     }
 
 fun ValveData.findShortestDistance(from: String, to: String): Int {
