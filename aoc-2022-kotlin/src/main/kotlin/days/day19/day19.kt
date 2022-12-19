@@ -1,6 +1,7 @@
 package days.day19
 
 import lib.Reader
+import kotlin.system.exitProcess
 
 fun main() {
     val input = Reader("day19.txt").strings()
@@ -11,110 +12,114 @@ fun main() {
 
 fun part1(input: List<String>) {
     val blueprints = input.map(::parse)
-    evaluate(blueprints.first(), 24)
+
+    val totalMinutes = 24
+
+    val initial = List(totalMinutes) { null as Material? }
+//    println(initial)
+//
+//    val improved = improve(initial, blueprints[0])
+//    println(improved)
+//
+//    val improved2 = improve(improved!!, blueprints[0])
+//    println(improved2)
+//
+//    val improved3 = improve(improved2!!, blueprints[0])
+//    println(improved3)
+//
+    var count = 0
+    tailrec fun go(moves: List<Material?>): List<Material?> {
+        count++
+        if (count == 100) exitProcess(0)
+        println()
+        println(moves)
+        println(evaluate(moves, blueprints[0]))
+        val improved = improve(moves, blueprints[0])
+        return if (improved == null) moves
+        else go(improved)
+    }
+
+    val final = go(initial)
+
+    println("hello")
+
+    println(evaluate(final, blueprints[0]))
 }
 
-fun evaluate(blueprint: Blueprint, totalTime: Int) {
-    val initialState = State(
-        time = 0,
-        robots = Resources(ore = 1),
-        resources = Resources(),
-        robotBeingBuilt = null
-    )
+val initialState = State(
+    robots = Resources(ore = 1),
+    resources = Resources(),
+)
 
+fun improve(moves: List<Material?>, blueprint: Blueprint): List<Material?>? {
+    val states = moves.scan(initialState) { acc, material ->
+        acc.calculateNext(material, blueprint)
+    }.dropLast(1).mapIndexed { index, state -> Pair(index, state) }
 
-    val queue = mutableSetOf(initialState)
+    if (!states.all { it.second.resources.allValuesNonNegative() }) throw Exception("Found some -ve resources?! ${states.first { !it.second.resources.allValuesNonNegative() }}")
 
-    var bestState: State = initialState
-
-    while (queue.isNotEmpty()) {
-        println("queue:")
-        queue.forEach(::println)
-        val current =
-            queue.sortedWith(
-                compareBy(
-                    { it.time },
-                    { it.robots },
-                    { it.robotBeingBuilt?.sortOrder ?: -1 },
-                    { it.resources },
-                )
-            ).last()
-        queue.remove(current)
-        print("selected:")
-        println(current)
-        if (current.time == totalTime + 1) {
-            if (current.resources.geode > bestState.resources.geode) bestState = current
-            continue
-        }
-
-        val newRobots =
-            if (current.robotBeingBuilt == null) current.robots
-            else {
-                when (current.robotBeingBuilt) {
-                    Material.ORE -> current.robots + Resources(ore = 1)
-                    Material.CLAY -> current.robots + Resources(clay = 1)
-                    Material.OBSIDIAN -> current.robots + Resources(obsidian = 1)
-                    Material.GEODE -> current.robots + Resources(geode = 1)
-                }
+    Material.values().sortedByDescending { it.sortOrder }.forEach { material ->
+        val index =
+            states.firstOrNull { (index, state) ->
+                state.resources.canBuild(blueprint.getByMaterial(material)) && moves[index] == null
             }
-
-        val potentialRobotsToBuild = mutableListOf(Pair(Resources(), null as Material?))
-        if (current.resources.canBuild(blueprint.oreRobot)) potentialRobotsToBuild.add(
-            Pair(
-                blueprint.oreRobot,
-                Material.ORE
-            )
-        )
-        if (current.resources.canBuild(blueprint.clayRobot)) potentialRobotsToBuild.add(
-            Pair(
-                blueprint.clayRobot,
-                Material.CLAY
-            )
-        )
-        if (current.resources.canBuild(blueprint.obsidianRobot)) potentialRobotsToBuild.add(
-            Pair(
-                blueprint.obsidianRobot,
-                Material.OBSIDIAN
-            )
-        )
-        if (current.resources.canBuild(blueprint.geodeRobot)) potentialRobotsToBuild.add(
-            Pair(
-                blueprint.geodeRobot,
-                Material.GEODE
-            )
-        )
-
-        println("potential new robots")
-        println(potentialRobotsToBuild.map { it.second })
-
-        val newStates = potentialRobotsToBuild.map { (cost, robotToBuild) ->
-            State(
-                time = current.time + 1,
-                robots = newRobots,
-                resources = current.resources + current.robots - cost,
-                robotBeingBuilt = robotToBuild
-            )
-        }.filter { it !in queue }
-
-        println("new states:")
-        println(newStates)
-
-        newStates.forEach { newState ->
-            queue.add(newState)
+        if (index != null) {
+            return moves.replace(index.first, material).nullifyFrom(index.first + 1)
         }
+    }
+
+    return null
+}
+
+fun <T> List<T>.replace(index: Int, value: T): List<T> {
+    val mutable = this.toMutableList()
+    mutable[index] = value
+    return mutable.toList()
+}
+
+fun <T> List<T?>.nullifyFrom(index: Int): List<T?> {
+    return subList(0, index) + List<T?>(size - index) { null }
+}
+
+fun evaluate(moves: List<Material?>, blueprint: Blueprint): State {
+    return moves.fold(initialState) { acc, move ->
+        acc.calculateNext(move, blueprint)
     }
 }
 
-data class State(val time: Int, val robots: Resources, val resources: Resources, val robotBeingBuilt: Material?) :
-    Comparable<State> {
-    override fun compareTo(other: State): Int =
-        when {
-            this.resources.geode < other.resources.geode -> -1
-            this.resources.obsidian < other.resources.obsidian -> -1
-            this.resources.clay < other.resources.clay -> -1
-            else -> this.resources.clay.compareTo(other.resources.clay)
-        }
+fun State.calculateNext(move: Material?, blueprint: Blueprint): State {
+    val newRobots = this.robots + when (move) {
+        null -> Resources()
+        Material.ORE -> Resources(ore = 1)
+        Material.CLAY -> Resources(clay = 1)
+        Material.OBSIDIAN -> Resources(obsidian = 1)
+        Material.GEODE -> Resources(geode = 1)
+    }
+    val newResources = this.resources + this.robots - when (move) {
+        null -> Resources()
+        Material.ORE -> blueprint.oreRobot
+        Material.CLAY -> blueprint.clayRobot
+        Material.OBSIDIAN -> blueprint.obsidianRobot
+        Material.GEODE -> blueprint.geodeRobot
+    }
+    return State(robots = newRobots, resources = newResources)
 }
+
+fun printy(moves: List<Material?>, blueprint: Blueprint) {
+    moves.foldIndexed(initialState) { index, acc, material ->
+        val next = acc.calculateNext(material, blueprint)
+        println()
+        println("== Minute ${index + 1} ==")
+        if (material != null) {
+            println("Spend ${blueprint.getByMaterial(material)} ore to start building a ${material.name.lowercase()}-collecting robot.")
+        }
+        println(material)
+        println(next)
+        next
+    }
+}
+
+data class State(val robots: Resources, val resources: Resources)
 
 data class Resources(val ore: Int = 0, val clay: Int = 0, val obsidian: Int = 0, val geode: Int = 0) :
     Comparable<Resources> {
@@ -135,6 +140,8 @@ data class Resources(val ore: Int = 0, val clay: Int = 0, val obsidian: Int = 0,
             geode = this.geode - other.geode
         )
     }
+
+    fun allValuesNonNegative() = this.ore >= 0 && this.clay >= 0 && this.obsidian >= 0 && this.geode >= 0
 
     fun canBuild(cost: Resources) =
         this.ore >= cost.ore &&
@@ -159,7 +166,15 @@ data class Blueprint(
     val clayRobot: Resources,
     val obsidianRobot: Resources,
     val geodeRobot: Resources
-)
+) {
+    fun getByMaterial(material: Material) =
+        when (material) {
+            Material.ORE -> oreRobot
+            Material.CLAY -> clayRobot
+            Material.OBSIDIAN -> obsidianRobot
+            Material.GEODE -> geodeRobot
+        }
+}
 
 fun parse(input: String): Blueprint {
     val r =
