@@ -29,6 +29,9 @@ data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
         return abs(diff.x) <= 1 && abs(diff.y) <= 1
     }
 
+    fun rotateLeft() = Vector(-y, x)
+    fun rotateRight() = Vector(y, -x)
+
     fun rotateQuarterTurnsCCW(quarterTurns: Int = 1) =
         this.repeatedlyApply(quarterTurns % 4) {
             Vector(
