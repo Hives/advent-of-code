@@ -6,27 +6,39 @@ import java.util.PriorityQueue
 
 fun main() {
     val input = Reader("day24.txt").strings()
+    // not 252
+    // not 279
+    // 285 is too high
+    // 337 is too high (also 336)
+
     val exampleInput = Reader("day24-example.txt").strings()
     val simpleExampleInput = Reader("day24-simple-example.txt").strings()
 
-    part1(exampleInput)
-    // 285 is too high
-    // 337 is too high (also 336)
+    part1(input)
 }
 
 fun part1(input: List<String>) {
     val initialBoard = parse(input)
     val boardPermutations = generateBoardPermutations(initialBoard)
-    val initialState = State(position = Vector(1, 0), boardIndex = 0)
-    aStar(initialState, boardPermutations)
-        .also {
-            it.forEachIndexed { index, it ->
-//                it.printy(boardPermutations)
-//                println(it)
-//                println(index)
-            }
-            println(it.size - 1)
-        }
+    val start = initialBoard.initial
+    val goal = initialBoard.destination
+
+    val initialState = State(position = start, boardIndex = 0)
+    val path = aStar(initialState, boardPermutations)
+    val stepValidation = path.windowed(2, 1).all {
+        val from = it[0]
+        val to = it[1]
+        (from.position - to.position).manhattanDistance <= 1
+    }
+    println("step validation: $stepValidation")
+    println("start validation: ${path.first().position == start}")
+    println("end validation: ${path.last().position == goal}")
+    val blizzardValidation = path.all {
+        it.position !in boardPermutations[it.boardIndex].blizzards
+    }
+    println("blizzard validation: $blizzardValidation")
+
+    println("time taken: ${path.size - 1}")
 }
 
 fun generateBoardPermutations(initialBoard: Board): List<Board> {
@@ -59,14 +71,18 @@ fun reconstructPath(cameFrom: Map<State, State>, start: Vector, goal: State): Li
 }
 
 fun aStar(initial: State, boards: List<Board>): List<State> {
-    val INFINITY = 1_000_000
     val (start, goal) = boards.first().let { Pair(it.initial, it.destination) }
     fun h(state: State) = (goal - state.position).manhattanDistance
-    val openSet2 = PriorityQueue(compareBy<State> { h(it) })
-    openSet2.add(initial)
+
     val cameFrom = mutableMapOf<State, State>()
+
     val gScore = mutableMapOf(initial to 0)
+
     val fScore = mutableMapOf(initial to h(initial))
+
+    val openSet2 = PriorityQueue(compareBy<State> { fScore[it] })
+    openSet2.add(initial)
+
     while (openSet2.isNotEmpty()) {
         val current = openSet2.poll()
 //        println()
@@ -82,9 +98,7 @@ fun aStar(initial: State, boards: List<Board>): List<State> {
                     cameFrom[nextState] = current
                     gScore[nextState] = tentativeGScore
                     fScore[nextState] = tentativeGScore + h(nextState)
-                    if (nextState !in openSet2) {
-                        openSet2.add(nextState)
-                    }
+                    openSet2.add(nextState)
                 }
             }
         }
@@ -212,3 +226,5 @@ enum class Moves(val v: Vector) {
     LEFT(Vector(-1, 0)),
     WAIT(Vector(0, 0))
 }
+
+const val INFINITY = 1_000_000
