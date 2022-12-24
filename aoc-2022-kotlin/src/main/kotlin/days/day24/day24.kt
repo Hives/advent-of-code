@@ -9,7 +9,8 @@ fun main() {
     val exampleInput = Reader("day24-example.txt").strings()
     val simpleExampleInput = Reader("day24-simple-example.txt").strings()
 
-    part1(input)
+    part1(exampleInput)
+    // 285 is too high
     // 337 is too high (also 336)
 }
 
@@ -18,7 +19,14 @@ fun part1(input: List<String>) {
     val boardPermutations = generateBoardPermutations(initialBoard)
     val initialState = State(position = Vector(1, 0), boardIndex = 0)
     aStar(initialState, boardPermutations)
-        .also { println(it.size) }
+        .also {
+            it.forEachIndexed { index, it ->
+//                it.printy(boardPermutations)
+//                println(it)
+//                println(index)
+            }
+            println(it.size - 1)
+        }
 }
 
 fun generateBoardPermutations(initialBoard: Board): List<Board> {
@@ -47,30 +55,35 @@ fun reconstructPath(cameFrom: Map<State, State>, start: Vector, goal: State): Li
         current = cameFrom[current]!!
         path.add(current)
     }
-    return path
+    return path.reversed()
 }
 
 fun aStar(initial: State, boards: List<Board>): List<State> {
+    val INFINITY = 1_000_000
     val (start, goal) = boards.first().let { Pair(it.initial, it.destination) }
     fun h(state: State) = (goal - state.position).manhattanDistance
-    val openSet2 = PriorityQueue(compareBy<State> { -h(it) })
+    val openSet2 = PriorityQueue(compareBy<State> { h(it) })
     openSet2.add(initial)
     val cameFrom = mutableMapOf<State, State>()
-    val gScore = mutableMapOf(initial to Int.MAX_VALUE)
+    val gScore = mutableMapOf(initial to 0)
     val fScore = mutableMapOf(initial to h(initial))
     while (openSet2.isNotEmpty()) {
         val current = openSet2.poll()
+//        println()
+//        println("current: $current - score: ${gScore[current]}")
         if (current.position == goal) {
             return reconstructPath(cameFrom, start, current)
         } else {
-            current.possibleNextStates(boards).forEach { neighbour ->
+            current.possibleNextStates(boards).forEach { nextState ->
+//                println("nextState: $nextState")
                 val tentativeGScore = gScore[current]!! + 1
-                if (tentativeGScore < gScore.getOrDefault(neighbour, Int.MAX_VALUE)) {
-                    cameFrom[neighbour] = current
-                    gScore[neighbour] = tentativeGScore
-                    fScore[neighbour] = tentativeGScore + h(neighbour)
-                    if (neighbour !in openSet2) {
-                        openSet2.add(neighbour)
+//                println("tentativeGScore: $tentativeGScore")
+                if (tentativeGScore < gScore.getOrDefault(nextState, INFINITY)) {
+                    cameFrom[nextState] = current
+                    gScore[nextState] = tentativeGScore
+                    fScore[nextState] = tentativeGScore + h(nextState)
+                    if (nextState !in openSet2) {
+                        openSet2.add(nextState)
                     }
                 }
             }
@@ -92,6 +105,36 @@ data class State(
         return newPositions.map { newPosition ->
             State(position = newPosition, boardIndex = newBoardIndex)
         }
+    }
+
+    fun printy(boards: List<Board>) {
+        println()
+        val board = boards[boardIndex]
+        val grid = (0..board.maxY).map { y ->
+            (0..board.maxX).map { x ->
+                when {
+                    y == board.minY || y == board.maxY || x == board.minX || x == board.maxX -> "#"
+                    Vector(x, y) == position -> "E"
+                    else -> "."
+                }
+            }.toMutableList()
+        }
+
+        board.blizzards.forEach { (location, directions) ->
+            val c = if (directions.size > 1) "${directions.size}"
+            else {
+                when (directions.single()) {
+                    Moves.UP.v -> "^"
+                    Moves.DOWN.v -> "v"
+                    Moves.LEFT.v -> "<"
+                    Moves.RIGHT.v -> ">"
+                    else -> throw Exception("Bad direction ${directions.single()}")
+                }
+            }
+            grid[location.y][location.x] = c
+        }
+
+        grid.forEach { println(it.joinToString("")) }
     }
 }
 
