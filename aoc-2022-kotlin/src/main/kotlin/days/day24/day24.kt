@@ -9,17 +9,34 @@ fun main() {
     val exampleInput = Reader("day24-example.txt").strings()
     val simpleExampleInput = Reader("day24-simple-example.txt").strings()
 
-    part1(exampleInput)
+    part1(input)
+    // 337 is too high (also 336)
 }
 
 fun part1(input: List<String>) {
-    val initial = parse(input)
-
-    aStar(initial)
+    val initialBoard = parse(input)
+    val boardPermutations = generateBoardPermutations(initialBoard)
+    val initialState = State(position = Vector(1, 0), boardIndex = 0)
+    aStar(initialState, boardPermutations)
         .also { println(it.size) }
 }
 
-fun generateBoardPermutations(initial: State) {}
+fun generateBoardPermutations(initialBoard: Board): List<Board> {
+    val boardPermutations = mutableListOf(initialBoard)
+
+    tailrec fun go(board: Board) {
+        val newBoard = board.updateBlizzards()
+        if (newBoard == boardPermutations.first()) return
+        else {
+            boardPermutations.add(newBoard)
+            go(newBoard)
+        }
+    }
+
+    go(initialBoard)
+
+    return boardPermutations
+}
 
 fun reconstructPath(cameFrom: Map<State, State>, start: Vector, goal: State): List<State> {
     println("reconstructin")
@@ -33,24 +50,20 @@ fun reconstructPath(cameFrom: Map<State, State>, start: Vector, goal: State): Li
     return path
 }
 
-fun aStar(initial: State): List<State> {
-    val goal = initial.board.destination
-    val start = initial.board.initial
-
+fun aStar(initial: State, boards: List<Board>): List<State> {
+    val (start, goal) = boards.first().let { Pair(it.initial, it.destination) }
     fun h(state: State) = (goal - state.position).manhattanDistance
     val openSet2 = PriorityQueue(compareBy<State> { -h(it) })
     openSet2.add(initial)
-//    val openSet = mutableSetOf(initial)
     val cameFrom = mutableMapOf<State, State>()
     val gScore = mutableMapOf(initial to Int.MAX_VALUE)
     val fScore = mutableMapOf(initial to h(initial))
     while (openSet2.isNotEmpty()) {
         val current = openSet2.poll()
-//        println(current.position)
         if (current.position == goal) {
             return reconstructPath(cameFrom, start, current)
         } else {
-            current.possibleNextStates().forEach { neighbour ->
+            current.possibleNextStates(boards).forEach { neighbour ->
                 val tentativeGScore = gScore[current]!! + 1
                 if (tentativeGScore < gScore.getOrDefault(neighbour, Int.MAX_VALUE)) {
                     cameFrom[neighbour] = current
@@ -67,49 +80,19 @@ fun aStar(initial: State): List<State> {
 }
 
 data class State(
-    val board: Board,
-    val position: Vector
+    val position: Vector,
+    val boardIndex: Int
 ) {
-    fun possibleNextStates(): List<State> {
-        val newBoard = board.updateBlizzards()
+    fun possibleNextStates(boards: List<Board>): List<State> {
+        val newBoardIndex = (boardIndex + 1) % boards.size
+        val newBoard = boards[newBoardIndex]
         val newPositions = Moves.values().map { position + it.v }.filter {
             it !in newBoard.blizzards.keys && newBoard.isWithinBounds(it)
         }
-        return newPositions.map {
-            this.copy(position = it, board = newBoard)
+        return newPositions.map { newPosition ->
+            State(position = newPosition, boardIndex = newBoardIndex)
         }
     }
-
-    fun printy() {
-        println()
-        (board.minY..board.maxY).map { y ->
-            when (y) {
-                board.minY -> List(board.maxX - board.minX + 1) { '#' }.joinToString("")
-                board.maxY -> List(board.maxX - board.minX + 1) { '#' }.joinToString("")
-                else -> (board.minX..board.maxX).joinToString("") { x ->
-                    val v = Vector(x, y)
-                    when {
-                        v == position -> "E"
-                        x == board.minX -> "#"
-                        x == board.maxX -> "#"
-                        v in board.blizzards.keys -> {
-                            if (board.blizzards[v]!!.size > 1) board.blizzards[v]!!.size.toString()
-                            else when (board.blizzards[v]!!.single()) {
-                                Moves.UP.v -> "^"
-                                Moves.DOWN.v -> "v"
-                                Moves.LEFT.v -> "<"
-                                Moves.RIGHT.v -> ">"
-                                else -> throw Exception("Bad blizzard direction")
-                            }
-                        }
-
-                        else -> "."
-                    }
-                }
-            }
-        }.forEach { println(it) }
-    }
-
 }
 
 data class Board(
@@ -156,7 +139,7 @@ data class Board(
 
 }
 
-fun parse(input: List<String>): State {
+fun parse(input: List<String>): Board {
     val blizzards = input.indices.flatMap { y ->
         input[y].indices.mapNotNull { x ->
             when (input[y][x]) {
@@ -169,15 +152,12 @@ fun parse(input: List<String>): State {
         }
     }.toMap()
 
-    return State(
-        position = Vector(1, 0),
-        board = Board(
-            blizzards = blizzards,
-            minX = 0,
-            maxX = input.first().length - 1,
-            minY = 0,
-            maxY = input.size - 1,
-        )
+    return Board(
+        blizzards = blizzards,
+        minX = 0,
+        maxX = input.first().length - 1,
+        minY = 0,
+        maxY = input.size - 1,
     )
 }
 
