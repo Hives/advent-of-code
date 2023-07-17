@@ -1,6 +1,8 @@
 package days.day19_3
 
 import lib.Reader
+import lib.checkAnswer
+import lib.time
 import java.util.PriorityQueue
 import kotlin.math.ceil
 
@@ -8,13 +10,13 @@ fun main() {
     val input = Reader("day19.txt").strings()
     val exampleInput = Reader("day19-example.txt").strings()
 
-    part1(input)
+    time(iterations = 2, warmUpIterations = 2, message = "Part 1") {
+        part1(input)
+    }.checkAnswer(1264)
 }
 
-fun part1(input: List<String>) {
-    val blueprints = input.map(::parse)
-    println(blueprints.sumOf(::getQualityLevel))
-}
+fun part1(input: List<String>) =
+    input.map(::parse).sumOf(::getQualityLevel)
 
 fun getQualityLevel(blueprint: Blueprint) = findMaxGeodes(blueprint) * blueprint.id
 
