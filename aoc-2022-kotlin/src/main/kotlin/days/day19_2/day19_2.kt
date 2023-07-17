@@ -6,6 +6,7 @@ import days.day19_2.Resource.OBSIDIAN
 import days.day19_2.Resource.ORE
 import lib.Reader
 import java.util.PriorityQueue
+import kotlin.math.ceil
 
 fun main() {
     val input = Reader("day19.txt").strings()
@@ -29,8 +30,8 @@ class Solver(
     fun dfs() {
         val queue = PriorityQueue<List<Resource?>>(
             compareBy(
-//                { path -> -path.size },
-//                { path -> maxPossible(path) },
+                { path -> -path.size },
+                { path -> -maxPossible(path) },
                 { path -> evaluate(path).geodes },
                 { path -> evaluate(path).robots.getOrDefault(GEODE, 0) },
                 { path -> evaluate(path).robots.getOrDefault(OBSIDIAN, 0) },
@@ -41,7 +42,8 @@ class Solver(
         while (queue.isNotEmpty()) {
             println()
             println("best so far: ${evaluate(bestCompletePath).geodes}")
-            println(bestCompletePath)
+            println("best path: $bestCompletePath")
+            println("best path size: ${bestCompletePath.size}")
             println("queue size: ${queue.size}")
             val current = queue.poll()
             println("current: $current")
@@ -62,6 +64,8 @@ class Solver(
                             queue.add(newPath)
                         }
                     }
+            } else {
+                println("               ditching $current")
             }
         }
 
@@ -84,12 +88,12 @@ class Solver(
                     else prevState.robots
 
                 val newResources =
-                    prevState.resources.plus(newRobots).let {
+                    prevState.resources.let {
                         if (lastMove != null) {
                             val cost = blueprint[lastMove]!!
                             it.deduct(cost)
                         } else it
-                    }
+                    }.plus(newRobots)
 
                 val newState = State(
                     resources = newResources,
@@ -97,6 +101,9 @@ class Solver(
                 )
 
                 cachedEvaluations[path] = newState
+                println(path.size)
+                println(path.last())
+                println(newState)
 
                 newState
             }
@@ -111,24 +118,37 @@ class Solver(
     }
 
     private fun nextPaths(path: Path): List<Path> {
+//        println("getting next paths")
+//        println("current path: $path")
         val state = evaluate(path)
         val remainingTime = totalTime - path.size
+//        println(state)
 
-        val possibleRobots = Resource.values()
-            .filter { robot ->
-                val cost = blueprint[robot]!!
-                cost.all { (resource, count) ->
-                    state.resources.getOrDefault(resource, 0) >= count
-                }
+        val possibleRobots = Resource.values().filter { robot ->
+            val required = blueprint[robot]!!
+            required.keys.all { it in state.robots.keys }
+        }
+
+        val paths = possibleRobots.map { robot ->
+            val cost = blueprint[robot]!!
+            val timeToAfford = cost.maxOf { (resource, required) ->
+                val outstanding = (required - state.resources.getOrDefault(resource, 0)).coerceAtLeast(0)
+                val timeRequired = ceil(outstanding.toDouble() / state.robots[resource]!!).toInt()
+                timeRequired
             }
-//        println("possible robots: $possibleRobots")
+            path + List(timeToAfford) { null } + robot
+        }
+            .filterNot {
+                it.size > totalTime
+            }
+            .filter {
+                remainingTime >= remainingTimeRequiredToBeWorthBuilding[it.last()]!!
+            }
+            .ifEmpty {
+                listOf(path + List<Resource?>(remainingTime) { null })
+            }
 
-        val sensibleRobots = remainingTimeRequiredToBeWorthBuilding
-            .filter { (_, time) -> remainingTime >= time }
-            .keys
-//        println("sensible robots: $sensibleRobots")
-
-        return (possibleRobots.intersect(sensibleRobots) + null).map { path + it }
+        return paths
     }
 
     private fun isComplete(path: Path): Boolean = path.size == totalTime
