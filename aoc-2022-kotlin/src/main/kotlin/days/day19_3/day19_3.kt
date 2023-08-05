@@ -13,15 +13,26 @@ fun main() {
     time(iterations = 2, warmUpIterations = 2, message = "Part 1") {
         part1(input)
     }.checkAnswer(1264)
+
+    // WARNING - very slow (6 minutes)
+    time(iterations = 1, warmUpIterations = 0, message = "Part 2") {
+        part2(input)
+    }.checkAnswer(13475)
 }
 
 fun part1(input: List<String>) =
-    input.map(::parse).sumOf(::getQualityLevel)
+    input.map(::parse).sumOf { findMaxGeodes(it, 24) * it.id }
 
-fun getQualityLevel(blueprint: Blueprint) = findMaxGeodes(blueprint) * blueprint.id
+fun part2(input: List<String>): Int =
+    input.asSequence()
+        .take(3)
+        .map(::parse)
+        .map { findMaxGeodes(it, 32) }
+        .onEach(::println)
+        .reduce(Int::times)
 
-fun findMaxGeodes(blueprint: Blueprint): Int {
-    val initialState = State(time = 24, oreRobots = 1)
+fun findMaxGeodes(blueprint: Blueprint, time: Int): Int {
+    val initialState = State(time = time, oreRobots = 1)
 
     val stateQueue = PriorityQueue<State>()
     stateQueue.add(initialState)
