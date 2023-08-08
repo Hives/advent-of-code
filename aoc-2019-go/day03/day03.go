@@ -8,28 +8,30 @@ import (
 )
 
 func main() {
-	//example1 := reader.Strings("./example1.txt")
 	input := reader.Strings("./input.txt")
 	fmt.Println(part1(input))
+	fmt.Println(part2(input))
 }
 
 func part1(input []string) int {
 	points1 := getPoints(input[0])
 	points2 := getPoints(input[1])
-	intersections := intersection(points1, points2)
-	closest := intersections[0]
-	for _, p := range intersections {
-		if manhattan(p) < manhattan(closest) {
-			closest = p
-		}
-	}
-	return manhattan(closest)
+	closest := findClosestIntersection1(points1, points2)
+	return closest
 }
 
-func getPoints(wire string) []point {
+func part2(input []string) int {
+	points1 := getPoints(input[0])
+	points2 := getPoints(input[1])
+	closest := findClosestIntersection2(points1, points2)
+	return closest
+}
+
+func getPoints(wire string) []pointAndDist {
 	segments := parseWire(wire)
 	current := point{0, 0}
-	var points []point
+	distance := 0
+	var points []pointAndDist
 	for _, segment := range segments {
 		var direction point
 		switch segment.dir {
@@ -45,8 +47,9 @@ func getPoints(wire string) []point {
 			panic(fmt.Sprintf("Unknown direction: %v", segment.dir))
 		}
 		for i := 0; i < segment.dist; i++ {
+			distance = distance + 1
 			newPoint := point{current.x + direction.x, current.y + direction.y}
-			points = append(points, newPoint)
+			points = append(points, pointAndDist{newPoint, distance})
 			current = newPoint
 		}
 	}
@@ -64,19 +67,53 @@ func parseWire(wire string) []segment {
 	return segments
 }
 
-func intersection(points1 []point, points2 []point) []point {
+func findClosestIntersection1(points1 []pointAndDist, points2 []pointAndDist) int {
 	points1Map := make(map[point]struct{})
 	for _, point := range points1 {
-		points1Map[point] = struct{}{}
+		points1Map[point.p] = struct{}{}
 	}
-	var commonPoints []point
+
+	closest := 1000000000
+
 	for _, point := range points2 {
-		_, found := points1Map[point]
+		_, found := points1Map[point.p]
 		if found {
-			commonPoints = append(commonPoints, point)
+			distance := manhattan(point.p)
+			if distance < closest {
+				closest = distance
+			}
 		}
 	}
-	return commonPoints
+
+	return closest
+}
+
+func findClosestIntersection2(points1 []pointAndDist, points2 []pointAndDist) int {
+	points1Map := make(map[point]int)
+	for _, point := range points1 {
+		_, found := points1Map[point.p]
+		if found {
+			if point.dist < points1Map[point.p] {
+				points1Map[point.p] = point.dist
+			}
+		} else {
+			points1Map[point.p] = point.dist
+		}
+	}
+
+	closest := 1000000000
+
+	for _, point := range points2 {
+		wire1Distance, found := points1Map[point.p]
+		if found {
+			distance := wire1Distance + point.dist
+			if distance < closest {
+				closest = distance
+			}
+		}
+	}
+
+	return closest
 }
 
 func manhattan(p point) int {
@@ -98,4 +135,9 @@ type segment struct {
 type point struct {
 	x int
 	y int
+}
+
+type pointAndDist struct {
+	p    point
+	dist int
 }
