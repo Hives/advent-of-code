@@ -1,0 +1,66 @@
+package main
+
+import (
+	"fmt"
+	"reader"
+)
+
+func main() {
+	input := reader.Ints("./input.txt")
+	fmt.Println(part1(input))
+	fmt.Println(part2(input))
+}
+
+func part1(program []int) int {
+	finalState := run(program, 12, 2)
+	return finalState[0]
+}
+
+func part2(program []int) int {
+	for noun := range [100]int{} {
+		for verb := range [100]int{} {
+			finalState := run(program, noun, verb)
+			if finalState[0] == 19690720 {
+				return 100*noun + verb
+			}
+		}
+	}
+
+	return -1
+}
+
+func run(inputProgram []int, noun int, verb int) []int {
+	program := append([]int{}, inputProgram...)
+	program[1] = noun
+	program[2] = verb
+
+	pointer := 0
+
+	for program[pointer] != 99 {
+		opcode := program[pointer]
+		switch opcode {
+		case 1:
+			// addition
+			input1Position := program[pointer+1]
+			input2Position := program[pointer+2]
+			outputPosition := program[pointer+3]
+
+			program[outputPosition] = program[input1Position] + program[input2Position]
+
+			pointer = pointer + 4
+		case 2:
+			// multiplication
+			input1Position := program[pointer+1]
+			input2Position := program[pointer+2]
+			outputPosition := program[pointer+3]
+
+			program[outputPosition] = program[input1Position] * program[input2Position]
+
+			pointer = pointer + 4
+		default:
+			panic(fmt.Sprintf("Unknown opcode: %v", opcode))
+		}
+	}
+
+	return program
+}
