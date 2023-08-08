@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"aoc"
 	"reader"
 )
 
 func main() {
 	//input := reader.Strings("./input.txt")
-	fmt.Println("Hello, world!")
+    aoc.CheckAnswer("Part 1", "ACTUAL", "EXPECTED")
 }
