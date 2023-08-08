@@ -1,0 +1,11 @@
+package main
+
+import (
+	"fmt"
+	"reader"
+)
+
+func main() {
+	//input := reader.Strings("./input.txt")
+	fmt.Println("Hello, world!")
+}

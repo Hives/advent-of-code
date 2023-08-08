@@ -9,7 +9,6 @@ func main() {
 	input := reader.Ints("./input.txt")
 	fmt.Println(part1(input))
 	fmt.Println(part2(input))
-	fmt.Println(getFuel2(1969))
 }
 
 func part1(masses []int) int {
