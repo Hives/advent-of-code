@@ -1,14 +1,28 @@
 package main
 
 import (
+	"aoc"
 	"fmt"
 	"reader"
+	"strconv"
+	"strings"
 )
 
 func main() {
-	input := reader.Ints("./input.txt")
-	fmt.Println(part1(input))
-	fmt.Println(part2(input))
+	inputPath := "./input.txt"
+	aoc.CheckAnswer("Part 1", part1(parse(inputPath)), 3716250)
+	aoc.CheckAnswer("Part 2", part2(parse(inputPath)), 6472)
+}
+
+func parse(path string) []int {
+	input := reader.Strings(path)
+	split := strings.Split(input[0], ",")
+	var ints []int
+	for _, s := range split {
+		n, _ := strconv.Atoi(s)
+		ints = append(ints, n)
+	}
+	return ints
 }
 
 func part1(program []int) int {

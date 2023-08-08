@@ -1,6 +1,7 @@
 package main
 
 import (
+	"aoc"
 	"fmt"
 	"reader"
 	"strconv"
@@ -9,8 +10,8 @@ import (
 
 func main() {
 	input := reader.Strings("./input.txt")
-	fmt.Println(part1(input))
-	fmt.Println(part2(input))
+	aoc.CheckAnswer("Part 1", part1(input), 1431)
+	aoc.CheckAnswer("Part 2", part2(input), 48012)
 }
 
 func part1(input []string) int {

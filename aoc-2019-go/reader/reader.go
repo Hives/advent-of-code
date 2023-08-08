@@ -21,11 +21,9 @@ func Strings(path string) (ret []string) {
 }
 
 func Ints(path string) []int {
-	input := String(path)
-	trimmed := strings.Trim(input, "\n")
-	split := strings.Split(trimmed, ",")
+	input := Strings(path)
 	var ints []int
-	for _, s := range split {
+	for _, s := range input {
 		n, err := strconv.Atoi(s)
 		check(err)
 		ints = append(ints, n)

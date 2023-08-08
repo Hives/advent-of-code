@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt"
+	"aoc"
 	"reader"
 )
 
 func main() {
 	input := reader.Ints("./input.txt")
-	fmt.Println(part1(input))
-	fmt.Println(part2(input))
+	aoc.CheckAnswer("Part 1", part1(input), 3406432)
+	aoc.CheckAnswer("Part 2", part2(input), 5106777)
 }
 
 func part1(masses []int) int {
