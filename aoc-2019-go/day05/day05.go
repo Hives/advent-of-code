@@ -41,132 +41,75 @@ func sliceToMap(ns []int) map[int]int {
 }
 
 func run(state state) state {
-	counter := 0
 
 	for state.readOpcode() != 99 {
-		counter = counter + 1
+		pointer := state.pointer
+
+		modes := state.parameterModes()
+		param1 := state.getParam(pointer+1, modes.get(0))
+		param2 := state.getParam(pointer+2, modes.get(1))
+
 		switch state.readOpcode() {
 		case 1:
-			opcode1Addition(&state)
+			// addition
+			writePosition := state.program[pointer+3]
+			state.program[writePosition] = param1 + param2
+			state.pointer = pointer + 4
 		case 2:
-			opcode2Multiplication(&state)
+			// multiplication
+			writePosition := state.program[pointer+3]
+			state.program[writePosition] = param1 * param2
+			state.pointer = pointer + 4
 		case 3:
-			opcode3Input(&state)
+			// read input
+			input := state.takeInput()
+			writePosition := state.program[pointer+1]
+			state.program[writePosition] = input
+			state.pointer = pointer + 2
 		case 4:
-			opcode4Output(&state)
+			// write output
+			readPosition := state.program[pointer+1]
+			value := state.program[readPosition]
+			state.output = append(state.output, value)
+			state.pointer = pointer + 2
 		case 5:
-			opcode5JumpIfTrue(&state)
+			// jump if true
+			if param1 != 0 {
+				state.pointer = param2
+			} else {
+				state.pointer = pointer + 3
+			}
 		case 6:
-			opcode6JumpIfFalse(&state)
+			// jump if false
+			if param1 == 0 {
+				state.pointer = param2
+			} else {
+				state.pointer = pointer + 3
+			}
 		case 7:
-			opcode7LessThan(&state)
+			// less than
+			writePosition := state.program[pointer+3]
+			if param1 < param2 {
+				state.program[writePosition] = 1
+			} else {
+				state.program[writePosition] = 0
+			}
+			state.pointer = pointer + 4
 		case 8:
-			opcode8Equals(&state)
+			// equals
+			writePosition := state.program[pointer+3]
+			if param1 == param2 {
+				state.program[writePosition] = 1
+			} else {
+				state.program[writePosition] = 0
+			}
+			state.pointer = pointer + 4
 		default:
 			panic(fmt.Sprintf("Unknown opcode: %v", state.readOpcode()))
 		}
 	}
 
 	return state
-}
-
-func opcode1Addition(s *state) {
-	modes := s.parameterModes()
-
-	param1 := s.getParam(s.pointer+1, getOrZero(modes, 0))
-	param2 := s.getParam(s.pointer+2, getOrZero(modes, 1))
-	outputPosition := s.program[s.pointer+3]
-
-	s.program[outputPosition] = param1 + param2
-
-	s.pointer = s.pointer + 4
-}
-
-func opcode2Multiplication(s *state) {
-	modes := s.parameterModes()
-
-	param1 := s.getParam(s.pointer+1, getOrZero(modes, 0))
-	param2 := s.getParam(s.pointer+2, getOrZero(modes, 1))
-	outputPosition := s.program[s.pointer+3]
-
-	s.program[outputPosition] = param1 * param2
-
-	s.pointer = s.pointer + 4
-}
-
-func opcode3Input(s *state) {
-	writePosition := s.program[s.pointer+1]
-	input := s.takeInput()
-
-	s.program[writePosition] = input
-
-	s.pointer = s.pointer + 2
-}
-
-func opcode4Output(s *state) {
-	readPosition := s.program[s.pointer+1]
-
-	s.output = append(s.output, s.program[readPosition])
-
-	s.pointer = s.pointer + 2
-}
-
-func opcode5JumpIfTrue(s *state) {
-	modes := s.parameterModes()
-
-	param1 := s.getParam(s.pointer+1, getOrZero(modes, 0))
-	param2 := s.getParam(s.pointer+2, getOrZero(modes, 1))
-
-	if param1 != 0 {
-		s.pointer = param2
-	} else {
-		s.pointer = s.pointer + 3
-	}
-}
-
-func opcode6JumpIfFalse(s *state) {
-	modes := s.parameterModes()
-
-	param1 := s.getParam(s.pointer+1, getOrZero(modes, 0))
-	param2 := s.getParam(s.pointer+2, getOrZero(modes, 1))
-
-	if param1 == 0 {
-		s.pointer = param2
-	} else {
-		s.pointer = s.pointer + 3
-	}
-}
-
-func opcode7LessThan(s *state) {
-	modes := s.parameterModes()
-
-	param1 := s.getParam(s.pointer+1, getOrZero(modes, 0))
-	param2 := s.getParam(s.pointer+2, getOrZero(modes, 1))
-	outputPosition := s.program[s.pointer+3]
-
-	if param1 < param2 {
-		s.program[outputPosition] = 1
-	} else {
-		s.program[outputPosition] = 0
-	}
-
-	s.pointer = s.pointer + 4
-}
-
-func opcode8Equals(s *state) {
-	modes := s.parameterModes()
-
-	param1 := s.getParam(s.pointer+1, getOrZero(modes, 0))
-	param2 := s.getParam(s.pointer+2, getOrZero(modes, 1))
-	outputPosition := s.program[s.pointer+3]
-
-	if param1 == param2 {
-		s.program[outputPosition] = 1
-	} else {
-		s.program[outputPosition] = 0
-	}
-
-	s.pointer = s.pointer + 4
 }
 
 type state struct {
@@ -184,7 +127,7 @@ func (s state) readOpcode() int {
 	return s.current() % 100
 }
 
-func (s state) parameterModes() []int {
+func (s state) parameterModes() defaultedList {
 	modesDigits := s.current() / 100
 	var modes []int
 	for modesDigits > 0 {
@@ -192,11 +135,7 @@ func (s state) parameterModes() []int {
 		modes = append(modes, digit)
 		modesDigits = modesDigits / 10
 	}
-	return modes
-}
-
-func (s state) read(i int) int {
-	return s.program[i]
+	return defaultedList{ns: modes, fallback: 0}
 }
 
 func (s state) getParam(i int, mode int) int {
@@ -234,9 +173,14 @@ func (s state) print() {
 	fmt.Println("------------------")
 }
 
-func getOrZero(ns []int, i int) int {
-	if i < len(ns) {
-		return ns[i]
+type defaultedList struct {
+	ns       []int
+	fallback int
+}
+
+func (l defaultedList) get(i int) int {
+	if i < len(l.ns) {
+		return l.ns[i]
 	}
-	return 0
+	return l.fallback
 }
