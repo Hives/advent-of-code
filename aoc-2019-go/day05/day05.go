@@ -9,12 +9,23 @@ import (
 func main() {
 	input := reader.Program("./input.txt")
 	aoc.CheckAnswer("Part 1", part1(input), 5044655)
+	aoc.CheckAnswer("Part 2", part2(input), 7408802)
 }
 
-func part1(program []int) int {
+func part1(input []int) int {
 	initial := state{
-		program: sliceToMap(program),
+		program: sliceToMap(input),
 		input:   []int{1},
+		pointer: 0,
+	}
+	final := run(initial)
+	return final.output[len(final.output)-1]
+}
+
+func part2(input []int) int {
+	initial := state{
+		program: sliceToMap(input),
+		input:   []int{5},
 		pointer: 0,
 	}
 	final := run(initial)
@@ -34,8 +45,6 @@ func run(state state) state {
 
 	for state.readOpcode() != 99 {
 		counter = counter + 1
-		state.print()
-		fmt.Println("state.current(): ", state.current())
 		switch state.readOpcode() {
 		case 1:
 			opcode1Addition(&state)
@@ -45,65 +54,119 @@ func run(state state) state {
 			opcode3Input(&state)
 		case 4:
 			opcode4Output(&state)
+		case 5:
+			opcode5JumpIfTrue(&state)
+		case 6:
+			opcode6JumpIfFalse(&state)
+		case 7:
+			opcode7LessThan(&state)
+		case 8:
+			opcode8Equals(&state)
 		default:
 			panic(fmt.Sprintf("Unknown opcode: %v", state.readOpcode()))
 		}
 	}
 
-	fmt.Println("counter: ", counter)
-
 	return state
 }
 
 func opcode1Addition(s *state) {
-	fmt.Println("Addin")
-
 	modes := s.parameterModes()
 
 	param1 := s.getParam(s.pointer+1, getOrZero(modes, 0))
 	param2 := s.getParam(s.pointer+2, getOrZero(modes, 1))
 	outputPosition := s.program[s.pointer+3]
 
-	set(s, outputPosition, param1+param2)
+	s.program[outputPosition] = param1 + param2
 
 	s.pointer = s.pointer + 4
 }
 
 func opcode2Multiplication(s *state) {
-	fmt.Println("Multiplyin")
-
 	modes := s.parameterModes()
 
 	param1 := s.getParam(s.pointer+1, getOrZero(modes, 0))
 	param2 := s.getParam(s.pointer+2, getOrZero(modes, 1))
 	outputPosition := s.program[s.pointer+3]
 
-	set(s, outputPosition, param1*param2)
+	s.program[outputPosition] = param1 * param2
 
 	s.pointer = s.pointer + 4
 }
 
 func opcode3Input(s *state) {
-	fmt.Println("Inputtin")
-
 	writePosition := s.program[s.pointer+1]
 	input := s.takeInput()
 
-	fmt.Println(fmt.Sprintf("Writing %v to position %v", input, writePosition))
-
-	set(s, writePosition, input)
+	s.program[writePosition] = input
 
 	s.pointer = s.pointer + 2
 }
 
 func opcode4Output(s *state) {
-	fmt.Println("Outputtin")
-
 	readPosition := s.program[s.pointer+1]
 
 	s.output = append(s.output, s.program[readPosition])
 
 	s.pointer = s.pointer + 2
+}
+
+func opcode5JumpIfTrue(s *state) {
+	modes := s.parameterModes()
+
+	param1 := s.getParam(s.pointer+1, getOrZero(modes, 0))
+	param2 := s.getParam(s.pointer+2, getOrZero(modes, 1))
+
+	if param1 != 0 {
+		s.pointer = param2
+	} else {
+		s.pointer = s.pointer + 3
+	}
+}
+
+func opcode6JumpIfFalse(s *state) {
+	modes := s.parameterModes()
+
+	param1 := s.getParam(s.pointer+1, getOrZero(modes, 0))
+	param2 := s.getParam(s.pointer+2, getOrZero(modes, 1))
+
+	if param1 == 0 {
+		s.pointer = param2
+	} else {
+		s.pointer = s.pointer + 3
+	}
+}
+
+func opcode7LessThan(s *state) {
+	modes := s.parameterModes()
+
+	param1 := s.getParam(s.pointer+1, getOrZero(modes, 0))
+	param2 := s.getParam(s.pointer+2, getOrZero(modes, 1))
+	outputPosition := s.program[s.pointer+3]
+
+	if param1 < param2 {
+		s.program[outputPosition] = 1
+	} else {
+		s.program[outputPosition] = 0
+	}
+
+	s.pointer = s.pointer + 4
+}
+
+func opcode8Equals(s *state) {
+	modes := s.parameterModes()
+
+	param1 := s.getParam(s.pointer+1, getOrZero(modes, 0))
+	param2 := s.getParam(s.pointer+2, getOrZero(modes, 1))
+	outputPosition := s.program[s.pointer+3]
+
+	if param1 == param2 {
+		s.program[outputPosition] = 1
+	} else {
+		s.program[outputPosition] = 0
+	}
+
+	s.pointer = s.pointer + 4
 }
 
 type state struct {
@@ -137,29 +200,19 @@ func (s state) read(i int) int {
 }
 
 func (s state) getParam(i int, mode int) int {
-	fmt.Println(fmt.Sprintf("getParam with i = %v, mode = %v", i, mode))
 	switch mode {
 	case 0:
 		// position mode
-		fmt.Println("position mode")
 		position := s.program[i]
-		fmt.Println("position: ", position)
 		value := s.program[position]
-		fmt.Println("value: ", value)
 		return value
 	case 1:
 		// immediate mode
-		fmt.Println("immediate mode")
 		value := s.program[i]
-		fmt.Println("value: ", value)
 		return value
 	default:
 		panic(fmt.Sprintf("Unknown parameter mode: %v", mode))
 	}
-}
-
-func set(s *state, i int, value int) {
-	s.program[i] = value
 }
 
 func (s state) takeInput() int {
@@ -176,6 +229,9 @@ func (s state) print() {
 	fmt.Println("------------------")
 	fmt.Println("program: ", s.program)
 	fmt.Println("pointer: ", s.pointer)
+	fmt.Println("input: ", s.input)
+	fmt.Println("output: ", s.output)
+	fmt.Println("------------------")
 }
 
 func getOrZero(ns []int, i int) int {
