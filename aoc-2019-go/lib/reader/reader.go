@@ -31,6 +31,17 @@ func Ints(path string) []int {
 	return ints
 }
 
+func Program(path string) []int {
+	input := Strings(path)
+	var ints []int
+	for _, s := range strings.Split(input[0], ",") {
+		n, err := strconv.Atoi(s)
+		check(err)
+		ints = append(ints, n)
+	}
+	return ints
+}
+
 func read(path string) []byte {
 	input, err := os.ReadFile(path)
 	check(err)
