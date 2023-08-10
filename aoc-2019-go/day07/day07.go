@@ -2,6 +2,7 @@ package main
 
 import (
 	"aoc"
+	"errors"
 	"fmt"
 	"gonum.org/v1/gonum/stat/combin"
 	"reader"
@@ -9,25 +10,15 @@ import (
 
 func main() {
 	input := reader.Program("./input.txt")
-	//example1 := reader.Program("./example1.txt")
-	//example2 := reader.Program("./example2.txt")
 	aoc.CheckAnswer("Part 1", part1(input), 366376)
 	aoc.CheckAnswer("Part 2", part2(input), 366376)
 }
 
 func part1(input []int) int {
-	return solve(input, false)
-}
-
-func part2(input []int) int {
-	return solve(input, true)
-}
-
-func solve(input []int, feedback bool) int {
 	phaseSettings := combin.Permutations(5, 5)
 	best := 0
 	for _, phaseSetting := range phaseSettings {
-		output := evaluatePhaseSettings(phaseSetting, input, feedback)
+		output := evaluatePhaseSettings(phaseSetting, input)
 		if output > best {
 			best = output
 		}
@@ -35,18 +26,78 @@ func solve(input []int, feedback bool) int {
 	return best
 }
 
+func part2(input []int) int {
+	phaseSettings := combin.Permutations(5, 5)
+	for i, _ := range phaseSettings {
+		var plusFive []int
+		for _, n := range phaseSettings[i] {
+			plusFive = append(plusFive, n+5)
+		}
+		phaseSettings[i] = plusFive
+	}
+	fmt.Println("phaseSettings: ", phaseSettings)
+	best := 0
+	for _, phaseSetting := range phaseSettings {
+		output := evaluatePhaseSettingsWithFeedback(phaseSetting, input)
+		if output > best {
+			best = output
+		}
+	}
+	return best
+}
+
+func evaluatePhaseSettingsWithFeedback(
+	phaseSettings []int,
+	program []int,
+) int {
+	var amps []state
+	for _, phaseSetting := range phaseSettings {
+		initial := state{
+			program: sliceToMap(program),
+			input:   []int{phaseSetting},
+			pointer: 0,
+		}
+		amps = append(amps, initial)
+	}
+
+	amps[0].input = append(amps[0].input, 0)
+
+	ampIndex := 0
+
+	for {
+		updatedAmp := run(amps[ampIndex])
+		amps[ampIndex] = updatedAmp
+
+		if allAreComplete(amps) {
+			break
+		}
+
+		nextAmpIndex := (ampIndex + 1) % 5
+
+		amps[nextAmpIndex].input = append(amps[nextAmpIndex].input, updatedAmp.output[len(updatedAmp.output)-1])
+
+		ampIndex = nextAmpIndex
+	}
+
+	return amps[4].output[len(amps[4].output)-1]
+}
+
+func allAreComplete(amps []state) bool {
+	for _, amp := range amps {
+		if amp.readOpcode() != 99 {
+			return false
+		}
+	}
+	return true
+}
+
 func evaluatePhaseSettings(
 	phaseSettings []int,
 	program []int,
-	feedback bool,
 ) int {
 	value := 0
 	for _, phaseSetting := range phaseSettings {
-		if feedback {
-			panic("Not implemented")
-		} else {
-			value = evaluatePhaseSetting(value, phaseSetting, program)
-		}
+		value = evaluatePhaseSetting(value, phaseSetting, program)
 	}
 	return value
 }
@@ -75,77 +126,75 @@ func sliceToMap(ns []int) map[int]int {
 
 func run(state state) state {
 	for state.readOpcode() != 99 {
-		state = step(state)
+		pointer := state.pointer
+
+		modes := state.parameterModes()
+		param1 := state.getParam(pointer+1, modes.get(0))
+		param2 := state.getParam(pointer+2, modes.get(1))
+
+		switch state.readOpcode() {
+		case 1:
+			// addition
+			writePosition := state.program[pointer+3]
+			state.program[writePosition] = param1 + param2
+			state.pointer = pointer + 4
+		case 2:
+			// multiplication
+			writePosition := state.program[pointer+3]
+			state.program[writePosition] = param1 * param2
+			state.pointer = pointer + 4
+		case 3:
+			// read input
+			input, err := takeInput(&state)
+			if err != nil {
+				return state
+			}
+			writePosition := state.program[pointer+1]
+			state.program[writePosition] = input
+			state.pointer = pointer + 2
+		case 4:
+			fmt.Println("Writing output")
+			// write output
+			readPosition := state.program[pointer+1]
+			value := state.program[readPosition]
+			state.output = append(state.output, value)
+			state.pointer = pointer + 2
+		case 5:
+			// jump if true
+			if param1 != 0 {
+				state.pointer = param2
+			} else {
+				state.pointer = pointer + 3
+			}
+		case 6:
+			// jump if false
+			if param1 == 0 {
+				state.pointer = param2
+			} else {
+				state.pointer = pointer + 3
+			}
+		case 7:
+			// less than
+			writePosition := state.program[pointer+3]
+			if param1 < param2 {
+				state.program[writePosition] = 1
+			} else {
+				state.program[writePosition] = 0
+			}
+			state.pointer = pointer + 4
+		case 8:
+			// equals
+			writePosition := state.program[pointer+3]
+			if param1 == param2 {
+				state.program[writePosition] = 1
+			} else {
+				state.program[writePosition] = 0
+			}
+			state.pointer = pointer + 4
+		default:
+			panic(fmt.Sprintf("Unknown opcode: %v", state.readOpcode()))
+		}
 	}
-	return state
-}
-
-func step(state state) state {
-	pointer := state.pointer
-
-	modes := state.parameterModes()
-	param1 := state.getParam(pointer+1, modes.get(0))
-	param2 := state.getParam(pointer+2, modes.get(1))
-
-	switch state.readOpcode() {
-	case 1:
-		// addition
-		writePosition := state.program[pointer+3]
-		state.program[writePosition] = param1 + param2
-		state.pointer = pointer + 4
-	case 2:
-		// multiplication
-		writePosition := state.program[pointer+3]
-		state.program[writePosition] = param1 * param2
-		state.pointer = pointer + 4
-	case 3:
-		// read input
-		input := takeInput(&state)
-		writePosition := state.program[pointer+1]
-		state.program[writePosition] = input
-		state.pointer = pointer + 2
-	case 4:
-		// write output
-		readPosition := state.program[pointer+1]
-		value := state.program[readPosition]
-		state.output = append(state.output, value)
-		state.pointer = pointer + 2
-	case 5:
-		// jump if true
-		if param1 != 0 {
-			state.pointer = param2
-		} else {
-			state.pointer = pointer + 3
-		}
-	case 6:
-		// jump if false
-		if param1 == 0 {
-			state.pointer = param2
-		} else {
-			state.pointer = pointer + 3
-		}
-	case 7:
-		// less than
-		writePosition := state.program[pointer+3]
-		if param1 < param2 {
-			state.program[writePosition] = 1
-		} else {
-			state.program[writePosition] = 0
-		}
-		state.pointer = pointer + 4
-	case 8:
-		// equals
-		writePosition := state.program[pointer+3]
-		if param1 == param2 {
-			state.program[writePosition] = 1
-		} else {
-			state.program[writePosition] = 0
-		}
-		state.pointer = pointer + 4
-	default:
-		panic(fmt.Sprintf("Unknown opcode: %v", state.readOpcode()))
-	}
-
 	return state
 }
 
@@ -191,10 +240,13 @@ func (s state) getParam(i int, mode int) int {
 	}
 }
 
-func takeInput(s *state) int {
+func takeInput(s *state) (int, error) {
+	if len(s.input) == 0 {
+		return 0, errors.New("run out of inputs")
+	}
 	input, remainingInput := s.input[0], s.input[1:]
 	s.input = remainingInput
-	return input
+	return input, nil
 }
 
 func (s state) writeOutput(value int) {
