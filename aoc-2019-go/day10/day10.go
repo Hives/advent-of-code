@@ -35,7 +35,7 @@ func part2(input []string) int {
 
 	_, station := findBestLocation(asteroids, max)
 
-	visibleAsteroids := slice(getVisibleAsteroids(station, asteroids, max))
+	visibleAsteroids := toSlice(getVisibleAsteroids(station, asteroids, max))
 
 	var normalised []point
 	for _, asteroid := range visibleAsteroids {
@@ -147,8 +147,7 @@ func (set Set[T]) contains(p T) bool {
 	_, ok := set[p]
 	return ok
 }
-
-func slice[T comparable](set Set[T]) []T {
+func toSlice[T comparable](set Set[T]) []T {
 	var keys []T
 	for item := range set {
 		keys = append(keys, item)
