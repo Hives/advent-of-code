@@ -11,13 +11,29 @@ import (
 func main() {
 	input := reader.Program("./input.txt")
 	aoc.CheckAnswer("Part 1", part1(input), 2054)
+	aoc.CheckAnswer("Part 2", part2(input), "asd")
 }
 
 func part1(input []int) int {
+	panelsPainted, _ := runRobot(input, 0)
+	return panelsPainted
+}
+
+func part2(input []int) int {
+	_, white := runRobot(input, 1)
+	fmt.Println("white: " + fmt.Sprint(white))
+	return -1
+}
+
+func runRobot(input []int, initial int) (int, map[point]struct{}) {
 	painted := map[point]struct{}{}
 	white := map[point]struct{}{}
 	state := getInitial(input, []int{}, Quiet)
 	position := point{0, 0}
+	if initial == 1 {
+		// white
+		white[position] = struct{}{}
+	}
 	facing := U
 
 	for state.readOpcode() != 99 {
@@ -89,7 +105,7 @@ func part1(input []int) int {
 		state = step(state)
 	}
 
-	return len(painted)
+	return len(painted), white
 }
 
 type direction int
