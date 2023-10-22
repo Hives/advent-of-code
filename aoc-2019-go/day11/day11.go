@@ -6,47 +6,104 @@ import (
 	"fmt"
 	"reader"
 	"strconv"
-	"strings"
 )
 
 func main() {
-	ex1 := reader.Program("./example1.txt")
-	aoc.CheckAnswer("Example 1", intsToString(getFinalOutput(ex1)), intsToString(ex1))
-
-	ex2 := reader.Program("./example2.txt")
-	aoc.CheckAnswer("Example 2", intsToString(getFinalOutput(ex2)), "1219070632396864")
-
-	ex3 := reader.Program("./example3.txt")
-	aoc.CheckAnswer("Example 3", intsToString(getFinalOutput(ex3)), "1125899906842624")
-
 	input := reader.Program("./input.txt")
-	aoc.CheckAnswer("Part 1", part1(input), 2671328082)
-	aoc.CheckAnswer("Part 2", part2(input), 59095)
+	aoc.CheckAnswer("Part 1", part1(input), 2054)
 }
 
-func part1(program []int) int {
-	state := getInitial(program, []int{1}, Quiet)
-	return run(state).output[0]
-}
+func part1(input []int) int {
+	painted := map[point]struct{}{}
+	white := map[point]struct{}{}
+	state := getInitial(input, []int{}, Quiet)
+	position := point{0, 0}
+	facing := U
 
-func part2(program []int) int {
-	state := getInitial(program, []int{2}, Quiet)
-	return run(state).output[0]
-}
+	for state.readOpcode() != 99 {
+		if len(state.output) == 2 {
+			colour, direction := state.output[0], state.output[1]
+			state.output = []int{}
 
-func getFinalOutput(program []int) []int {
-	state := getInitial(program, []int{1}, Quiet)
-	state = run(state)
+			painted[position] = struct{}{}
 
-	return state.output
-}
+			if colour == 1 {
+				// white
+				white[position] = struct{}{}
+			} else if colour == 0 {
+				// black
+				delete(white, position)
+			} else {
+				panic(fmt.Sprintf("Unknown colour: %d", colour))
+			}
 
-func intsToString(ints []int) string {
-	var ss []string
-	for _, n := range ints {
-		ss = append(ss, strconv.Itoa(n))
+			if direction == 0 {
+				// turn left
+				switch facing {
+				case U:
+					facing = L
+				case L:
+					facing = D
+				case D:
+					facing = R
+				case R:
+					facing = U
+				}
+			} else if direction == 1 {
+				// turn right
+				switch facing {
+				case U:
+					facing = R
+				case R:
+					facing = D
+				case D:
+					facing = L
+				case L:
+					facing = U
+				}
+			} else {
+				panic(fmt.Sprintf("Unknown direction: %d", direction))
+			}
+
+			switch facing {
+			case U:
+				position = point{position.x, position.y - 1}
+			case R:
+				position = point{position.x + 1, position.y}
+			case D:
+				position = point{position.x, position.y + 1}
+			case L:
+				position = point{position.x - 1, position.y}
+			}
+		}
+
+		if state.readOpcode() == 3 {
+			_, positionIsWhite := white[position]
+			if positionIsWhite {
+				state.input = append(state.input, 1)
+			} else {
+				state.input = append(state.input, 0)
+			}
+		}
+
+		state = step(state)
 	}
-	return strings.Join(ss, ",")
+
+	return len(painted)
+}
+
+type direction int
+
+const (
+	U direction = iota
+	R
+	D
+	L
+)
+
+type point struct {
+	x int
+	y int
 }
 
 // --- V intcode computer V ---
