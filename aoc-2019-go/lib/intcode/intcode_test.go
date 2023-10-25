@@ -7,7 +7,7 @@ import (
 
 func TestIntcode(t *testing.T) {
 	program := reader.Program("./test-program.txt")
-	initialState := GetInitial(program, []int{1}, Quiet)
+	initialState := GetInitial(program, []int{1})
 	finalState := Run(initialState)
 
 	actual := finalState.Output[0]

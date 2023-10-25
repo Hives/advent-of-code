@@ -27,7 +27,7 @@ func part2(input []int) int {
 func runRobot(input []int, initial int) (int, map[point]struct{}) {
 	painted := map[point]struct{}{}
 	white := map[point]struct{}{}
-	state := intcode.GetInitial(input, []int{}, intcode.Quiet)
+	state := intcode.GetInitial(input, []int{})
 	position := point{0, 0}
 	if initial == 1 {
 		// white
