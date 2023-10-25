@@ -33,7 +33,7 @@ func runRobot(input []int, initial int) (int, map[point]struct{}) {
 		// white
 		white[position] = struct{}{}
 	}
-	facing := U
+	facing := 0
 
 	for state.ReadOpcode() != 99 {
 		if len(state.Output) == 2 {
@@ -54,41 +54,21 @@ func runRobot(input []int, initial int) (int, map[point]struct{}) {
 
 			if direction == 0 {
 				// turn left
-				switch facing {
-				case U:
-					facing = L
-				case L:
-					facing = D
-				case D:
-					facing = R
-				case R:
-					facing = U
-				}
-			} else if direction == 1 {
-				// turn right
-				switch facing {
-				case U:
-					facing = R
-				case R:
-					facing = D
-				case D:
-					facing = L
-				case L:
-					facing = U
-				}
+				facing = (facing + 1) % 4
 			} else {
-				panic(fmt.Sprintf("Unknown direction: %d", direction))
+				// turn right
+				facing = (4 + facing - 1) % 4
 			}
 
 			switch facing {
-			case U:
-				position = point{position.x, position.y - 1}
-			case R:
-				position = point{position.x + 1, position.y}
-			case D:
-				position = point{position.x, position.y + 1}
-			case L:
-				position = point{position.x - 1, position.y}
+			case 0:
+				position.y -= 1
+			case 1:
+				position.x -= 1
+			case 2:
+				position.y += 1
+			case 3:
+				position.x += 1
 			}
 		}
 
@@ -107,18 +87,7 @@ func runRobot(input []int, initial int) (int, map[point]struct{}) {
 	return len(painted), white
 }
 
-type direction int
-
-const (
-	U direction = iota
-	R
-	D
-	L
-)
-
 type point struct {
 	x int
 	y int
 }
-
-// --- V intcode computer V ---
