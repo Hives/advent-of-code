@@ -6,22 +6,22 @@ import (
 
 func main() {
 	input := []moon{
-		{position: []int{14, 2, 8}, velocity: zero()},
-		{position: []int{7, 4, 10}, velocity: zero()},
-		{position: []int{1, 17, 16}, velocity: zero()},
-		{position: []int{-4, -1, 1}, velocity: zero()},
+		{{p: 14, v: 0}, {p: 2, v: 0}, {p: 8, v: 0}},
+		{{p: 7, v: 0}, {p: 4, v: 0}, {p: 10, v: 0}},
+		{{p: 1, v: 0}, {p: 17, v: 0}, {p: 16, v: 0}},
+		{{p: -4, v: 0}, {p: -1, v: 0}, {p: 1, v: 0}},
 	}
 	example1 := []moon{
-		{position: []int{-1, 0, 2}, velocity: zero()},
-		{position: []int{2, -10, -7}, velocity: zero()},
-		{position: []int{4, -8, 8}, velocity: zero()},
-		{position: []int{3, 5, -1}, velocity: zero()},
+		{{p: -1, v: 0}, {p: 0, v: 0}, {p: 2, v: 0}},
+		{{p: 2, v: 0}, {p: -10, v: 0}, {p: -7, v: 0}},
+		{{p: 4, v: 0}, {p: -8, v: 0}, {p: 8, v: 0}},
+		{{p: 3, v: 0}, {p: 5, v: 0}, {p: -1, v: 0}},
 	}
 	example2 := []moon{
-		{position: []int{-8, -10, 0}, velocity: zero()},
-		{position: []int{5, 5, 10}, velocity: zero()},
-		{position: []int{2, -7, 3}, velocity: zero()},
-		{position: []int{9, -8, -3}, velocity: zero()},
+		{{p: -8, v: 0}, {p: -10, v: 0}, {p: 0, v: 0}},
+		{{p: 5, v: 0}, {p: 5, v: 0}, {p: 10, v: 0}},
+		{{p: 2, v: 0}, {p: -7, v: 0}, {p: 3, v: 0}},
+		{{p: 9, v: 0}, {p: -8, v: 0}, {p: -3, v: 0}},
 	}
 	aoc.CheckAnswer("Part 1, Example 1", part1(example1, 10), 179)
 	aoc.CheckAnswer("Part 1, Example 2", part1(example2, 100), 1940)
@@ -38,12 +38,20 @@ func part1(initial []moon, iterations int) int {
 	return calculateEnergy(moons)
 }
 
+//func part2(initial []moon, iterations int) int {
+//
+//	return -1
+//}
+//
+//func findLoopingPoint(moons []moon, index int)  {
+//}
+
 func applyGravity(moons []moon) []moon {
 	for i := 0; i < len(moons); i++ {
 		for j := 0; j < len(moons); j++ {
 			if i != j {
 				for k := 0; k < 3; k++ {
-					moons[i].velocity[k] += normalise(moons[j].position[k] - moons[i].position[k])
+					moons[i][k].v += normalise(moons[j][k].p - moons[i][k].p)
 				}
 			}
 		}
@@ -54,7 +62,7 @@ func applyGravity(moons []moon) []moon {
 func applyVelocity(moons []moon) []moon {
 	for i := 0; i < len(moons); i++ {
 		for k := 0; k < 3; k++ {
-			moons[i].position[k] += moons[i].velocity[k]
+			moons[i][k].p += moons[i][k].v
 		}
 	}
 	return moons
@@ -63,11 +71,8 @@ func applyVelocity(moons []moon) []moon {
 func calculateEnergy(moons []moon) int {
 	total := 0
 	for _, moon := range moons {
-		p := moon.position
-		potential := abs(p[0]) + abs(p[1]) + abs(p[2])
-
-		v := moon.velocity
-		kinetic := abs(v[0]) + abs(v[1]) + abs(v[2])
+		potential := abs(moon[0].p) + abs(moon[1].p) + abs(moon[2].p)
+		kinetic := abs(moon[0].v) + abs(moon[1].v) + abs(moon[2].v)
 
 		total += potential * kinetic
 	}
@@ -91,9 +96,11 @@ func abs(i int) int {
 	return i
 }
 
-type moon struct {
-	position []int
-	velocity []int
+type moon []moonSingleAxis
+
+type moonSingleAxis struct {
+	p int
+	v int
 }
 
 func zero() []int {
