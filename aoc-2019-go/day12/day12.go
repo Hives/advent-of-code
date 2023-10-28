@@ -2,6 +2,7 @@ package main
 
 import (
 	"aoc"
+	"fmt"
 )
 
 func main() {
@@ -27,6 +28,8 @@ func main() {
 	aoc.CheckAnswer("Part 1, Example 2", part1(example2, 100), 1940)
 
 	aoc.CheckAnswer("Part 1", part1(input, 1_000), 9139)
+
+	aoc.CheckAnswer("Part 2", part2(input), 420788524631496)
 }
 
 func part1(initial []moon, iterations int) int {
@@ -38,19 +41,69 @@ func part1(initial []moon, iterations int) int {
 	return calculateEnergy(moons)
 }
 
-//func part2(initial []moon, iterations int) int {
-//
-//	return -1
-//}
-//
-//func findLoopingPoint(moons []moon, index int)  {
-//}
+func part2(initial []moon) int {
+	x := findLoopingPoint(initial, 0)
+	y := findLoopingPoint(initial, 1)
+	z := findLoopingPoint(initial, 2)
+
+	return LCM(x, y, z)
+}
+
+func findLoopingPoint(moons []moon, index int) int {
+	visited := make(map[string]int)
+	var axis []moon
+	for _, m := range moons {
+		axis = append(axis, []moonSingleAxis{m[index]})
+	}
+	count := 0
+
+	for {
+		key := makeKey(axis)
+		_, ok := visited[key]
+		if ok {
+			return count
+		}
+		visited[key] = count
+		count += 1
+		axis = applyVelocity(applyGravity(axis))
+	}
+}
+
+// copied from here https://siongui.github.io/2017/06/03/go-find-lcm-by-gcd/
+// greatest common divisor (GCD) via Euclidean algorithm
+func GCD(a, b int) int {
+	for b != 0 {
+		t := b
+		b = a % b
+		a = t
+	}
+	return a
+}
+
+// find Least Common Multiple (LCM) via GCD
+func LCM(a, b int, integers ...int) int {
+	result := a * b / GCD(a, b)
+
+	for i := 0; i < len(integers); i++ {
+		result = LCM(result, integers[i])
+	}
+
+	return result
+}
+
+func makeKey(moons []moon) string {
+	key := ""
+	for _, moon := range moons {
+		key += fmt.Sprint(moon)
+	}
+	return key
+}
 
 func applyGravity(moons []moon) []moon {
 	for i := 0; i < len(moons); i++ {
 		for j := 0; j < len(moons); j++ {
 			if i != j {
-				for k := 0; k < 3; k++ {
+				for k := 0; k < len(moons[i]); k++ {
 					moons[i][k].v += normalise(moons[j][k].p - moons[i][k].p)
 				}
 			}
@@ -61,7 +114,7 @@ func applyGravity(moons []moon) []moon {
 
 func applyVelocity(moons []moon) []moon {
 	for i := 0; i < len(moons); i++ {
-		for k := 0; k < 3; k++ {
+		for k := 0; k < len(moons[i]); k++ {
 			moons[i][k].p += moons[i][k].v
 		}
 	}
