@@ -2,6 +2,7 @@ package main
 
 import (
 	"aoc"
+	"fmt"
 	"math"
 	"reader"
 	"strconv"
@@ -13,13 +14,34 @@ func main() {
 	example1 := reader.Strings("./example1.txt")
 	aoc.CheckAnswer("Example 1", part1(example1), 31)
 	aoc.CheckAnswer("Part 1", part1(input), 273638)
+	aoc.CheckAnswer("Part 2", part2(input), -1)
+	// part 2 answer is 4,200,533. worked out by manual binary search.
 }
 
 func part1(input []string) int {
-	ingredientsMap := parse(input)
+	return calculateOreRequiredForFuel(1, parse(input))
+}
 
+func part2(input []string) int {
+	// 4_200_534 too much
+	// 4_200_533 too little
+
+	fuel := 4_200_534
+	oreRequired := calculateOreRequiredForFuel(fuel, parse(input))
+	fmt.Printf("oreRequired: %v\n", oreRequired)
+	if oreRequired > 1000000000000 {
+		fmt.Println("too much")
+	} else if oreRequired < 1000000000000 {
+		fmt.Println("too little")
+	} else {
+		fmt.Println("bang on")
+	}
+	return 0
+}
+
+func calculateOreRequiredForFuel(fuel int, ingredientsMap map[string]recipe) int {
 	spare := map[string]int{}
-	required := map[string]int{"FUEL": 1}
+	required := map[string]int{"FUEL": fuel}
 
 	for true {
 		chemical := getNextChemical(required)
