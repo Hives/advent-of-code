@@ -1,8 +1,26 @@
 package days.day${DAY}
 
 import lib.Reader
+import lib.checkAnswer
+import lib.time
 
 fun main() {
-    val input = Reader("day${DAY}.txt").strings()
-    val exampleInput = Reader("day${DAY}-example.txt").strings()
+    val input = Reader("/day${DAY}/input.txt").strings()
+    val exampleInput = Reader("/day${DAY}/example-1.txt").strings()
+
+    time(message = "Part 1") {
+        part1(input)
+    }.checkAnswer(0)
+
+    time(message = "Part 2") {
+        part2(input)
+    }.checkAnswer(0)
+}
+
+fun part1(input: List<String>): Int {
+    return -1
+}
+
+fun part2(input: List<String>): Int {
+    return -1
 }
