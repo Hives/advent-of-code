@@ -2,7 +2,6 @@ package days.day01
 
 import lib.Reader
 import lib.checkAnswer
-import lib.indexesOf
 import lib.time
 
 fun main() {
@@ -26,15 +25,12 @@ fun part1(input: List<String>) =
 
 fun part2(input: List<String>) = input
     .sumOf { line ->
-        Digit.values().fold(emptyList<Pair<Int, Digit>>()) { acc, digit ->
-            val digitPositions =
-                listOf(digit.text, "${digit.number}")
-                    .flatMap { needle -> line.indexesOf(needle).map { Pair(it, digit) } }
-
-            acc + digitPositions
-        }
-            .sortedBy { it.first }
-            .let { 10 * it.first().second.number + it.last().second.number }
+        (0..line.length).mapNotNull { index ->
+            val tail = line.substring(index)
+            Digit.values().firstOrNull { digit ->
+                tail.startsWith(digit.text) || tail.startsWith("${digit.number}")
+            }?.number
+        }.let { 10 * it.first() + it.last() }
     }
 
 enum class Digit(val text: String, val number: Int) {
