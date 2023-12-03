@@ -7,13 +7,11 @@ import lib.time
 fun main() {
     val input = Reader("/day02/input.txt").strings()
 
-    time(message = "Part 1") {
-        part1(input)
-    }.checkAnswer(2204)
+    time(message = "Part 1") { part1(input) }
+        .checkAnswer(2204)
 
-    time(message = "Part 2") {
-        part2(input)
-    }.checkAnswer(71036)
+    time(message = "Part 2") { part2(input) }
+        .checkAnswer(71036)
 }
 
 fun part1(input: List<String>): Int {

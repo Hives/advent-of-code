@@ -8,13 +8,11 @@ fun main() {
     val input = Reader("/day01/input.txt").strings()
     val exampleInput = Reader("/day01/example-1.txt").strings()
 
-    time(message = "Part 1") {
-        part1(input)
-    }.checkAnswer(54388)
+    time(message = "Part 1") { part1(input) }
+        .checkAnswer(54388)
 
-    time(message = "Part 2") {
-        part2(input)
-    }.checkAnswer(53515)
+    time(message = "Part 2") { part2(input) }
+        .checkAnswer(53515)
 }
 
 fun part1(input: List<String>) =
