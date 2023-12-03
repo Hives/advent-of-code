@@ -17,70 +17,65 @@ fun main() {
 
 fun part1(input: List<String>): Int {
     val grid = Grid(input)
-    var total = 0
-    input.indices.forEach { y ->
-        input[y].indices.forEach { x ->
-            if (grid.get(x, y).isDigit() && !grid.get(x - 1, y).isDigit()) {
-                var i = x
-                val numberList = mutableListOf<Char>()
-                while (grid.get(i, y).isDigit()) {
-                    numberList.add(grid.get(i, y))
-                    i++
-                }
-                val number = numberList.joinToString("").toInt()
-                val neighbours = ((x - 1)..i).toList()
-                    .flatMap { listOf(Pair(it, y - 1), Pair(it, y + 1)) } +
-                        Pair(x - 1, y) +
-                        Pair(i, y)
-                if (neighbours.any { (x, y) ->
-                        val c = grid.get(x, y)
-                        !c.isDigit() && c != '.'
-                    }) {
-                    total += number
-                }
-            }
-        }
-    }
-
-    return total
+    return getNumbersAndNeighbours(grid)
+        .filter { (_, neighbours) -> neighbours.any { grid.get(it).isSymbol() } }
+        .sumOf { it.first }
 }
 
 fun part2(input: List<String>): Int {
     val grid = Grid(input)
-    val starAdjacent = mutableMapOf<Pair<Int, Int>, MutableList<Int>>()
-    input.indices.forEach { y ->
-        input[y].indices.forEach { x ->
+    val starAdjacentNumbers = mutableMapOf<Point, MutableList<Int>>()
+    getNumbersAndNeighbours(grid).forEach { (number, neighbours) ->
+        neighbours.forEach { point ->
+            if (grid.get(point) == '*') {
+                if (point !in starAdjacentNumbers) starAdjacentNumbers[point] = mutableListOf()
+                starAdjacentNumbers[point]?.add(number)
+            }
+        }
+    }
+    return starAdjacentNumbers.values.filter { it.size == 2 }.sumOf { it[0] * it[1] }
+}
+
+fun getNumbersAndNeighbours(grid: Grid): List<Pair<Int, List<Pair<Int, Int>>>> {
+    val numbersAndNeighbours = mutableListOf<Pair<Int, List<Point>>>()
+    (0..grid.maxY).forEach { y ->
+        (0..grid.maxX).forEach { x ->
             if (grid.get(x, y).isDigit() && !grid.get(x - 1, y).isDigit()) {
                 var i = x
-                val numberList = mutableListOf<Char>()
+                val digits = mutableListOf<Char>()
                 while (grid.get(i, y).isDigit()) {
-                    numberList.add(grid.get(i, y))
+                    digits.add(grid.get(i, y))
                     i++
                 }
-                val number = numberList.joinToString("").toInt()
+                val number = digits.joinToString("").toInt()
                 val neighbours = ((x - 1)..i).toList()
                     .flatMap { listOf(Pair(it, y - 1), Pair(it, y + 1)) } +
                         Pair(x - 1, y) +
                         Pair(i, y)
-                neighbours.forEach { point ->
-                    val (x, y) = point
-                    if (grid.get(x, y) == '*') {
-                       if (point !in starAdjacent) starAdjacent[point] = mutableListOf()
-                        starAdjacent[point]?.add(number)
-                    }
-                }
+                numbersAndNeighbours.add(Pair(number, neighbours))
             }
         }
     }
-
-    return starAdjacent.values.filter { it.size == 2 }.sumOf { it[0] * it[1] }
+    return numbersAndNeighbours
 }
 
+fun Char.isSymbol() = !isDigit() && this != '.'
+
 class Grid(private val input: List<String>) {
+    fun get(point: Point): Char =
+        this.get(point.first, point.second)
+
     fun get(x: Int, y: Int): Char {
         if (y < 0 || y >= input.size) return '.'
         val row = input[y]
         if (x < 0 || x >= row.length) return '.'
         return row[x]
     }
+
+    val maxX: Int
+        get() = input[0].length - 1
+    val maxY: Int
+        get() = input.size - 1
 }
+
+typealias Point = Pair<Int, Int>
