@@ -12,9 +12,9 @@ fun main() {
         part1(input)
     }.checkAnswer(0)
 
-    time(message = "Part 2") {
-        part2(input)
-    }.checkAnswer(0)
+//    time(message = "Part 2") {
+//        part2(input)
+//    }.checkAnswer(0)
 }
 
 fun part1(input: List<String>): Int {
