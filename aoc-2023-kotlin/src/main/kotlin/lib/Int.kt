@@ -8,6 +8,6 @@ fun Int.pow(exponent: Int): Int {
     tailrec fun go(i: Int, acc: Int): Int =
         if (i == 0) acc
         else go(i - 1, this * acc)
-    
+
     return go(exponent, 1)
 }

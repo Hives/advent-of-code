@@ -19,33 +19,30 @@ fun main() {
 }
 
 fun part1(input: List<String>): Int =
-    input.map(::parse).sumOf { (_, card) ->
+    input.map(::parse).sumOf { card ->
         if (card.winnerCount == 0) 0
         else 2.pow(card.winnerCount - 1)
     }
 
 fun part2(input: List<String>): Int {
-    val cardMap = input.associate(::parse)
-    val cardCounts = cardMap.keys.associateWith { 1 }.toMutableMap()
-    (1..cardMap.keys.max()).forEach { cardId ->
-        val card = cardMap[cardId]!!
-        val newCardIds = List(card.winnerCount) { cardId + it + 1 }
+    val cards = input.map(::parse)
+    val cardCounts = List(cards.size) { 1 }.toMutableList()
+    cards.forEachIndexed { index, card ->
+        val newCardIds = List(card.winnerCount) { index + it + 1 }
         newCardIds.forEach { newCardId ->
-            if (newCardId in cardCounts) {
-                cardCounts[newCardId] = cardCounts[newCardId]!! + cardCounts[cardId]!!
+            if (newCardId < cardCounts.size) {
+                cardCounts[newCardId] += cardCounts[index]
             }
         }
     }
-    return cardCounts.values.sum()
+    return cardCounts.sum()
 }
 
-fun parse(input: String): Pair<Int, Card> {
-    val (start, end) = input.split(""":\s+""".toRegex())
-    val id = """Card\s+(\d+)""".toRegex().find(start)?.destructured?.component1()?.toInt()!!
-    val (numbers, winningNumbers) = end.split("""\s+\|\s+""".toRegex()).map {
+fun parse(input: String): Card {
+    val (numbers, winningNumbers) = input.split(""":\s+""".toRegex())[1].split("""\s+\|\s+""".toRegex()).map {
         it.split("""\s+""".toRegex()).map(String::toInt).toSet()
     }
-    return Pair(id, Card(numbers, winningNumbers))
+    return Card(numbers, winningNumbers)
 }
 
 data class Card(
