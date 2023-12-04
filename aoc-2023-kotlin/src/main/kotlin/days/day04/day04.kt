@@ -28,7 +28,7 @@ fun part2(input: List<String>): Int {
     val cards = input.map(::parse)
     val cardCounts = List(cards.size) { 1 }.toMutableList()
     cards.forEachIndexed { index, card ->
-        val newCardIds = List(card.winnerCount) { index + it + 1 }
+        val newCardIds = (index + 1)..(index + card.winnerCount)
         newCardIds.forEach { newCardId ->
             if (newCardId < cardCounts.size) {
                 cardCounts[newCardId] += cardCounts[index]
