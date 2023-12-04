@@ -2,6 +2,7 @@ package days.day04
 
 import lib.Reader
 import lib.checkAnswer
+import lib.pow
 import lib.time
 
 fun main() {
@@ -45,13 +46,6 @@ fun parse(input: String): Pair<Int, Card> {
         it.split("""\s+""".toRegex()).map(String::toInt).toSet()
     }
     return Pair(id, Card(numbers, winningNumbers))
-}
-
-fun Int.pow(exponent: Int): Int {
-    tailrec fun go(i: Int, acc: Int): Int =
-        if (i == 0) acc
-        else go(i - 1, this * acc)
-    return go(exponent, 1)
 }
 
 data class Card(
