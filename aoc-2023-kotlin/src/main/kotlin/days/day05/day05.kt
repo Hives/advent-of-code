@@ -18,14 +18,10 @@ fun main() {
 }
 
 fun part1(input: String): Long {
-    val (seeds, mapses) = parse(input)
+    val (seeds, maps) = parse(input)
 
     return seeds.minOf { seed ->
-        mapses.fold(seed) { acc, maps ->
-            maps.firstNotNullOfOrNull { map ->
-                map.apply(acc)
-            } ?: acc
-        }
+        maps.fold(seed) { acc, map -> map.apply(acc) }
     }
 }
 
@@ -33,24 +29,34 @@ fun part2(input: String): Int {
     return -1
 }
 
-fun parse(input: String): Pair<List<Long>, List<List<Map>>> {
+fun parse(input: String): Pair<List<Long>, List<Map>> {
     val splitted = input.split("\n\n")
     val seeds = splitted[0].split(": ")[1].split(" ").map(String::toLong)
-    val maps = splitted.drop(1).map { chunk ->
-        chunk.lines().drop(1).map { line -> line.split(" ").map(String::toLong).let { Map(it[0], it[1], it[2]) } }
-    }
+    val maps = splitted.drop(1).map { Map(it) }
     return Pair(seeds, maps)
 }
 
 data class Map(
-    private val destRangeStart: Long,
-    private val sourceRangeStart: Long,
-    private val rangeLength: Long
+    private val input: String
 ) {
-    private val sourceRange = sourceRangeStart..(sourceRangeStart + rangeLength - 1)
-    private val translation = destRangeStart - sourceRangeStart
+    private val lines =
+        input.lines().drop(1).map { line -> line.split(" ").map(String::toLong).let { Line(it[0], it[1], it[2]) } }
 
-    fun apply(input: Long): Long? =
-        if (sourceRange.contains(input)) input + translation
-        else null
+    fun apply(input: Long): Long =
+        lines.firstNotNullOfOrNull { it.apply(input) } ?: input
+
+    private data class Line(
+        private val destRangeStart: Long,
+        private val sourceRangeStart: Long,
+        private val rangeLength: Long
+    ) {
+        private val sourceRange = sourceRangeStart..(sourceRangeStart + rangeLength - 1)
+        private val translation = destRangeStart - sourceRangeStart
+
+        fun apply(input: Long): Long? =
+            if (sourceRange.contains(input)) input + translation
+            else null
+    }
 }
+
+
