@@ -32,18 +32,22 @@ fun part2(input: String): Int {
 fun parse(input: String): Pair<List<Long>, List<Map>> {
     val splitted = input.split("\n\n")
     val seeds = splitted[0].split(": ")[1].split(" ").map(String::toLong)
-    val maps = splitted.drop(1).map { Map(it) }
+    val maps = splitted.drop(1).map {
+        it.lines().drop(1).map { line ->
+            line.split(" ").map(String::toLong)
+        }.let { Map(it) }
+    }
     return Pair(seeds, maps)
 }
 
 data class Map(
-    private val input: String
+    private val values: List<List<Long>>
 ) {
-    private val lines =
-        input.lines().drop(1).map { line -> line.split(" ").map(String::toLong).let { Line(it[0], it[1], it[2]) } }
-
     fun apply(input: Long): Long =
         lines.firstNotNullOfOrNull { it.apply(input) } ?: input
+
+    private val lines =
+        values.map { Line(it[0], it[1], it[2]) }
 
     private data class Line(
         private val destRangeStart: Long,
