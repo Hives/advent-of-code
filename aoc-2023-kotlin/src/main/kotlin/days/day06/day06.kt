@@ -46,7 +46,8 @@ fun parse(input: List<String>): List<Race> {
 
 fun parse2(input: List<String>): Race {
     fun parseLine(input: String) =
-        input.split(Regex(""":\s+"""))[1].replace(Regex("""\s+"""), "").toLong()
+        input.split(Regex(""":\s+"""))[1].replace(" ", "").toLong()
+
     return Race(
         time = parseLine(input[0]),
         record = parseLine(input[1])
