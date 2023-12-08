@@ -20,8 +20,23 @@ fun main() {
 fun part1(input: List<String>) =
     input.map(Hand::parse1).totalWinnings()
 
-fun part2(input: List<String>) =
-    input.map(Hand::parse2).totalWinnings()
+fun part2(input: List<String>): Int {
+    val hand = input.map(Hand::parse2).map { hand ->
+        val mostPopularNonJokerFace =
+            hand.cards.groupBy { it.face }
+                .filter { it.key != '!' }
+                .maxByOrNull { it.value.size }?.key ?: 'A'
+
+        hand.copy(
+            cards = hand.cards.map {
+                if (it.face == '!') it.copy(face = mostPopularNonJokerFace)
+                else it
+            }
+        )
+    }
+
+    return hand.totalWinnings()
+}
 
 fun List<Hand>.totalWinnings(): Int =
     sorted().mapIndexed { index, hand ->
@@ -63,21 +78,8 @@ data class Hand(val cards: List<Card>, val bid: Int) : Comparable<Hand> {
             )
         }
 
-        fun parse2(input: String): Hand {
-            val hand = parse1(input.replace('J', '!'))
-            val cards = hand.cards
-            val mostPopularNonJokerFace =
-                cards.groupBy { it.face }
-                    .filter { it.key != '!' }
-                    .maxByOrNull { it.value.size }?.key ?: 'A'
-
-            return hand.copy(
-                cards = cards.map {
-                    if (it.face == '!') it.copy(face = mostPopularNonJokerFace)
-                    else it
-                }
-            )
-        }
+        fun parse2(input: String): Hand =
+            parse1(input.replace('J', '!'))
     }
 
     enum class Type(val rank: Int) {
