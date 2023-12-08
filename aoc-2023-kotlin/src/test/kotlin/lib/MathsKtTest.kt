@@ -11,16 +11,19 @@ class Maths {
         @Test
         fun `example 1`() {
             assertThat(gcd(30, 650)).isEqualTo(10L)
+            assertThat(gcd(650, 30)).isEqualTo(10L)
         }
 
         @Test
         fun `example 2`() {
             assertThat(gcd(2420, 230)).isEqualTo(10L)
+            assertThat(gcd(230, 2420)).isEqualTo(10L)
         }
 
         @Test
         fun `example 3`() {
             assertThat(gcd(3915, 825)).isEqualTo(15L)
+            assertThat(gcd(825, 3915)).isEqualTo(15L)
         }
     }
 
