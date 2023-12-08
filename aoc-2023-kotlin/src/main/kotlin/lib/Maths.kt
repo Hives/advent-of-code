@@ -1,12 +1,10 @@
 package lib
 
 tailrec fun gcd(n1: Long, n2: Long): Long {
-    require(n1 > 0 && n2 > 0)
+    require(n1 >= 0 && n2 >= 0)
     // Euclid's algorithm
-    val (bigger, smaller) = if (n1 >= n2) Pair(n1, n2) else Pair(n2, n1)
-    val remainder = bigger % smaller
-    return if (remainder == 0L) smaller
-    else gcd(smaller, remainder)
+    return if (n2 == 0L) n1
+    else gcd(n2, n1 % n2)
 }
 
 fun lcm(n1: Long, n2: Long): Long {

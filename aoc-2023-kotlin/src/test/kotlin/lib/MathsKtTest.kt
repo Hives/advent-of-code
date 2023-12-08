@@ -25,6 +25,12 @@ class Maths {
             assertThat(gcd(3915, 825)).isEqualTo(15L)
             assertThat(gcd(825, 3915)).isEqualTo(15L)
         }
+
+        @Test
+        fun `example 4`() {
+            assertThat(gcd(10, 0)).isEqualTo(10L)
+            assertThat(gcd(0, 10)).isEqualTo(10L)
+        }
     }
 
     @Nested
