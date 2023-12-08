@@ -1,6 +1,6 @@
 package lib
 
-fun gcd(n1: Long, n2: Long): Long {
+tailrec fun gcd(n1: Long, n2: Long): Long {
     require(n1 > 0 && n2 > 0)
     // Euclid's algorithm
     val (bigger, smaller) = if (n1 >= n2) Pair(n1, n2) else Pair(n2, n1)
