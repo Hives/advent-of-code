@@ -27,25 +27,38 @@ fun main() {
                 g.fillRect((point.x * 6) + 4, (point.y * 6) + 2, 1, 3)
             }
             is Tile.Pipe -> {
-                g.color = Color.GREEN
+//                g.color = Color.YELLOW
+//                g.fillRect(point.x * 6, point.y * 6, 5, 5)
                 when (tile.char) {
-                    '|' -> g.fillRect((point.x * 6) + 2, point.y * 6, 1, 5)
-                    '-' -> g.fillRect(point.x * 6, (point.y * 6) + 2, 5, 1)
+                    '|' -> {
+                        g.color = Color.GREEN
+                        g.fillRect((point.x * 6), point.y * 6, 1, 5)
+                        g.fillRect((point.x * 6) + 4, point.y * 6, 1, 5)
+                    }
+                    '-' -> {
+                        g.color = Color.GREEN
+                        g.fillRect(point.x * 6, (point.y * 6), 5, 1)
+                        g.fillRect(point.x * 6, (point.y * 6) + 4, 5, 1)
+                    }
                     'F' -> {
-                        g.fillRect((point.x * 6) + 2, (point.y * 6) + 2, 3, 1)
-                        g.fillRect((point.x * 6) + 2, (point.y * 6) + 2, 1, 3)
+                        g.fillRect(point.x * 6, (point.y * 6), 5, 1)
+                        g.fillRect((point.x * 6), point.y * 6, 1, 5)
+                        g.fillRect((point.x * 6) + 4, (point.y * 6) + 4, 1, 1)
                     }
                     '7' -> {
-                        g.fillRect((point.x * 6), (point.y * 6) + 2, 3, 1)
-                        g.fillRect((point.x * 6) + 2, (point.y * 6) + 2, 1, 3)
+                        g.fillRect(point.x * 6, (point.y * 6), 5, 1)
+                        g.fillRect((point.x * 6) + 4, point.y * 6, 1, 5)
+                        g.fillRect((point.x * 6), (point.y * 6) + 4, 1, 1)
                     }
                     'J' -> {
-                        g.fillRect((point.x * 6), (point.y * 6) + 2, 3, 1)
-                        g.fillRect((point.x * 6) + 2, (point.y * 6), 1, 3)
+                        g.fillRect(point.x * 6, (point.y * 6) + 4, 5, 1)
+                        g.fillRect((point.x * 6) + 4, point.y * 6, 1, 5)
+                        g.fillRect((point.x * 6), (point.y * 6), 1, 1)
                     }
                     'L' -> {
-                        g.fillRect((point.x * 6) + 2, (point.y * 6) + 2, 3, 1)
-                        g.fillRect((point.x * 6) + 2, (point.y * 6), 1, 3)
+                        g.fillRect(point.x * 6, (point.y * 6) + 4, 5, 1)
+                        g.fillRect((point.x * 6), point.y * 6, 1, 5)
+                        g.fillRect((point.x * 6) + 4, (point.y * 6), 1, 1)
                     }
                 }
             }
