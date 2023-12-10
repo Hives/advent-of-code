@@ -29,11 +29,62 @@ fun main() {
 }
 
 fun part1(input: List<List<Char>>): Int =
-    parse(input).getPath().size / 2
+    getPath(parse(input)).size / 2
 
 fun part2(input: List<List<Char>>): Int {
     val grid = parse(input)
-    val path = grid.getPath().toSet()
+    val path = getPath(grid)
+    val internalPoints = getInternalPoints(grid, path.toSet())
+    return internalPoints.count()
+}
+
+fun parse(grid: List<List<Char>>): Grid =
+    grid.map { row ->
+        row.map { tile ->
+            when (tile) {
+                // n.b. North = (0, 1), which is downwards 😲
+                '|' -> Pipe(setOf(N, S), tile)
+                '-' -> Pipe(setOf(E, W), tile)
+                'L' -> Pipe(setOf(S, E), tile)
+                'J' -> Pipe(setOf(S, W), tile)
+                '7' -> Pipe(setOf(N, W), tile)
+                'F' -> Pipe(setOf(N, E), tile)
+                '.' -> Ground
+                'S' -> {
+                    Start
+                }
+
+                else -> throw Error("Bad tile: $tile")
+            }
+        }
+    }.let(::Grid)
+
+fun getPath(grid: Grid): List<Vector> {
+    val startPoint = grid.points.first { grid.at(it) == Start }
+
+    val startDirections = CompassDirection.values().filter { direction ->
+        val neighbour = grid.at(startPoint + direction.vector)
+        neighbour is Pipe && neighbour.connections.contains(direction.opposite())
+    }
+
+    val path = mutableListOf(startPoint)
+
+    var direction = startDirections.first()
+
+    while (true) {
+        val nextPoint = path.last() + direction.vector
+        val nextTile = grid.at(nextPoint)
+        path.add(nextPoint)
+        if (nextTile == Start) break
+        if (nextTile !is Pipe) throw Error("Landed on ground?!")
+        val nextDirection = nextTile.connections.first { it != direction.opposite() }
+        direction = nextDirection
+    }
+
+    return path
+}
+
+fun getInternalPoints(grid: Grid, path: Set<Vector>): List<Vector> {
     val nonPathPoints = (grid.points - path).toMutableSet()
 
     val patches = mutableListOf<Set<Vector>>()
@@ -70,29 +121,8 @@ fun part2(input: List<List<Char>>): Int {
         }.first
 
         crossingCount % 2 == 1
-    }.flatten().count()
+    }.flatten()
 }
-
-fun parse(grid: List<List<Char>>): Grid =
-    grid.map { row ->
-        row.map { tile ->
-            when (tile) {
-                // n.b. North = (0, 1), which is downwards 😲
-                '|' -> Pipe(setOf(N, S), tile)
-                '-' -> Pipe(setOf(E, W), tile)
-                'L' -> Pipe(setOf(S, E), tile)
-                'J' -> Pipe(setOf(S, W), tile)
-                '7' -> Pipe(setOf(N, W), tile)
-                'F' -> Pipe(setOf(N, E), tile)
-                '.' -> Ground
-                'S' -> {
-                    Start
-                }
-
-                else -> throw Error("Bad tile: $tile")
-            }
-        }
-    }.let(::Grid)
 
 data class Grid(val tiles: List<List<Tile>>) {
     val points
@@ -101,31 +131,6 @@ data class Grid(val tiles: List<List<Tile>>) {
             val xs = tiles[0].indices
             return ys.flatMap { y -> xs.map { x -> Vector(x = x, y = y) } }
         }
-
-    fun getPath(): List<Vector> {
-        val startPoint = points.first { at(it) == Start }
-
-        val startDirections = CompassDirection.values().filter { direction ->
-            val neighbour = at(startPoint + direction.vector)
-            neighbour is Pipe && neighbour.connections.contains(direction.opposite())
-        }
-
-        val path = mutableListOf(startPoint)
-
-        var direction = startDirections.first()
-
-        while (true) {
-            val nextPoint = path.last() + direction.vector
-            val nextTile = at(nextPoint)
-            path.add(nextPoint)
-            if (nextTile == Start) break
-            if (nextTile !is Pipe) throw Error("Landed on ground?!")
-            val nextDirection = nextTile.connections.first { it != direction.opposite() }
-            direction = nextDirection
-        }
-
-        return path
-    }
 
     fun at(point: Vector): Tile? =
         if (point.x < 0 || point.y < 0 || point.x >= tiles[0].size || point.y >= tiles.size) null
