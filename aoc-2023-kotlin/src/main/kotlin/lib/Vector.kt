@@ -76,6 +76,14 @@ enum class CompassDirection(override val vector: Vector): Direction {
     E(Vector(1, 0)),
     W(Vector(-1, 0));
 
+    fun opposite(): Direction =
+        when (this) {
+            N -> S
+            S -> N
+            E -> W
+            W -> E
+        }
+
     companion object {
         fun from(input: String) = when (input) {
             "N", "U" -> N
