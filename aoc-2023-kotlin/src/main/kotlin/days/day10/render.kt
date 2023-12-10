@@ -27,8 +27,6 @@ fun main() {
                 g.fillRect((point.x * 6) + 4, (point.y * 6) + 2, 1, 3)
             }
             is Tile.Pipe -> {
-//                g.color = Color.YELLOW
-//                g.fillRect(point.x * 6, point.y * 6, 5, 5)
                 when (tile.char) {
                     '|' -> {
                         g.color = Color.GREEN
@@ -68,12 +66,14 @@ fun main() {
 
     internalPoints.forEach { point ->
         g.color = Color.MAGENTA
-        g.fillRect(point.x * 6, point.y * 6, 5, 5)
+        g.fillRect(point.x * 6 + 1, point.y * 6, 3, 5)
+        g.fillRect(point.x * 6, point.y * 6 + 1, 5, 3)
     }
 
     externalPoints.forEach { point ->
         g.color = Color.CYAN
-        g.fillRect(point.x * 6, point.y * 6, 5, 5)
+        g.fillRect(point.x * 6 + 1, point.y * 6, 3, 5)
+        g.fillRect(point.x * 6, point.y * 6 + 1, 5, 3)
     }
 
     g.dispose()
