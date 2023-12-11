@@ -1,6 +1,7 @@
 package days.day11
 
 import lib.Reader
+import lib.Vector
 import lib.checkAnswer
 import lib.time
 import kotlin.math.abs
@@ -19,21 +20,21 @@ fun main() {
 }
 
 fun part1(input: List<List<Char>>): Long =
-    getExpandedGalaxies(input, 2).getPairs()
+    input.getExpandedGalaxies(2).getAllPairs()
         .sumOf { it.manhattanDistance() }
 
 fun part2(input: List<List<Char>>): Long =
-    getExpandedGalaxies(input, 1_000_000).getPairs()
+    input.getExpandedGalaxies(1_000_000).getAllPairs()
         .sumOf { it.manhattanDistance() }
 
-fun getExpandedGalaxies(grid: List<List<Char>>, expansionIndex: Int): List<Pair<Long, Long>> {
-    val emptyRowCounts = grid.getEmptyRowCounts()
-    val emptyColCounts = grid.transpose().getEmptyRowCounts()
+fun List<List<Char>>.getExpandedGalaxies(expansionIndex: Int): List<Vector> {
+    val emptyRowCounts = getEmptyRowCounts()
+    val emptyColCounts = transpose().getEmptyRowCounts()
 
-    return grid.getGalaxies().map { (x, y) ->
-        Pair(
-            x + (emptyColCounts[x.toInt()] * (expansionIndex - 1)),
-            y + (emptyRowCounts[y.toInt()] * (expansionIndex - 1))
+    return getGalaxies().map { (x, y) ->
+        Vector(
+            x + (emptyColCounts[x] * (expansionIndex - 1)),
+            y + (emptyRowCounts[y] * (expansionIndex - 1))
         )
     }
 }
@@ -45,18 +46,17 @@ fun List<List<Char>>.getEmptyRowCounts() =
         acc + add
     }
 
-
-fun List<List<Char>>.getGalaxies(): List<Pair<Long, Long>> =
+fun List<List<Char>>.getGalaxies(): List<Vector> =
     flatMapIndexed { y, row ->
         row.mapIndexed { x, c ->
-            if (c == '#') Pair(x.toLong(), y.toLong()) else null
+            if (c == '#') Vector(x, y) else null
         }
     }.filterNotNull().toList()
 
-fun List<Pair<Long, Long>>.getPairs(): List<Pair<Pair<Long, Long>, Pair<Long, Long>>> =
-    indices.flatMap { first ->
-        ((first + 1) until this.size).map { second ->
-            Pair(this[first], this[second])
+fun <T> List<T>.getAllPairs(): List<Pair<T, T>> =
+    flatMapIndexed { index, first ->
+        subList(index + 1, this.size).map { second ->
+            Pair(first, second)
         }
     }
 
@@ -71,7 +71,7 @@ fun <T> List<List<T>>.transpose(): List<List<T>> {
     }
 }
 
-fun Pair<Pair<Long, Long>, Pair<Long, Long>>.manhattanDistance(): Long =
+fun Pair<Vector, Vector>.manhattanDistance(): Long =
     let { (point1, point2) ->
-        abs(point1.first - point2.first) + abs(point1.second - point2.second)
+        abs(point1.x - point2.x).toLong() + abs(point1.y - point2.y).toLong()
     }
