@@ -1,10 +1,9 @@
 package days.day11
 
 import lib.Reader
-import lib.Vector
 import lib.checkAnswer
 import lib.time
-import kotlin.system.exitProcess
+import kotlin.math.abs
 
 fun main() {
     val input = Reader("/day11/input.txt").grid()
@@ -14,42 +13,51 @@ fun main() {
         part1(input)
     }.checkAnswer(9521550)
 
-    exitProcess(0)
-
     time(message = "Part 2") {
         part2(input)
-    }.checkAnswer(0)
+    }.checkAnswer(298932923702)
 }
 
-fun part1(input: List<List<Char>>): Int =
-    input.expand().getGalaxies().getPairs()
-        .sumOf { (it.second - it.first).manhattanDistance }
+fun part1(input: List<List<Char>>): Long =
+    getExpandedGalaxies(input, 2).getPairs()
+        .sumOf { it.manhattanDistance() }
 
-fun part2(input: List<List<Char>>): Int {
-    return -1
+fun part2(input: List<List<Char>>): Long =
+    getExpandedGalaxies(input, 1_000_000).getPairs()
+        .sumOf { it.manhattanDistance() }
+
+fun getExpandedGalaxies(grid: List<List<Char>>, expansionIndex: Int): List<Pair<Long, Long>> {
+    val emptyRowCounts = grid.getEmptyRowCounts()
+    val emptyColCounts = grid.transpose().getEmptyRowCounts()
+
+    return grid.getGalaxies().map { (x, y) ->
+        Pair(
+            x + (emptyColCounts[x.toInt()] * (expansionIndex - 1)),
+            y + (emptyRowCounts[y.toInt()] * (expansionIndex - 1))
+        )
+    }
 }
 
-fun List<List<Char>>.expand() =
-    expandHorizontal().transpose().expandHorizontal().transpose()
+fun List<List<Char>>.getEmptyRowCounts() =
+    fold(emptyList<Int>()) { acc, row ->
+        val add = if (row.all { it == '.' }) (acc.lastOrNull() ?: 0) + 1
+        else acc.lastOrNull() ?: 0
+        acc + add
+    }
 
-fun List<List<Char>>.getGalaxies(): List<Vector> =
+
+fun List<List<Char>>.getGalaxies(): List<Pair<Long, Long>> =
     flatMapIndexed { y, row ->
         row.mapIndexed { x, c ->
-            if (c == '#') Vector(x, y) else null
+            if (c == '#') Pair(x.toLong(), y.toLong()) else null
         }
     }.filterNotNull().toList()
 
-fun List<Vector>.getPairs(): List<Pair<Vector, Vector>> =
+fun List<Pair<Long, Long>>.getPairs(): List<Pair<Pair<Long, Long>, Pair<Long, Long>>> =
     indices.flatMap { first ->
         ((first + 1) until this.size).map { second ->
             Pair(this[first], this[second])
         }
-    }
-
-fun List<List<Char>>.expandHorizontal(): List<List<Char>> =
-    this.flatMap { row ->
-        if (row.all { it == '.' }) listOf(row, row)
-        else listOf(row)
     }
 
 fun <T> List<List<T>>.transpose(): List<List<T>> {
@@ -62,3 +70,8 @@ fun <T> List<List<T>>.transpose(): List<List<T>> {
         }
     }
 }
+
+fun Pair<Pair<Long, Long>, Pair<Long, Long>>.manhattanDistance(): Long =
+    let { (point1, point2) ->
+        abs(point1.first - point2.first) + abs(point1.second - point2.second)
+    }
