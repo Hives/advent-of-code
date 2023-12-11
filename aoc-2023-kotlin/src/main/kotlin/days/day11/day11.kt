@@ -21,11 +21,11 @@ fun main() {
 
 fun part1(input: List<List<Char>>): Long =
     input.getExpandedGalaxies(2).getAllPairs()
-        .sumOf { it.manhattanDistance() }
+        .sumOf { it.manhattanDistance().toLong() }
 
 fun part2(input: List<List<Char>>): Long =
     input.getExpandedGalaxies(1_000_000).getAllPairs()
-        .sumOf { it.manhattanDistance() }
+        .sumOf { it.manhattanDistance().toLong() }
 
 fun List<List<Char>>.getExpandedGalaxies(expansionIndex: Int): List<Vector> {
     val emptyRowCounts = getEmptyRowCounts()
@@ -71,7 +71,7 @@ fun <T> List<List<T>>.transpose(): List<List<T>> {
     }
 }
 
-fun Pair<Vector, Vector>.manhattanDistance(): Long =
+fun Pair<Vector, Vector>.manhattanDistance(): Int =
     let { (point1, point2) ->
-        abs(point1.x - point2.x).toLong() + abs(point1.y - point2.y).toLong()
+        abs(point1.x - point2.x) + abs(point1.y - point2.y)
     }
