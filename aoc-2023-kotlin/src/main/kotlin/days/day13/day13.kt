@@ -27,14 +27,18 @@ fun part2(input: String) =
 
 fun Grid.summarize(): Int {
     val horizontal = findHorizontalReflectionLine()
+    if (horizontal != null) return 100 * (horizontal + 1)
+
     val vertical = transpose().findHorizontalReflectionLine()
-    return if (horizontal != null) 100 * (horizontal + 1) else vertical!! + 1
+    return vertical!! + 1
 }
 
 fun Grid.summarizeAfterRemovingSmudge(): Int {
     val horizontal = findNewHorizontalReflectionLineAfterRemovingSmudge()
+    if (horizontal != null) return 100 * (horizontal + 1)
+
     val vertical = transpose().findNewHorizontalReflectionLineAfterRemovingSmudge()
-    return if (horizontal != null) 100 * (horizontal + 1) else vertical!! + 1
+    return vertical!! + 1
 }
 
 fun Grid.findNewHorizontalReflectionLineAfterRemovingSmudge(): Int? {
@@ -89,7 +93,11 @@ fun Grid.removeSmudge(smudge: Vector) =
     mapIndexed { y, row ->
         if (y == smudge.y) {
             row.mapIndexed { x, char ->
-                if (x == smudge.x) '.' else char
+                if (x == smudge.x) {
+                    '.'
+                } else {
+                    char
+                }
             }
         } else {
             row
