@@ -3,6 +3,7 @@ package days.day${DAY}
 import lib.Reader
 import lib.checkAnswer
 import lib.time
+import kotlin.system.exitProcess
 
 fun main() {
     val input = Reader("/day${DAY}/input.txt").strings()
