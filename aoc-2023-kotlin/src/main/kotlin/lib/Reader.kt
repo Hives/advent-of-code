@@ -5,6 +5,8 @@ class Reader(private val file: String) {
     fun strings(): List<String> = string().lines()
     fun listOfListOfLongs(): List<List<Long>> = strings().map { it.split(" ").map(String::toLong) }
     fun chars(): List<Char> = string().toList()
-    fun grid() = strings().map(String::toList)
+    fun grid(): Grid = strings().map(String::toList)
     fun numbers(): List<Long> = strings().map { it.toLong() }
 }
+
+typealias Grid = List<List<Char>>
