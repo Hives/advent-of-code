@@ -11,27 +11,24 @@ fun main() {
     val input = Reader("/day12/input.txt").strings()
     val exampleInput = Reader("/day12/example-1.txt").strings()
 
-//    time(message = "Part 1", warmUpIterations = 0, iterations = 1) {
-//        part1(input)
-//    }.checkAnswer(8075)
-
-    part2(input)
+    time(message = "Part 1", warmUpIterations = 5, iterations = 5) {
+        part1(input)
+    }.checkAnswer(8075)
 
     exitProcess(0)
 
-
-    time(message = "Part 2") {
-        part2(exampleInput)
-    }.checkAnswer(0)
+//    time(message = "Part 2") {
+//        part2(exampleInput)
+//    }.checkAnswer(0)
 }
 
 fun part1(input: List<String>) =
-    input.map(::parse).sumOf { (condition, groups) ->
+    input.map(::parse).mapIndexed { index, (condition, groups) ->
         getArrangements(condition.length, groups)
             ?.filter { matchesCondition(it, condition) }
             ?.size
             ?: throw Error("Something went wrong here")
-    }
+    }.sum()
 
 @OptIn(ExperimentalTime::class)
 fun part2(input: List<String>): Int {
