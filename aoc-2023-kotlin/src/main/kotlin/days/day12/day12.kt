@@ -3,148 +3,92 @@ package days.day12
 import lib.Reader
 import lib.checkAnswer
 import lib.time
-import kotlin.system.exitProcess
-import kotlin.time.ExperimentalTime
-import kotlin.time.measureTimedValue
 
 fun main() {
     val input = Reader("/day12/input.txt").strings()
     val exampleInput = Reader("/day12/example-1.txt").strings()
 
-    time(message = "Part 1", warmUpIterations = 5, iterations = 5) {
+    time(message = "Part 1") {
         part1(input)
     }.checkAnswer(8075)
 
-    exitProcess(0)
-
-//    time(message = "Part 2") {
-//        part2(exampleInput)
-//    }.checkAnswer(0)
+    time(message = "Part 2", warmUpIterations = 2, iterations = 2) {
+        part2(input)
+    }.checkAnswer(4232520187524)
 }
 
-fun part1(input: List<String>) =
-    input.map(::parse).mapIndexed { index, (condition, groups) ->
-        getArrangements(condition.length, groups)
-            ?.filter { matchesCondition(it, condition) }
-            ?.size
-            ?: throw Error("Something went wrong here")
-    }.sum()
+fun part1(input: List<String>): Long =
+    input.map(::parse).sumOf(::solveRow)
 
-@OptIn(ExperimentalTime::class)
-fun part2(input: List<String>): Int {
-    input.map(::parse2).mapIndexed { index, line ->
-        println("---- $index ----")
-        println(line)
-        val (arrangements, timeTaken) = measureTimedValue {
-            getArrangements2(line.first, line.second)
-        }
-        arrangements.count().toLong()
-            .also {
-                println(it)
-                println("time taken: $timeTaken")
-            }
-    }.sum().also { println(it) }
+fun part2(input: List<String>): Long =
+    input.map(::parse2).sumOf(::solveRow)
 
-    return -1
+fun solveRow(row: Row): Long {
+    val (condition, groups) = row
+    return ArrangementsCounter().countArrangementsMemoized(condition, groups)
 }
 
-fun getArrangements(length: Int, groups: List<Int>): List<String>? {
-    return if (groups.isEmpty()) {
-        listOf(createString(length, '.'))
-    } else {
-        val firstGroup = groups[0]
-        val remainingGroups = groups.drop(1)
-        val minTailLength = remainingGroups.let { it.sum() + it.size - 1 }
-        if (firstGroup + minTailLength + 1 > length) null
-        else {
-            val intRange = 0 until (length - minTailLength - firstGroup)
-            intRange.mapNotNull { startPadding ->
-                val head = createString(startPadding, '.') + createString(firstGroup, '#')
-                if (remainingGroups.isNotEmpty()) {
-                    val tails = getArrangements(length - head.length - 1, remainingGroups)
-                    tails?.map { "$head.$it" }
-                } else listOf(head + createString(length - head.length, '.'))
-            }.flatten()
+class ArrangementsCounter {
+    fun countArrangementsMemoized(condition: String, groups: List<Int>): Long {
+        val key = Pair(condition, groups)
+        val memoized = memo[key]
+        return if (memoized != null) {
+            memoized
+        } else {
+            val result = countArrangements(condition, groups)
+            memo[key] = result
+            result
         }
     }
-}
 
-fun getArrangements2(condition: String, allGroups: List<Int>): List<String> {
+    private fun countArrangements(condition: String, groups: List<Int>): Long {
+        if (groups.isEmpty()) {
+            val dots = createString(condition.length, '.')
+            return if (dots.matches(condition)) 1 else 0
+        } else {
+            val firstGroup = groups[0]
+            val remainingGroups = groups.drop(1)
 
-    fun go(head: String, groups: List<Int>): List<String> {
-//        println("---------------")
-//        println("head: $head")
-//        println("head.length: ${head.length}")
-//        println("condition.length: ${condition.length}")
-//        println("groups: $groups")
-        if (head.length == condition.length) return listOf(head)
+            val minimumSpaceRequiredForRemainingGroups =
+                if (remainingGroups.isEmpty()) 0
+                else remainingGroups.sum() + remainingGroups.count() - 1
 
-        val nextHeads: List<String> =
-            when {
-                groups.isEmpty() -> {
-//                    println("condition.length: ${condition.length}")
-//                    println("head.length: ${head.length}")
-                    listOf(createString(condition.length - head.length, '.'))
-                }
+            val spaceAvailableForFirstGroup =
+                if (remainingGroups.isEmpty()) condition.length - minimumSpaceRequiredForRemainingGroups
+                else condition.length - minimumSpaceRequiredForRemainingGroups - 1
 
-                else -> {
-                    val firstGroup = groups[0]
-//                    println("firstGroup: $firstGroup")
-                    val remainingGroups = groups.drop(1)
-//                    println("remainingGroups: $remainingGroups")
-                    val minTailLength = remainingGroups.let { it.sum() + it.size }
-//                    println("minTailLength: $minTailLength")
-                    val maxNextHeadLength = if (head.isEmpty()) {
-                        condition.length - minTailLength
-                    } else {
-                        condition.length - (head.length + 1) - minTailLength
-                    }
-//                    println("maxNextHeadLength: $maxNextHeadLength")
-                    val nextHeadRange = 0..(maxNextHeadLength - firstGroup)
-//                    println("nextHeadRange: $nextHeadRange")
-                    nextHeadRange.map { startPadding ->
-                        createString(startPadding, '.') + createString(firstGroup, '#')
-                    }
-                }
+            val maxInitialPadding = spaceAvailableForFirstGroup - firstGroup
+            val possibleFirstSections = (0..maxInitialPadding).map { padding ->
+                createString(padding, '.') + createString(firstGroup, '#') +
+                        if (remainingGroups.isEmpty()) "" else "."
             }
 
-//        println("nextHeads: $nextHeads")
+            val validFirstSections =
+                possibleFirstSections.filter { it.matches(condition) }
 
-        val nextHeadsJoined = nextHeads.map {
-            if (head.isEmpty()) it
-            else "$head.$it"
-        }
-
-//        println("nextHeadsJoined: $nextHeadsJoined")
-
-        val nextHeadsJoinedFiltered = nextHeadsJoined.filter { matchesCondition(it, condition) }
-
-//        println("nextHeadsJoinedFiltered: $nextHeadsJoinedFiltered")
-
-        return if (groups.isEmpty()) nextHeadsJoinedFiltered
-        else {
-            nextHeadsJoinedFiltered.flatMap { go(it, groups.drop(1)) }
+            return validFirstSections.sumOf { section ->
+                countArrangementsMemoized(condition.drop(section.length), remainingGroups)
+            }
         }
     }
 
-    return go("", allGroups)
+    private val memo = mutableMapOf<Pair<String, List<Int>>, Long>()
+
 }
 
-fun matchesCondition(input: String, match: String) =
-    input.zip(match).all { (first, second) ->
-        when {
-            second == '?' -> true
-            else -> first == second
-        }
-    }
+fun String.matches(other: String) =
+    zip(other).all { if (it.second == '?') true else it.first == it.second }
 
-fun parse(input: String): Pair<String, List<Int>> =
+fun createString(length: Int, char: Char) =
+    List(length) { char }.joinToString("")
+
+fun parse(input: String): Row =
     input.split(' ').let { (first, second) ->
         val ns = second.split(',').map(String::toInt)
         return Pair(first, ns)
     }
 
-fun parse2(input: String): Pair<String, List<Int>> =
+fun parse2(input: String): Row =
     parse(input).let { (condition, groups) ->
         Pair(
             List(5) { condition }.joinToString("?"),
@@ -152,5 +96,4 @@ fun parse2(input: String): Pair<String, List<Int>> =
         )
     }
 
-fun createString(length: Int, char: Char) =
-    List(length) { char }.joinToString("")
+typealias Row = Pair<String, List<Int>>
