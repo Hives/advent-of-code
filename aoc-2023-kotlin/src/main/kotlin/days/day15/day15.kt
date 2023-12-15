@@ -1,5 +1,7 @@
 package days.day15
 
+import days.day15.Instruction.Dash
+import days.day15.Instruction.Equals
 import lib.Reader
 import lib.checkAnswer
 import lib.time
@@ -24,19 +26,15 @@ fun part1(input: List<String>) =
 fun part2(input: List<String>): Int {
     val instructions = input.map(Instruction::from)
     val boxes = (0..255).associateWith { mutableListOf<Lens>() }
-    
+
     instructions.forEach { instruction ->
         val box = boxes[instruction.box]!!
         when (instruction) {
-            is Instruction.Dash -> {
-                box.removeIf { it.label == instruction.label }
-            }
-
-            is Instruction.Equals -> {
+            is Dash -> box.removeIf { it.label == instruction.label }
+            is Equals -> {
                 val existingLensIndex = box.indexOfFirst { it.label == instruction.label }
-                val lens = Lens(instruction.label, instruction.focalLength)
-                if (existingLensIndex == -1) box.add(lens)
-                else box[existingLensIndex] = lens
+                if (existingLensIndex == -1) box.add(instruction.lens)
+                else box[existingLensIndex] = instruction.lens
             }
         }
     }
@@ -62,7 +60,11 @@ data class Lens(val label: String, val focalLength: Int)
 
 sealed class Instruction(open val label: String, open val box: Int) {
     data class Dash(override val label: String, override val box: Int) : Instruction(label, box)
-    data class Equals(override val label: String, override val box: Int, val focalLength: Int) : Instruction(label, box)
+    data class Equals(override val label: String, override val box: Int, val focalLength: Int) :
+        Instruction(label, box) {
+        val lens = Lens(label, focalLength)
+    }
+
     companion object {
         fun from(s: String): Instruction {
             val dashMatch = Regex("""([a-z]+)-""").find(s)
