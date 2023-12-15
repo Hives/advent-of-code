@@ -7,6 +7,7 @@ class Reader(private val file: String) {
     fun chars(): List<Char> = string().toList()
     fun grid(): Grid = strings().map(String::toList)
     fun numbers(): List<Long> = strings().map { it.toLong() }
+    fun commaSeparated() = string().split(",")
 }
 
 typealias Grid = List<List<Char>>

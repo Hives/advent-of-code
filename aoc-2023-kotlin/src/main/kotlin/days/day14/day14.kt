@@ -15,7 +15,7 @@ fun main() {
         part1(input)
     }.checkAnswer(108614)
 
-    time(message = "Part 2", warmUpIterations = 0, iterations = 1) {
+    time(message = "Part 2", warmUpIterations = 5, iterations = 5) {
         part2(input)
     }.checkAnswer(96447)
 }

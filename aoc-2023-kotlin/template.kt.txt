@@ -14,7 +14,7 @@ fun main() {
     exitProcess(0)
 
     time(message = "Part 1") {
-        println(part1(input))
+        part1(input)
     }.checkAnswer(0)
 
     time(message = "Part 2") {
