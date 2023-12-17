@@ -30,13 +30,13 @@ fun part1(input: IntGrid) =
 fun part2(input: IntGrid) =
     aStar(input, UltraCrucibleBits)
 
-private fun aStar(grid: IntGrid, bits: Bits): Int? {
+fun aStar(grid: IntGrid, bits: Bits): Int? {
     val start = Node(Vector(0, 0), 0, Right)
     val goal = Vector(grid.last().size - 1, grid.size - 1)
 
     fun heuristic(node: Node) = (goal - node.location).manhattanDistance
 
-    val cameFrom = mutableMapOf<Node, Node>()
+//    val cameFrom = mutableMapOf<Node, Node>()
     val gScore = mutableMapOf(start to 0)
     val fScore = mutableMapOf(start to heuristic(start))
 
@@ -45,15 +45,23 @@ private fun aStar(grid: IntGrid, bits: Bits): Int? {
     }
     openSet.add(start)
 
+    var count = 0L
+
     while (openSet.isNotEmpty()) {
+        count++
         val current = openSet.poll()
-        if (bits.isGoal(current, grid)) return gScore[current]
+        if (bits.isGoal(current, grid)) {
+            println("gScoreMin: ${gScore.values.min()}")
+            println("gScoreMax: ${gScore.values.max()}")
+            println("count: $count")
+            return gScore[current]
+        }
 
         val possibleNext = bits.getViableNextNodes(current, grid)
         possibleNext.forEach { next ->
             val tentativeGScore = gScore[current]!! + grid.at(next.location)!!
             if (tentativeGScore < (gScore.getOrDefault(next, Int.MAX_VALUE))) {
-                cameFrom[next] = current
+//                cameFrom[next] = current
                 gScore[next] = tentativeGScore
                 fScore[next] = tentativeGScore + heuristic(next)
                 if (next !in openSet) openSet.add(next)
@@ -64,7 +72,7 @@ private fun aStar(grid: IntGrid, bits: Bits): Int? {
     throw Error("Oh no")
 }
 
-private object StandardCrucibleBits : Bits {
+object StandardCrucibleBits : Bits {
     override fun getViableNextNodes(node: Node, grid: IntGrid): List<Node> {
         val (turns, straightOn) = node.getNextNodes()
 
@@ -78,7 +86,7 @@ private object StandardCrucibleBits : Bits {
         node.location.y == grid.size - 1 && node.location.x == grid.last().size - 1
 }
 
-private object UltraCrucibleBits : Bits {
+object UltraCrucibleBits : Bits {
     override fun getViableNextNodes(node: Node, grid: IntGrid): List<Node> {
         val (turns, straightOn) = node.getNextNodes()
 
@@ -95,7 +103,7 @@ private object UltraCrucibleBits : Bits {
                 (node.location.y == grid.size - 1 && node.location.x == grid.last().size - 1)
 }
 
-private fun Node.getNextNodes(): Pair<List<Node>, Node> {
+fun Node.getNextNodes(): Pair<List<Node>, Node> {
     val turns = when (previousDirection) {
         Left -> listOf(Up, Down)
         Right -> listOf(Up, Down)
@@ -111,19 +119,19 @@ private fun Node.getNextNodes(): Pair<List<Node>, Node> {
     return Pair(turns, straightOn)
 }
 
-private interface Bits {
+interface Bits {
     fun getViableNextNodes(node: Node, grid: IntGrid): List<Node>
     fun isGoal(node: Node, grid: IntGrid): Boolean
 }
 
-private data class Node(val location: Vector, val straightLineCount: Int, val previousDirection: Direction)
+data class Node(val location: Vector, val straightLineCount: Int, val previousDirection: Direction)
 
-private operator fun Vector.plus(other: Direction) = Vector(
+operator fun Vector.plus(other: Direction) = Vector(
     x = this.x + other.v.x,
     y = this.y + other.v.y,
 )
 
-private sealed class Direction(val v: Vector) {
+sealed class Direction(val v: Vector) {
     object Left : Direction(Vector(-1, 0))
     object Right : Direction(Vector(1, 0))
     object Up : Direction(Vector(0, -1))
