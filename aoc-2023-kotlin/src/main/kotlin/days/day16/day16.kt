@@ -23,10 +23,10 @@ fun main() {
     }.checkAnswer(7315)
 }
 
-fun part1(grid: Grid) =
+private fun part1(grid: Grid) =
     grid.countEnergised(MovingPoint(Vector(0, 0), Right))
 
-fun part2(grid: Grid): Int {
+private fun part2(grid: Grid): Int {
     val top = grid[0].indices.map { MovingPoint(Vector(it, 0), Down) }
     val bottom = grid[0].indices.map { MovingPoint(Vector(it, grid.size - 1), Up) }
     val left = grid.indices.map { MovingPoint(Vector(0, it), Right) }
@@ -34,7 +34,7 @@ fun part2(grid: Grid): Int {
     return listOf(top, bottom, left, right).flatten().maxOf { grid.countEnergised(it) }
 }
 
-fun Grid.countEnergised(start: MovingPoint): Int {
+private fun Grid.countEnergised(start: MovingPoint): Int {
     var current = listOf(start)
     val energised = mutableSetOf(start)
 
@@ -48,7 +48,7 @@ fun Grid.countEnergised(start: MovingPoint): Int {
     return energised.map { it.point }.toSet().size
 }
 
-fun Grid.getNext(movingPoint: MovingPoint): List<MovingPoint> {
+private fun Grid.getNext(movingPoint: MovingPoint): List<MovingPoint> {
     val (point, direction) = movingPoint
     val nextDirections = when (at(point)) {
         '.' -> listOf(direction)
@@ -86,7 +86,7 @@ fun Grid.getNext(movingPoint: MovingPoint): List<MovingPoint> {
     return nextDirections.map { MovingPoint(point + it, it) }.filter { at(it.point) != null }
 }
 
-fun Grid.printy(energised: Set<MovingPoint>) {
+private fun Grid.printy(energised: Set<MovingPoint>) {
     val energisedPoints = energised.map { it.point }.toSet()
     indices.map { y ->
         this[y].mapIndexed { x, c ->
@@ -96,20 +96,20 @@ fun Grid.printy(energised: Set<MovingPoint>) {
     }
 }
 
-operator fun Vector.plus(other: Direction) = Vector(
+private operator fun Vector.plus(other: Direction) = Vector(
     x = this.x + other.v.x,
     y = this.y + other.v.y,
 )
 
-sealed class Direction(val v: Vector) {
+private sealed class Direction(val v: Vector) {
     object Left : Direction(Vector(-1, 0))
     object Right : Direction(Vector(1, 0))
     object Up : Direction(Vector(0, -1))
     object Down : Direction(Vector(0, 1))
 }
 
-fun Grid.at(v: Vector) =
+private fun Grid.at(v: Vector) =
     if (v.y < 0 || v.y >= this.size || v.x < 0 || v.x >= this[v.y].size) null
     else this[v.y][v.x]
 
-data class MovingPoint(val point: Vector, val direction: Direction)
+private data class MovingPoint(val point: Vector, val direction: Direction)
