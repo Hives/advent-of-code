@@ -25,7 +25,7 @@ fun main() {
     /*
     Part 2:
     ran the `generateMermaidCode` function to print out my map in a format that can be rendered
-    as a flow graph by https://mermaid.live
+    as a flow graph by https://mermaid.live (see flow-chart.png)
 
     by inspecting the graph you can see that rx will return a LOW pulse on the same turn that the
     four nodes tc, ks, dn and ms all issue a LOW pulse.
