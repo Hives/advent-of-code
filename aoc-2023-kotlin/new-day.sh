@@ -1,8 +1,14 @@
 #! /usr/bin/env bash
 
-day=$(date +"%d")
+if [ $# -eq 0 ]; then
+  year=$(date +"%Y")
+  day=$(date +"%d")
+else
+  year=$1
+  day=$2
+fi
+
 day_no_leading_zeroes=$(echo $day | sed 's/^0*//')
-year=$(date +"%Y")
 
 path="src/main/kotlin/days/day${day}"
 input_path="src/main/resources/day${day}"
