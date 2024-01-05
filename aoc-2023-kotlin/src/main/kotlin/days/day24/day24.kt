@@ -32,21 +32,23 @@ fun main() {
 fun part1(input: List<String>): Int {
     val hailstones = input.map(::parse)
 
-    File("/home/hives/tmp/aoc-day-24-method-1.txt").printWriter().use { out ->
+    File("/home/hives/tmp/aoc-day-24-method-2.txt").printWriter().use { out ->
         return hailstones.flatMapIndexed { index, h1 ->
             hailstones.drop(index + 1).map { h2 ->
                 Pair(h1, h2)
             }
-        }.count { (h1, h2) -> crossInFuture(h1, h2, out) }
+        }.count { (h1, h2) -> crossInFuture(h1, h2, PrintWriter(System.out)) }
     }
 
 }
 
 fun crossInFuture(h1: Hailstone, h2: Hailstone, out: PrintWriter): Boolean {
-    val i = findIntersection(h1, h2)
     out.println("---")
     out.println(h1)
     out.println(h2)
+
+    val i = findIntersection(h1, h2, out)
+
     return when {
         i == null -> {
             out.println("X: no cross")
@@ -98,8 +100,11 @@ fun isInFuture(point: Pair<Double, Double>, hailstone: Hailstone): Boolean =
     sign(point.first - hailstone.pos.x) == sign(hailstone.vel.x.toDouble()) &&
             sign(point.second - hailstone.pos.y) == sign(hailstone.vel.y.toDouble())
 
-fun findIntersection2(h1: Hailstone, h2: Hailstone): Pair<Double, Double>? {
+fun findIntersection2(h1: Hailstone, h2: Hailstone, out: PrintWriter): Pair<Double, Double>? {
     // from wikipedia, determinant method
+
+    out.println("m1: asdasd")
+    out.println("m2: asdasd")
 
     val x1 = h1.pos.x.toDouble()
     val y1 = h1.pos.y.toDouble()
@@ -120,11 +125,13 @@ fun findIntersection2(h1: Hailstone, h2: Hailstone): Pair<Double, Double>? {
     return Pair(numeratorX / denominator, numeratorY / denominator)
 }
 
-fun findIntersection(h1: Hailstone, h2: Hailstone): Pair<Double, Double>? {
+fun findIntersection(h1: Hailstone, h2: Hailstone, out: PrintWriter): Pair<Double, Double>? {
     if (h1.vel.x == 0 || h2.vel.x == 0) throw Exception("was vertical?!")
 
     val (m1, c1) = getMAndC(h1)
     val (m2, c2) = getMAndC(h2)
+    out.println("m1: $m1, c1: $c1")
+    out.println("m2: $m2, c2: $c2")
 
     return when {
         m1 == null || c1 == null -> {
