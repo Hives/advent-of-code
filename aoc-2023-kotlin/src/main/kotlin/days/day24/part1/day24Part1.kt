@@ -1,83 +1,49 @@
-package days.day24
+package days.day24.part1
 
 import lib.Reader
 import lib.checkAnswer
 import lib.time
-import java.io.File
-import java.io.PrintWriter
 import kotlin.math.sign
-import kotlin.system.exitProcess
 
 fun main() {
     val input = Reader("/day24/input.txt").strings()
     val exampleInput = Reader("/day24/example-1.txt").strings()
 
-    time(message = "Part 1", iterations = 10) {
+    time(message = "Part 1") {
         part1(input)
     }.checkAnswer(25261)
-
-    exitProcess(0)
-
-    time(message = "Part 2") {
-        part2(input)
-    }.checkAnswer(0)
 }
 
 fun part1(input: List<String>): Int {
     val hailstones = input.map(::parse)
 
-    File("/home/hives/tmp/aoc-day-24-method-2.txt").printWriter().use { out ->
-        return hailstones.flatMapIndexed { index, h1 ->
-            hailstones.drop(index + 1).map { h2 ->
-                Pair(h1, h2)
-            }
-        }.count { (h1, h2) -> crossInFuture(h1, h2, PrintWriter(System.out)) }
-    }
-
+    return hailstones.flatMapIndexed { index, h1 ->
+        hailstones.drop(index + 1).map { h2 ->
+            Pair(h1, h2)
+        }
+    }.count { (h1, h2) -> crossInFuture(h1, h2) }
 }
 
-fun crossInFuture(h1: Hailstone, h2: Hailstone, out: PrintWriter): Boolean {
-    out.println("---")
-    out.println(h1)
-    out.println(h2)
-
-    val i = findIntersection(h1, h2, out)
+fun crossInFuture(h1: Hailstone, h2: Hailstone): Boolean {
+    val i = findIntersection(h1, h2)
 
     return when {
         i == null -> {
-            out.println("X: no cross")
             false
         }
 
-        !isInFuture(i, h1) && !isInFuture(i, h2) -> {
-            out.println("X: is in past for both: $i")
-            false
-        }
-
-        !isInFuture(i, h1) -> {
-            out.println("X: is in past for h1: $i")
-            false
-        }
-
-        !isInFuture(i, h2) -> {
-            out.println("X: is in past for h2: $i")
+        !isInFuture(i, h1) || !isInFuture(i, h2) -> {
             false
         }
 
         !isInsideBoundaries(i) -> {
-            out.println("X: outside boundaries: $i")
             false
         }
 
         else -> {
-            out.println("Y: is good: $i")
             true
         }
     }
-}
-
-fun part2(input: List<String>): Int {
-    return -1
 }
 
 fun isInsideBoundaries(point: Pair<Double, Double>): Boolean {
@@ -94,13 +60,9 @@ fun isInFuture(point: Pair<Double, Double>, hailstone: Hailstone): Boolean =
     sign(point.first - hailstone.pos.x) == sign(hailstone.vel.x.toDouble()) &&
             sign(point.second - hailstone.pos.y) == sign(hailstone.vel.y.toDouble())
 
-fun findIntersection(h1: Hailstone, h2: Hailstone, out: PrintWriter): Pair<Double, Double>? {
-    if (h1.vel.x == 0 || h2.vel.x == 0) throw Exception("was vertical?!")
-
+fun findIntersection(h1: Hailstone, h2: Hailstone): Pair<Double, Double>? {
     val (m1, c1) = getMAndC(h1)
     val (m2, c2) = getMAndC(h2)
-    out.println("m1: $m1, c1: $c1")
-    out.println("m2: $m2, c2: $c2")
 
     return when {
         m1 == null || c1 == null -> {
@@ -127,7 +89,6 @@ fun findIntersection(h1: Hailstone, h2: Hailstone, out: PrintWriter): Pair<Doubl
 }
 
 fun getMAndC(h: Hailstone): Pair<Double?, Double?> {
-//    if (h.vel.x == 0) return Pair(null, null)
     val m = h.vel.y.toDouble() / h.vel.x
     val c = h.pos.y - ((h.pos.x.toDouble() / h.vel.x) * h.vel.y)
     return Pair(m, c)
