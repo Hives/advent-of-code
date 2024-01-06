@@ -12,17 +12,11 @@ fun main() {
     val input = Reader("/day24/input.txt").strings()
     val exampleInput = Reader("/day24/example-1.txt").strings()
 
-    // 25308 is too high
-    // 25304 is too high
-    // 25269 is... not right
-    // 19968 is too low
-    println(part1(input))
+    time(message = "Part 1", iterations = 10) {
+        part1(input)
+    }.checkAnswer(25261)
 
     exitProcess(0)
-
-    time(message = "Part 1") {
-        part1(input)
-    }.checkAnswer(0)
 
     time(message = "Part 2") {
         part2(input)
@@ -92,38 +86,13 @@ fun isInsideBoundaries(point: Pair<Double, Double>): Boolean {
 
     val boundaries = realBoundaries
 
-    return point.first >= boundaries.first && point.second <= boundaries.second &&
+    return point.first >= boundaries.first && point.first <= boundaries.second &&
             point.second >= boundaries.first && point.second <= boundaries.second
 }
 
 fun isInFuture(point: Pair<Double, Double>, hailstone: Hailstone): Boolean =
     sign(point.first - hailstone.pos.x) == sign(hailstone.vel.x.toDouble()) &&
             sign(point.second - hailstone.pos.y) == sign(hailstone.vel.y.toDouble())
-
-fun findIntersection2(h1: Hailstone, h2: Hailstone, out: PrintWriter): Pair<Double, Double>? {
-    // from wikipedia, determinant method
-
-    out.println("m1: asdasd")
-    out.println("m2: asdasd")
-
-    val x1 = h1.pos.x.toDouble()
-    val y1 = h1.pos.y.toDouble()
-    val x2 = x1 + h1.vel.x
-    val y2 = y1 + h1.vel.y
-
-    val x3 = h2.pos.x.toDouble()
-    val y3 = h2.pos.y.toDouble()
-    val x4 = x3 + h2.vel.x
-    val y4 = y3 + h2.vel.y
-
-    val denominator = ((x1 - x2) * (y3 - y4)) - ((y1 - y2) * (x3 - x4))
-    if (denominator == 0.toDouble()) return null
-
-    val numeratorX = (((x1 * y2) - (y1 * x2)) * (x3 - x4)) - ((x1 - x2) * ((x3 * y4) - (y3 * x4)))
-    val numeratorY = (((x1 * y2) - (y1 * x2)) * (y3 - y4)) - ((y1 - y2) * ((x3 * y4) - (y3 * x4)))
-
-    return Pair(numeratorX / denominator, numeratorY / denominator)
-}
 
 fun findIntersection(h1: Hailstone, h2: Hailstone, out: PrintWriter): Pair<Double, Double>? {
     if (h1.vel.x == 0 || h2.vel.x == 0) throw Exception("was vertical?!")
