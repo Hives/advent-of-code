@@ -95,7 +95,7 @@ fun createMaps(bricks: List<Brick>): Pair<Map<Brick, List<Brick>>, Map<Brick, Li
     return Pair(supportedByMap, supportingMap)
 }
 
-fun Brick.isFloor() = first().z == 0
+fun Brick.isFloor() = first().z == 0L
 
 fun Set<Brick>.isSettled(floor: Brick): Boolean {
     val munged = (this + setOf(floor)).flatten()
