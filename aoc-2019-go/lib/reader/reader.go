@@ -31,6 +31,18 @@ func Ints(path string) []int {
 	return ints
 }
 
+func Digits(path string) []int {
+	input := String(path)
+	var ints []int
+	for _, s := range strings.Split(input, "") {
+		n, err := strconv.Atoi(s)
+		if err == nil {
+			ints = append(ints, n)
+		}
+	}
+	return ints
+}
+
 func Program(path string) []int {
 	input := Strings(path)
 	var ints []int
