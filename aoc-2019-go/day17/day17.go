@@ -5,30 +5,49 @@ import (
 	"fmt"
 	"intcode"
 	"reader"
+	"strconv"
 )
 
 func main() {
 	input := reader.Program("./input.txt")
-	//aoc.CheckAnswer("Part 1 example", test(), 76)
 	aoc.CheckAnswer("Part 1", part1(input), 8408)
+	aoc.CheckAnswer("Part 2", part2(input), 1168948)
 }
-
-//func test() int {
-//	scaffold := [][]string{
-//		{".", ".", "#", ".", ".", ".", ".", ".", ".", ".", ".", ".", "."},
-//		{".", ".", "#", ".", ".", ".", ".", ".", ".", ".", ".", ".", "."},
-//		{"#", "#", "#", "#", "#", "#", "#", ".", ".", ".", "#", "#", "#"},
-//		{"#", ".", "#", ".", ".", ".", "#", ".", ".", ".", "#", ".", "#"},
-//		{"#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"},
-//		{".", ".", "#", ".", ".", ".", "#", ".", ".", ".", "#", ".", "."},
-//		{".", ".", "#", "#", "#", "#", "#", ".", ".", ".", "^", ".", "."},
-//	}
-//	return getAlignmentParamsSum(scaffold)
-//}
 
 func part1(program []int) int {
 	scaffold := getScaffold(program)
 	return getAlignmentParamsSum(scaffold)
+}
+
+func part2(program []int) int {
+	wokenUpProgram := []int{2}
+	wokenUpProgram = append(wokenUpProgram, program[1:len(program)-1]...)
+
+	var input []int
+	input = append(input, toAsciiInput("A,B,A,C,B,C,A,B,A,C")...)
+	input = append(input, toAsciiInput("R,6,L,10,R,8,R,8")...)
+	input = append(input, toAsciiInput("R,12,L,8,L,10")...)
+	input = append(input, toAsciiInput("R,12,L,10,R,6,L,10")...)
+	input = append(input, toAsciiInput("n,10")...)
+
+	initial := intcode.GetInitial(wokenUpProgram, input)
+	final := intcode.Run(initial)
+
+	return final.Output[len(final.Output)-1]
+}
+
+func toAsciiInput(s string) []int {
+	bytes := []byte(s)
+	var output []int
+	for _, b := range bytes {
+		atoi, err := strconv.Atoi(fmt.Sprint(b))
+		if err != nil {
+			panic(err)
+		}
+		output = append(output, atoi)
+	}
+	output = append(output, 10)
+	return output
 }
 
 func getAlignmentParamsSum(scaffold [][]string) int {
@@ -41,7 +60,6 @@ func getAlignmentParamsSum(scaffold [][]string) int {
 					alignmentParamsTotal += x * y
 				}
 			}
-
 		}
 	}
 
