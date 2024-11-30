@@ -20,6 +20,19 @@ func Strings(path string) (ret []string) {
 	return ret
 }
 
+func Grid(path string) (ret [][]string) {
+	ss := Strings(path)
+	grid := [][]string{{}}
+	for _, row := range ss {
+		rowChars := strings.Split(row, "")
+		for _, char := range rowChars {
+			grid[len(grid)-1] = append(grid[len(grid)-1], char)
+		}
+		grid = append(grid, nil)
+	}
+	return grid
+}
+
 func Ints(path string) []int {
 	input := Strings(path)
 	var ints []int
