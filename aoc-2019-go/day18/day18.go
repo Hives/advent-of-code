@@ -26,7 +26,7 @@ func main() {
 	//aoc.CheckAnswer("Example 5", part1(example5), 81)
 
 	input := reader.Grid("./input.txt")
-	aoc.CheckAnswer("Part 1", part1(input), "EXPECTED")
+	aoc.CheckAnswer("Part 1", part1(input), 5450)
 }
 
 func part1(grid [][]string) int {
@@ -81,6 +81,10 @@ func part1(grid [][]string) int {
 			}
 		}
 	}
+}
+
+func part2(grid [][]string) int {
+
 }
 
 func getEdges(grid [][]string) map[string]map[string]int {
