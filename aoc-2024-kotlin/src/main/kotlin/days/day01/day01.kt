@@ -1,7 +1,6 @@
 package days.day01
 
 import kotlin.math.abs
-import kotlin.system.exitProcess
 import lib.Reader
 import lib.checkAnswer
 import lib.time
@@ -21,7 +20,7 @@ fun main() {
 
 fun part1(input: List<String>): Int {
     val (col1, col2) = parseInput(input)
-    return (col1.sorted() zip col2.sorted()).sumOf { abs(it.first - it.second) }
+    return (col1.sorted() zip col2.sorted()).sumOf { (n1, n2) -> abs(n1 - n2) }
 }
 
 fun part2(input: List<String>): Int {
