@@ -33,8 +33,8 @@ fun part1(grid: Grid<Char>) =
 
 fun part2(grid: Grid<Char>): Int {
     val xPaths = listOf(
-        (0..2).map { Vector(0, 0) + AllCompassDirection.NE.vector * it },
-        (0..2).map { Vector(2, 0) + AllCompassDirection.NW.vector * it },
+        listOf(Vector(0, 0), Vector(1, 1), Vector(2, 2)),
+        listOf(Vector(2, 0), Vector(1, 1), Vector(0, 2)),
     )
 
     return grid.cells().count { (point) ->
