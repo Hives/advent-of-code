@@ -6,8 +6,8 @@ class Reader(private val file: String) {
     fun listOfListOfLongs() = strings().map { it.split(" ").map(String::toLong) }
     fun listOfListOfInts() = strings().map { it.split(" ").map(String::toInt) }
     fun chars(): List<Char> = string().toList()
-    fun grid(): Grid = strings().map(String::toList)
-    fun intGrid(): IntGrid = strings().map {
+    fun grid(): Grid<Char> = strings().map(String::toList)
+    fun intGrid(): Grid<Int> = strings().map {
         it.split("").mapNotNull { c ->
             if (c == "") null else c.toInt()
         }
@@ -16,6 +16,3 @@ class Reader(private val file: String) {
     fun numbers(): List<Long> = strings().map { it.toLong() }
     fun commaSeparated() = string().split(",")
 }
-
-typealias Grid = List<List<Char>>
-typealias IntGrid = List<List<Int>>
