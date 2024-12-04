@@ -8,3 +8,13 @@ fun <T> Grid<T>.at(v: Vector, default: T): T =
     } else {
         default
     }
+
+/*
+ Returns a sequence of Pair(Vector(x, y), cellValue)
+ */
+fun <T> Grid<T>.cells() =
+   indices.asSequence().flatMap { y ->
+       get(y).indices.asSequence().map { x ->
+           Pair(Vector(x, y), get(y)[x])
+       }
+   }

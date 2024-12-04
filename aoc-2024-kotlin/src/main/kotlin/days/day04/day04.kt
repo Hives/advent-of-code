@@ -5,6 +5,7 @@ import lib.Grid
 import lib.Reader
 import lib.Vector
 import lib.at
+import lib.cells
 import lib.checkAnswer
 import lib.time
 
@@ -16,19 +17,17 @@ fun main() {
         part1(input)
     }.checkAnswer(2646)
 
-    time(message = "Part 2", iterations = 1, warmUp = 0) {
+    time(message = "Part 2", iterations = 10) {
         part2(input)
     }.checkAnswer(2000)
 }
 
 fun part1(grid: Grid<Char>) =
-    grid.indices.sumOf { y ->
-        grid[y].indices.sumOf { x ->
-            AllCompassDirection.entries.toTypedArray().count { dir ->
-                (0..3).map { Vector(x, y) + dir.vector * it }
-                    .map { grid.at(it, '.') }
-                    .joinToString("") == "XMAS"
-            }
+    grid.cells().sumOf { (point) ->
+        AllCompassDirection.entries.toTypedArray().count { dir ->
+            (0..3).map { point + dir.vector * it }
+                .map { grid.at(it, '.') }
+                .let { it == listOf('X', 'M', 'A', 'S') }
         }
     }
 
@@ -37,13 +36,12 @@ fun part2(grid: Grid<Char>): Int {
         (0..2).map { Vector(0, 0) + AllCompassDirection.NE.vector * it },
         (0..2).map { Vector(2, 0) + AllCompassDirection.NW.vector * it },
     )
-    return grid.indices.sumOf { y ->
-        grid[y].indices.count { x ->
-            xPaths.map { path ->
-                path.translate(Vector(x, y))
-                    .map { point -> grid.at(point, '.') }
-                    .joinToString("")
-            }.all { it == "MAS" || it == "SAM" }
+
+    return grid.cells().count { (point) ->
+        xPaths.map { path ->
+            path.translate(point).map { grid.at(it, '.') }
+        }.all {
+            it == listOf('M', 'A', 'S') || it == listOf('S', 'A', 'M')
         }
     }
 }
