@@ -8,7 +8,7 @@ const val ONE_MINUTE = 60_000_000_000
 const val ONE_SECOND = 1_000_000_000
 const val ONE_MILLISECOND = 1_000_000
 
-fun <T> time(iterations: Int = 100, warmUp: Int = 15, message: String? = null, f: () -> T?): T? {
+fun <T> time(iterations: Int = 50, warmUp: Int = 50, message: String? = null, f: () -> T?): T? {
     println()
     if (!message.isNullOrEmpty()) println(message)
 
