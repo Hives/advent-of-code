@@ -1,7 +1,5 @@
 package days.day07
 
-import days.day07.Operator.PLUS
-import days.day07.Operator.TIMES
 import lib.Reader
 import lib.checkAnswer
 import lib.time
@@ -11,79 +9,52 @@ fun main() {
     val input = Reader("/day07/input.txt").strings()
     val exampleInput = Reader("/day07/example-1.txt").strings()
 
-    time(message = "Part 1", iterations = 10, warmUp = 10) {
+    time(message = "Part 1", iterations = 10, warmUp = 20) {
         part1(input)
     }.checkAnswer(4364915411363)
 
-    time(message = "Part 2", iterations = 1, warmUp = 0) {
+    time(message = "Part 2", iterations = 10, warmUp = 10) {
         part2(input)
     }.checkAnswer(38322057216320)
 }
 
 fun part1(input: List<String>) =
+    solve(input, listOf(Long::plus, Long::times))
+
+fun part2(input: List<String>) =
+    solve(input, listOf(Long::plus, Long::times, Long::concat))
+
+fun solve(input: List<String>, allowedOperations: List<LongLongToLong>) =
     input.map(::parseInput)
-        .filter { it.isResolvable(listOf(PLUS, TIMES)) }
-        .sumOf { it.first }
+        .filter { it.isResolvable(allowedOperations) }
+        .sumOf { it.total }
 
-fun part2(input: List<String>): Long {
-    val equations = input.map(::parseInput)
-    val canBeMadeWithPlusOrTimes = equations.filter { it.isResolvable(listOf(PLUS, TIMES)) }
-
-    val theRest = equations.filterNot { canBeMadeWithPlusOrTimes.contains(it) }
-    val canBeMadeWithPlusOrTimesOrConcatenate = theRest.filter { it.isResolvable(Operator.entries) }
-
-    return canBeMadeWithPlusOrTimes.sumOf { it.first } +
-            canBeMadeWithPlusOrTimesOrConcatenate.sumOf { it.first }
-}
-
-fun Equation.isResolvable(
-    allowedOperators: List<Operator>
-): Boolean {
-    val (total, ns) = this
-    return operatorPermutations(ns.size, allowedOperators).any { operators ->
-        total == ns.drop(1).zip(operators).fold(ns[0]) { acc, (n, plusOrTimes) ->
-            plusOrTimes.f(acc, n)
-        }
-    }
-}
-
-fun findResolvableEquations(
-    equations: List<Equation>,
-    allowedOperators: List<Operator>
-): List<Pair<Long, List<Long>>> =
-    equations.filter { (total, ns) ->
-        val operatorsList = operatorPermutations(ns.size, allowedOperators)
-        operatorsList.any { operators ->
-            total == ns.drop(1).zip(operators).fold(ns[0]) { acc, (n, plusOrTimes) ->
-                plusOrTimes.f(acc, n)
+data class Equation(val total: Long, val numbers: List<Long>) {
+    fun isResolvable(
+        allowedOperations: List<LongLongToLong>
+    ): Boolean {
+        fun go(total: Long, acc: Long, numbers: List<Long>): Boolean =
+            if (numbers.isEmpty()) acc == total
+            else allowedOperations.any { operation ->
+                go(
+                    total = total,
+                    acc = operation(acc, numbers.first()),
+                    numbers = numbers.subList(1, numbers.size)
+                )
             }
-        }
-    }
 
-enum class Operator(val f: (Long, Long) -> Long) {
-    PLUS({ a, b -> a + b }),
-    TIMES({ a, b -> a * b }),
-    CONCATENATE({ a, b -> (a.toString() + b.toString()).toLong() })
+        return go(total, numbers.first(), numbers.subList(1, numbers.size))
+    }
 }
 
-fun operatorPermutations(
-    n: Int,
-    allowedOperators: List<Operator>
-): List<List<Operator>> {
-    tailrec fun go(n: Int, perms: List<List<Operator>>): List<List<Operator>> {
-        if (n == 0) return perms
-
-        return go(
-            n - 1,
-            allowedOperators.flatMap { operator -> perms.map { it + operator } }
-        )
-    }
-
-    return go(n - 1, listOf(emptyList()))
+fun Long.concat(that: Long): Long {
+    var powerOfTen = 10;
+    while (that >= powerOfTen) powerOfTen *= 10
+    return this * powerOfTen + that
 }
-
-typealias Equation = Pair<Long, List<Long>>
 
 fun parseInput(input: String): Equation =
     input.split(": ")
-        .let { Pair(it[0].toLong(), it[1].toLongs()) }
+        .let { Equation(it[0].toLong(), it[1].toLongs()) }
+
+typealias LongLongToLong = (Long, Long) -> Long
