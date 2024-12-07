@@ -21,17 +21,30 @@ fun main() {
 }
 
 fun part1(input: List<String>) =
-    findResolvableEquations(input.map(::parseInput), listOf(PLUS, TIMES))
-        .sumOf { (total) -> total }
+    input.map(::parseInput)
+        .filter { it.isResolvable(listOf(PLUS, TIMES)) }
+        .sumOf { it.first }
 
 fun part2(input: List<String>): Long {
     val equations = input.map(::parseInput)
-    val canBeMadeWithPlusOrTimes = findResolvableEquations(equations, listOf(PLUS, TIMES))
+    val canBeMadeWithPlusOrTimes = equations.filter { it.isResolvable(listOf(PLUS, TIMES)) }
 
     val theRest = equations.filterNot { canBeMadeWithPlusOrTimes.contains(it) }
+    val canBeMadeWithPlusOrTimesOrConcatenate = theRest.filter { it.isResolvable(Operator.entries) }
 
     return canBeMadeWithPlusOrTimes.sumOf { it.first } +
-            findResolvableEquations(theRest, Operator.entries).sumOf { it.first }
+            canBeMadeWithPlusOrTimesOrConcatenate.sumOf { it.first }
+}
+
+fun Equation.isResolvable(
+    allowedOperators: List<Operator>
+): Boolean {
+    val (total, ns) = this
+    return operatorPermutations(ns.size, allowedOperators).any { operators ->
+        total == ns.drop(1).zip(operators).fold(ns[0]) { acc, (n, plusOrTimes) ->
+            plusOrTimes.f(acc, n)
+        }
+    }
 }
 
 fun findResolvableEquations(
@@ -53,7 +66,10 @@ enum class Operator(val f: (Long, Long) -> Long) {
     CONCATENATE({ a, b -> (a.toString() + b.toString()).toLong() })
 }
 
-fun operatorPermutations(n: Int, allowedOperators: List<Operator>): List<List<Operator>> {
+fun operatorPermutations(
+    n: Int,
+    allowedOperators: List<Operator>
+): List<List<Operator>> {
     tailrec fun go(n: Int, perms: List<List<Operator>>): List<List<Operator>> {
         if (n == 0) return perms
 
