@@ -13,6 +13,8 @@ class Reader(private val file: String) {
         }
     }
 
+    fun digits(): List<Int> = strings().first().split("").filter { it.isNotEmpty() }.map(String::toInt)
+
     fun numbers(): List<Long> = strings().map { it.toLong() }
     fun commaSeparated() = string().split(",")
 }
