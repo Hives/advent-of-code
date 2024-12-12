@@ -13,29 +13,35 @@ fun main() {
     val input = Reader("/day12/input.txt").grid()
     val exampleInput = Reader("/day12/example-1.txt").grid()
 
-    part1(input).checkAnswer(12)
-
-    exitProcess(0)
+//    part1(input).checkAnswer(12)
 
     time(message = "Part 1") {
         part1(input)
     }.checkAnswer(1485656)
+
+    exitProcess(0)
 
     time(message = "Part 2") {
         part2(input)
     }.checkAnswer(0)
 }
 
-fun part1(grid: Grid<Char>): Int {
+fun part1(grid: Grid<Char>) =
+    grid.getRegions().sumOf { it.getFenceCost1() }
+
+fun part2(grid: Grid<Char>) =
+    grid.getRegions().sumOf { it.getFenceCost2() }
+
+fun Grid<Char>.getRegions(): List<Set<Vector>> {
     val visited = mutableSetOf<Vector>()
     val regions = mutableListOf<Set<Vector>>()
-    grid.cells().forEach { (point, value) ->
+    cells().forEach { (point, value) ->
         if (point !in visited) {
             val region = mutableSetOf(point)
             var frontier = listOf(point)
             while (frontier.isNotEmpty()) {
                 val newFrontier = frontier.flatMap { it.neighbours }.distinct()
-                    .filter { grid.atOrNull(it) == value && it !in region }
+                    .filter { atOrNull(it) == value && it !in region }
                 region += newFrontier
                 frontier = newFrontier
                 visited += newFrontier
@@ -44,12 +50,11 @@ fun part1(grid: Grid<Char>): Int {
         }
     }
 
-    return regions.sumOf { it.getFenceCost() }
+    return regions
 }
 
-fun part2(input: Grid<Char>): Int {
-    return -1
-}
+fun Set<Vector>.getFenceCost1() =
+    sumOf { (it.neighbours - this).size } * size
 
-fun Set<Vector>.getFenceCost() =
+fun Set<Vector>.getFenceCost2() =
     sumOf { (it.neighbours - this).size } * size
