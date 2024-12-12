@@ -71,8 +71,8 @@ interface Direction {
 }
 
 enum class CompassDirection(override val vector: Vector): Direction {
-    N(Vector(0, 1)),
-    S(Vector(0, -1)),
+    N(Vector(0, -1)),
+    S(Vector(0, 1)),
     E(Vector(1, 0)),
     W(Vector(-1, 0));
 

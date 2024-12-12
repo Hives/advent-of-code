@@ -1,6 +1,6 @@
 package days.day12
 
-import kotlin.system.exitProcess
+import lib.CompassDirection
 import lib.Grid
 import lib.Reader
 import lib.Vector
@@ -13,24 +13,20 @@ fun main() {
     val input = Reader("/day12/input.txt").grid()
     val exampleInput = Reader("/day12/example-1.txt").grid()
 
-//    part1(input).checkAnswer(12)
-
     time(message = "Part 1") {
         part1(input)
     }.checkAnswer(1485656)
 
-    exitProcess(0)
-
     time(message = "Part 2") {
         part2(input)
-    }.checkAnswer(0)
+    }.checkAnswer(899196)
 }
 
 fun part1(grid: Grid<Char>) =
-    grid.getRegions().sumOf { it.getFenceCost1() }
+    grid.getRegions().sumOf(::getFenceCost1)
 
 fun part2(grid: Grid<Char>) =
-    grid.getRegions().sumOf { it.getFenceCost2() }
+    grid.getRegions().sumOf(::getFenceCost2)
 
 fun Grid<Char>.getRegions(): List<Set<Vector>> {
     val visited = mutableSetOf<Vector>()
@@ -53,8 +49,32 @@ fun Grid<Char>.getRegions(): List<Set<Vector>> {
     return regions
 }
 
-fun Set<Vector>.getFenceCost1() =
-    sumOf { (it.neighbours - this).size } * size
+fun getFenceCost1(region: Set<Vector>) =
+    region.sumOf { (it.neighbours - region).size } * region.size
 
-fun Set<Vector>.getFenceCost2() =
-    sumOf { (it.neighbours - this).size } * size
+fun getFenceCost2(region: Set<Vector>): Int {
+    val sides = CompassDirection.entries.map { dir ->
+        region.map { point -> point + dir }.filter { it !in region }
+    }
+    return sides.sumOf { countContiguous(it) * region.size }
+}
+
+fun countContiguous(vs: List<Vector>): Int {
+    val vsMutable = vs.toMutableSet()
+
+    var count = 0
+    while (vsMutable.isNotEmpty()) {
+        val first = vsMutable.first()
+        vsMutable.remove(first)
+        val contiguous = mutableSetOf(first)
+        var frontier = listOf(first)
+        while (frontier.isNotEmpty()) {
+            val newFrontier = frontier.flatMap { it.neighbours }.distinct().filter { it in vsMutable }
+            contiguous += newFrontier
+            vsMutable -= newFrontier.toSet()
+            frontier = newFrontier
+        }
+        count += 1
+    }
+    return count
+}
