@@ -12,4 +12,4 @@ fun lcm(n1: Long, n2: Long): Long {
     return (n1 * n2) / gcd(n1, n2)
 }
 
-fun lcm(ns: List<Long>): Long = ns.reduce(::lcm)
+fun lcm(vararg ns: Long): Long = ns.reduce(::lcm)

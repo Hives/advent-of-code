@@ -42,7 +42,7 @@ class Maths {
 
         @Test
         fun `example 2`() {
-            assertThat(lcm(listOf(2L, 3L, 4L, 5L))).isEqualTo(60L)
+            assertThat(lcm(2L, 3L, 4L, 5L)).isEqualTo(60L)
         }
     }
 }
