@@ -1,6 +1,5 @@
 package days.day11
 
-import days.day09.printy
 import kotlin.system.exitProcess
 import lib.Reader
 import lib.checkAnswer
@@ -10,8 +9,12 @@ fun main() {
     val input = Reader("/day11/input.txt").listOfLongs()
     val exampleInput = Reader("/day11/example-1.txt").listOfLongs()
 
-    solve(exampleInput, 6).checkAnswer(22)
-    solve(exampleInput, 25).checkAnswer(55312)
+//    (5..25).forEach {
+//        (solve2(exampleInput, it)).checkAnswer(solve(exampleInput, it))
+//    }
+
+//    solve(exampleInput, 6).checkAnswer(22)
+    solve2(exampleInput, 75).checkAnswer(55312)
 
     exitProcess(0)
 
@@ -32,11 +35,11 @@ fun part2(input: List<Long>) =
 
 fun solve(input: List<Long>, blinks: Int): Long {
     val zeroCounts = calcZeros(blinks)
-
     println(zeroCounts)
 
     val numbers = MyLinkedList<Long>()
     input.reversed().forEach { numbers.pushStart(it) }
+    numbers.printy()
 
     var total = 0L
 
@@ -44,7 +47,7 @@ fun solve(input: List<Long>, blinks: Int): Long {
     repeat(blinks) {
 //        println("---")
         count += 1
-//        numbers.printy()
+        println(count)
 
         var node = numbers.head
         while (node != null) {
@@ -71,7 +74,63 @@ fun solve(input: List<Long>, blinks: Int): Long {
                 }
             }
         }
+
+        numbers.printy()
     }
+
+    return total + numbers.size
+}
+
+fun solve2(input: List<Long>, blinks: Int): Long {
+    println("solve 2")
+
+    val zeroCounts = calcZeros(blinks)
+    println(zeroCounts)
+
+    val numbers = MyLinkedList<Long>()
+    input.reversed().forEach { numbers.pushStart(it) }
+//    numbers.printy()
+
+    var total = 0L
+
+    var count = 0;
+
+    repeat(blinks) {
+//        println("---")
+        count += 1
+        println("count: $count")
+
+        var node = numbers.head
+        while (node != null) {
+            val n = node.value
+            when {
+                n == 0L -> {
+//                    node.value = 1L
+//                    node = node.next
+                    node = numbers.delete(node)
+                    total += zeroCounts[blinks - count + 1]!!
+                }
+
+                n.countDigits().isEven() -> {
+                    val (n1, n2) = n.split()
+                    node.value = n1
+                    numbers.insertAfter(node, n2)
+                    node = node.next?.next
+                }
+
+                else -> {
+                    node.value = n * 2024
+                    node = node.next
+                }
+            }
+        }
+
+//        println("total: $total")
+//        numbers.printy()
+    }
+
+//    println("total: $total")
+//    println("numbers.size: ${numbers.size}")
 
     return total + numbers.size
 }
@@ -155,6 +214,7 @@ class MyLinkedList<T : Any> {
     fun delete(node: MyLinkedListNode<T>): MyLinkedListNode<T>? {
         node.prev?.next = node.next
         node.next?.prev = node.prev
+        _size -= 1
         return node.next
     }
 
