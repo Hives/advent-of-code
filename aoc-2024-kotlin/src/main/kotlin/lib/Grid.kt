@@ -16,8 +16,20 @@ fun <T> Grid<T>.at(v: Vector, default: T): T =
  Returns a sequence of Pair(Vector(x, y), cellValue)
  */
 fun <T> Grid<T>.cells() =
-   indices.asSequence().flatMap { y ->
-       get(y).indices.asSequence().map { x ->
-           Pair(Vector(x, y), get(y)[x])
-       }
-   }
+    indices.asSequence().flatMap { y ->
+        get(y).indices.asSequence().map { x ->
+            Pair(Vector(x, y), get(y)[x])
+        }
+    }
+
+fun printy(grid: Grid<Char>, things: Map<Vector, Char>) {
+    grid.forEachIndexed { y, row ->
+        row.mapIndexed { x, cell ->
+            val v = Vector(x, y)
+            if (v in things) things[v]
+            else cell
+        }
+            .joinToString("")
+            .also(::println)
+    }
+}

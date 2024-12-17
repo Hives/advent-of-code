@@ -3,10 +3,15 @@
 if [ $# -eq 0 ]; then
   year=$(date +"%Y")
   day=$(date +"%d")
-else
+elif [ -z $2 ]; then
+  year=$(date +"%Y")
+  day=$1
+else 
   year=$1
   day=$2
 fi
+
+echo "Setting up day ${day}"
 
 day_no_leading_zeroes=$(echo $day | sed 's/^0*//')
 

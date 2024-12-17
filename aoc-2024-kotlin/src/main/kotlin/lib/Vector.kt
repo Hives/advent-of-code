@@ -41,6 +41,8 @@ data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
         }
 
     fun pathTo(other: Vector): List<Vector> {
+        if (this == other) return listOf(this)
+
         val direction = (other - this).let { Vector(it.x.sign, it.y.sign) }
         require(direction in CompassDirection.values().map { it.vector }) { "Vectors must be in a horizontal or vertical line" }
 
@@ -76,13 +78,24 @@ enum class CompassDirection(override val vector: Vector): Direction {
     E(Vector(1, 0)),
     W(Vector(-1, 0));
 
-    fun opposite(): Direction =
+    fun opposite(): CompassDirection =
         when (this) {
             N -> S
             S -> N
             E -> W
             W -> E
         }
+
+    fun rotateLeft(): CompassDirection =
+        when (this) {
+            N -> W
+            S -> E
+            E -> N
+            W -> S
+        }
+
+    fun rotateRight() =
+        rotateLeft().opposite()
 
     companion object {
         fun from(input: String) = when (input) {
