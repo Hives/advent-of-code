@@ -1,6 +1,5 @@
 package days.day15
 
-import kotlin.system.exitProcess
 import lib.CompassDirection
 import lib.CompassDirection.E
 import lib.CompassDirection.W
@@ -18,197 +17,98 @@ fun main() {
     val exampleInput2 = Reader("/day15/example-2.txt").string()
     val exampleInput3 = Reader("/day15/example-3.txt").string()
 
-    part2(exampleInput2)
-
-    exitProcess(0)
-
-    time(message = "Part 1") {
+    time(message = "Part 1", warmUp = 5, iterations = 5) {
         part1(input)
     }.checkAnswer(1415498)
 
-    exitProcess(0)
-
-    exitProcess(0)
-
-    // 1426910 is too low
-    time(message = "Part 2") {
+    time(message = "Part 2", warmUp = 5, iterations = 5) {
         part2(input)
-    }.checkAnswer(0)
+    }.checkAnswer(1432898)
 }
 
-fun part1(inputString: String): Int {
-    val input = parseInput(inputString)
+fun part1(input: String) =
+    parseInput(input).let(::doIt)
+
+fun part2(input: String) =
+    parseInput(input).expand().let(::doIt)
+
+fun doIt(input: Input): Int {
     val (grid, things, moves) = input
-    var robot = things.entries.single { it.value == "@" }.key
 
     moves.forEach { move ->
-        if (move1(robot, move.vector, grid, things)) {
-            robot += move.vector
+        val pointsThatMove = getPointsThatMove(move.vector, grid, things)
+        if (pointsThatMove != null) {
+            movePoints(pointsThatMove, move.vector, things)
         }
     }
 
     return things.score()
 }
 
-fun part2(input: String): Int {
-    val (grid, things, moves) = parseInput2(input)
-    var robot = things.entries.single { it.value == "@" }.key
+fun getPointsThatMove(
+    direction: Vector,
+    grid: Grid<String>,
+    things: MutableMap<Vector, String>
+): Set<Vector>? {
+    fun go(
+        point: Vector,
+        pointsThatMove: Set<Vector>
+    ): Set<Vector>? {
+        val destinationPoint = point + direction
+        val destinationThing = whatsThere(destinationPoint, grid, things)
+        return when (destinationThing) {
+            "." -> pointsThatMove + point
+            "#" -> null
+            "O" -> go(destinationPoint, pointsThatMove + point)
+            "[", "]" -> {
+                val motionIsHorizontal = direction == E.vector || direction == W.vector
 
-    grid.printy(things)
-
-    moves.forEach { move ->
-        if (move2(robot, move.vector, grid, things)) {
-            robot += move.vector
-        }
-        grid.printy(things)
-    }
-
-    return things.score2()
-}
-
-fun move1(point: Vector, direction: Vector, grid: Grid<String>, things: MutableMap<Vector, String>): Boolean {
-    val newPoint = point + direction
-    val destination = things[newPoint] ?: if (grid.at(newPoint, ".") == "#") "#" else null
-    when (destination) {
-        "#" -> {
-            return false
-        }
-
-        null -> {
-            things[newPoint] = things[point]!!
-            things.remove(point)
-            return true
-        }
-
-        else -> {
-            if (move1(newPoint, direction, grid, things)) {
-                things[newPoint] = things[point]!!
-                things.remove(point)
-                return true
-            } else {
-                return false
-            }
-        }
-    }
-}
-
-fun move2(point: Vector, direction: Vector, grid: Grid<String>, things: MutableMap<Vector, String>): Boolean {
-    println()
-    val d = when (direction) {
-        Vector(0, 1) -> "v"
-        Vector(0, -1) -> "^"
-        Vector(1, 0) -> ">"
-        Vector(-1, 0) -> "<"
-        else -> throw Error("asdasd")
-    }
-    println("Move: $d:")
-    return if (canMove(point, direction, grid, things)) {
-        val pointsToMove = getPointsToMove(point, direction, things)
-//        println("pointsToMove: ${pointsToMove}")
-        pointsToMove.sortReversed(direction).forEach { point ->
-            val newPoint = point + direction
-            things[newPoint] = things[point]!!
-            things.remove(point)
-        }
-        true
-    } else {
-        false
-    }
-}
-
-fun Collection<Vector>.sortReversed(direction: Vector) =
-    when (direction) {
-        Vector(0, 1) -> {
-            sortedByDescending { it.y }
-        }
-        Vector(0, -1) -> {
-            sortedBy { it.y }
-        }
-        Vector(1, 0) -> {
-            sortedByDescending { it.x }
-        }
-        Vector(-1, 0) -> {
-            sortedBy { it.x }
-        }
-        else ->{
-            throw Error("9ew740983247")
-        }
-    }
-
-fun canMove(point: Vector, direction: Vector, grid: Grid<String>, things: Map<Vector, String>): Boolean {
-//    println("point: ${point}")
-    val destinations = getDestinations(point, direction, things)
-//    println("destinations: $destinations")
-//    println(destinations.map { it to whatsThere(it, grid, things) })
-    val whatsThere = destinations.map { whatsThere(it, grid, things) }
-    return when {
-        whatsThere.any { it == "#" } -> false
-        whatsThere.all { it == "." } -> true
-        else -> destinations.all { canMove(it, direction, grid, things) }
-    }
-}
-
-fun getPointsToMove(point: Vector, direction: Vector, things: Map<Vector, String>): Set<Vector> {
-    val pointsToMove = mutableSetOf<Vector>()
-
-    fun go(point: Vector) {
-        val movementIsHorizontal = direction == E.vector || direction == W.vector
-        if (movementIsHorizontal) {
-            pointsToMove += point
-            val pushedPoint = point + direction
-            if (pushedPoint in things) {
-                go(pushedPoint)
-            }
-        } else {
-//            println("point: $point")
-            val thing = things[point]
-            val pointAndNeighbour =
-                if (thing == "@") listOf(point)
-                else {
-                    if (thing == "[") listOf(point, point + E)
-                    else listOf(point, point + W)
+                if (motionIsHorizontal) {
+                    go(destinationPoint, pointsThatMove + point)
+                } else {
+                    val box = if (destinationThing == "[") {
+                        Pair(destinationPoint, destinationPoint + E.vector)
+                    } else {
+                        Pair(destinationPoint + W.vector, destinationPoint)
+                    }
+                    val points1 = go(box.first, pointsThatMove + point)
+                    val points2 = go(box.second, pointsThatMove + point)
+                    if (points1 == null || points2 == null) null
+                    else points1 + points2
                 }
-//            println("pointAndNeighbour: $pointAndNeighbour")
-            pointsToMove += pointAndNeighbour
-            val pushedPoints = pointAndNeighbour.map { it + direction }
-            val occupiedPushedPoints = pushedPoints.filter { it in things }
-            occupiedPushedPoints.forEach(::go)
+            }
+
+            else -> throw Error("Invalid type of thing: $destinationThing")
         }
     }
 
-    go(point)
-
-    return pointsToMove
+    return go(things.getRobot(), emptySet())
 }
 
-fun getDestinations(point: Vector, direction: Vector, things: Map<Vector, String>): List<Vector> {
-    val thing = things[point]
-    val movementIsHorizontal = direction == E.vector || direction == W.vector
-    val destinations = if (thing == "@") {
-        listOf(point + direction)
-    } else {
-        if (movementIsHorizontal) {
-            listOf(point + direction)
-        } else {
-            val neighbour = if (thing == "[") point + E.vector else point + W.vector
-            listOf(point + direction, neighbour + direction)
-        }
-    }
-    return destinations
+fun movePoints(
+    points: Set<Vector>,
+    direction: Vector,
+    things: MutableMap<Vector, String>
+) {
+    val newPoints = points.map { point -> point + direction to things[point]!! }
+    points.forEach { things.remove(it) }
+    newPoints.forEach { things[it.first] = it.second }
 }
+
+fun Map<Vector, String>.getRobot() =
+    entries.single { it.value == "@" }.key
 
 fun whatsThere(point: Vector, grid: Grid<String>, things: Map<Vector, String>): String {
     return things[point] ?: grid.at(point, ".")
 }
 
 fun Map<Vector, String>.score() =
-    toList().filter { it.second == "O" }.sumOf { (v) -> v.x + (100 * v.y) }
+    toList()
+        .filter { it.second == "O" || it.second == "[" }
+        .sumOf { (v) -> v.x + (100 * v.y) }
 
-fun Map<Vector, String>.score2() =
-    toList().filter { it.second == "[" }.sumOf { (v) -> v.x + (100 * v.y) }
-
-fun Grid<String>.printy(things: Map<Vector, String>) {
-    forEachIndexed { y, row ->
+fun printy(grid: Grid<String>, things: Map<Vector, String>) {
+    grid.forEachIndexed { y, row ->
         row.mapIndexed { x, cell ->
             val point = Vector(x, y)
             when (point) {
@@ -221,35 +121,18 @@ fun Grid<String>.printy(things: Map<Vector, String>) {
     }
 }
 
-fun parseInput2(input: String): Input {
-    val input1 = parseInput(input)
-    return input1.copy(
-        grid = input1.grid.map { row ->
-            row.flatMap { cell ->
-                if (cell == "#") listOf("#", "#") else listOf(".", ".")
-            }
-        },
-        things = input1.things.entries.flatMap { (point, thing) ->
-            when (thing) {
-                "O" -> listOf(Vector(point.x * 2, point.y) to "[", Vector(point.x * 2 + 1, point.y) to "]")
-                "@" -> listOf(Vector(point.x * 2, point.y) to "@")
-                else -> throw Error("Unknown thing?!")
-            }
-        }.toMap().toMutableMap()
-    )
-}
-
 fun parseInput(input: String): Input {
     val (first, second) = input.split("\n\n")
     val grid = first.split("\n").map { row ->
         row.split("").filter { cell -> cell.isNotBlank() }
     }
 
-    val robot = grid.cells().find { (_, value) -> value == "@" }?.first!!
-    val boxes = grid.cells().filter { (_, value) -> value == "O" }.map { it.first }.toSet()
-
-    val things = mutableMapOf(robot to "@")
-    boxes.forEach { things[it] = "O" }
+    val things = mutableMapOf<Vector, String>()
+    grid.cells()
+        .filter { (_, value) -> value == "@" || value == "O" }
+        .forEach { (point, thing) ->
+            things[point] = thing
+        }
 
     return Input(
         grid = grid.map { row ->
@@ -274,4 +157,21 @@ data class Input(
     val grid: Grid<String>,
     val things: MutableMap<Vector, String>,
     val moves: List<CompassDirection>
-)
+) {
+    fun expand(): Input {
+        return copy(
+            grid = grid.map { row ->
+                row.flatMap { cell ->
+                    if (cell == "#") listOf("#", "#") else listOf(".", ".")
+                }
+            },
+            things = things.entries.flatMap { (point, thing) ->
+                when (thing) {
+                    "O" -> listOf(Vector(point.x * 2, point.y) to "[", Vector(point.x * 2 + 1, point.y) to "]")
+                    "@" -> listOf(Vector(point.x * 2, point.y) to "@")
+                    else -> throw Error("Invalid thing: $thing")
+                }
+            }.toMap().toMutableMap()
+        )
+    }
+}
