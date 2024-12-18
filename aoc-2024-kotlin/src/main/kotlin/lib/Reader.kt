@@ -18,4 +18,5 @@ class Reader(private val file: String) {
 
     fun numbers(): List<Long> = strings().map { it.toLong() }
     fun commaSeparated() = string().split(",")
+    fun vectors() = strings().map { it.split(",").let { (x, y) -> Vector(x.toInt(), y.toInt()) } }
 }
