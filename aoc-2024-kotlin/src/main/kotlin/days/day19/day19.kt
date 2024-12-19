@@ -10,22 +10,15 @@ fun main() {
     val input = Reader("/day19/input.txt").string()
     val exampleInput = Reader("/day19/example-1.txt").string()
 
-    part1(input).also(::println)
-
-    exitProcess(0)
-
     time(message = "Part 1") {
         part1(input)
-    }.checkAnswer(0)
+    }.checkAnswer(255)
+
+    exitProcess(0)
 
     time(message = "Part 2") {
         part2(input)
     }.checkAnswer(0)
-}
-
-sealed class Either<A, B> {
-    data class Left<A>(val value: A) : Either<A, Nothing>()
-    data class Right<B>(val value: B) : Either<Nothing, B>()
 }
 
 fun part1(input: String): Int {
@@ -44,24 +37,17 @@ fun part1(input: String): Int {
         }
     }
 
-    println(towelMap)
-
-//    val d = designs.last()
-//    println(d)
-//    assessDesign(d, d, towelMap, maxTowelLength, emptyList()).also(::println)
-
     return designs.filter { design ->
         val result = assessDesign(design, design, towelMap, maxTowelLength, emptyList())
-        println("${design}: $result")
         result
     }.size
-
-    return -1
 }
 
 fun part2(input: String): Int {
     return -1
 }
+
+val resultsCache = mutableMapOf<String, Boolean>()
 
 fun assessDesign(
     originalDesign: String,
@@ -70,12 +56,17 @@ fun assessDesign(
     maxTowelLength: Int,
     previous: List<String>
 ): Boolean {
-    println(previous)
+    if (subDesign in resultsCache) {
+        return resultsCache[subDesign]!!
+    }
+
     return if ((previous.joinToString("") == originalDesign)) {
+        resultsCache[subDesign] = true
         true
     } else {
         val towelsMatchingStart = getTowelsMatchingStart(subDesign, towelMap, maxTowelLength)
         if (towelsMatchingStart.isEmpty()) {
+            resultsCache[subDesign] = false
             false
         } else {
             towelsMatchingStart.any {
@@ -86,7 +77,7 @@ fun assessDesign(
                     maxTowelLength = maxTowelLength,
                     previous = previous + it
                 )
-            }
+            }.also { resultsCache[subDesign] = it }
         }
     }
 }
