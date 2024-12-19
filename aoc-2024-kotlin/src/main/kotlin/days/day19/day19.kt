@@ -1,7 +1,6 @@
 package days.day19
 
 import kotlin.math.min
-import kotlin.system.exitProcess
 import lib.Reader
 import lib.checkAnswer
 import lib.time
@@ -10,21 +9,40 @@ fun main() {
     val input = Reader("/day19/input.txt").string()
     val exampleInput = Reader("/day19/example-1.txt").string()
 
-    time(message = "Part 1") {
+    time(message = "Part 1", iterations = 500, warmUp = 5000) {
         part1(input)
     }.checkAnswer(255)
 
-    exitProcess(0)
-
-    time(message = "Part 2") {
+    time(message = "Part 2", iterations = 500, warmUp = 5000) {
         part2(input)
-    }.checkAnswer(0)
+    }.checkAnswer(621820080273474)
 }
 
 fun part1(input: String): Int {
     val (towels, designs) = parseInput(input)
     val maxTowelLength = towels.maxOf { it.length }
 
+    val towelMap = makeTowelMap(towels)
+
+    return designs.filter { design ->
+        val result = isDesignPossible(design, design, towelMap, maxTowelLength, emptyList())
+        result
+    }.size
+}
+
+fun part2(input: String): Long {
+    val (towels, designs) = parseInput(input)
+    val maxTowelLength = towels.maxOf { it.length }
+
+    val towelMap = makeTowelMap(towels)
+
+    return designs.sumOf { design ->
+        val result = countPossibilities(design, design, towelMap, maxTowelLength)
+        result
+    }
+}
+
+fun makeTowelMap(towels: List<String>): Map<Any, Any> {
     val towelMap = mutableMapOf<Any, Any>()
 
     towels.forEach { towel ->
@@ -37,19 +55,12 @@ fun part1(input: String): Int {
         }
     }
 
-    return designs.filter { design ->
-        val result = assessDesign(design, design, towelMap, maxTowelLength, emptyList())
-        result
-    }.size
-}
-
-fun part2(input: String): Int {
-    return -1
+    return towelMap
 }
 
 val resultsCache = mutableMapOf<String, Boolean>()
 
-fun assessDesign(
+fun isDesignPossible(
     originalDesign: String,
     subDesign: String,
     towelMap: Map<Any, Any>,
@@ -70,7 +81,7 @@ fun assessDesign(
             false
         } else {
             towelsMatchingStart.any {
-                assessDesign(
+                isDesignPossible(
                     originalDesign = originalDesign,
                     subDesign = subDesign.substring(it.length),
                     towelMap = towelMap,
@@ -78,6 +89,39 @@ fun assessDesign(
                     previous = previous + it
                 )
             }.also { resultsCache[subDesign] = it }
+        }
+    }
+}
+
+val resultsCache2 = mutableMapOf<String, Long>()
+
+fun countPossibilities(
+    originalDesign: String,
+    subDesign: String,
+    towelMap: Map<Any, Any>,
+    maxTowelLength: Int,
+): Long {
+    if (subDesign in resultsCache2) {
+        return resultsCache2[subDesign]!!
+    }
+
+    if (subDesign.isEmpty()) {
+        resultsCache2[subDesign] = 1
+        return 1
+    } else {
+        val towelsMatchingStart = getTowelsMatchingStart(subDesign, towelMap, maxTowelLength)
+        return if (towelsMatchingStart.isEmpty()) {
+            resultsCache2[subDesign] = 0
+            0
+        } else {
+            towelsMatchingStart.sumOf { towel ->
+                countPossibilities(
+                    originalDesign = originalDesign,
+                    subDesign = subDesign.substring(towel.length),
+                    towelMap = towelMap,
+                    maxTowelLength = maxTowelLength
+                )
+            }.also { resultsCache2[subDesign] = it }
         }
     }
 }
@@ -102,7 +146,7 @@ fun getTowelsMatchingStart(
     }
 }
 
-fun parseInput(input: String): Pair<Set<String>, List<String>> =
+fun parseInput(input: String): Pair<List<String>, List<String>> =
     input.split("\n\n").let { (first, second) ->
-        Pair(first.split(", ").toSet(), second.split("\n"))
+        Pair(first.split(", "), second.split("\n"))
     }
