@@ -54,14 +54,14 @@ class Day21KtTest {
             val v = Vector(3, -2)
             assertThat(getPaths(v)).containsExactlyInAnyOrder(
                 listOf(u, u, r, r, r),
-                listOf(u, r, u, r, r),
-                listOf(u, r, r, u, r),
-                listOf(u, r, r, r, u),
-                listOf(r, u, u, r, r),
-                listOf(r, u, r, u, r),
-                listOf(r, u, r, r, u),
-                listOf(r, r, u, u, r),
-                listOf(r, r, u, r, u),
+//                listOf(u, r, u, r, r),
+//                listOf(u, r, r, u, r),
+//                listOf(u, r, r, r, u),
+//                listOf(r, u, u, r, r),
+//                listOf(r, u, r, u, r),
+//                listOf(r, u, r, r, u),
+//                listOf(r, r, u, u, r),
+//                listOf(r, r, u, r, u),
                 listOf(r, r, r, u, u),
             )
         }
@@ -86,10 +86,10 @@ class Day21KtTest {
             )
             assertThat(paths).containsExactlyInAnyOrder(
                 listOf(u, u, l, l),
-                listOf(u, l, u, l),
-                listOf(u, l, l, u),
-                listOf(l, u, u, l),
-                listOf(l, u, l, u),
+//                listOf(u, l, u, l),
+//                listOf(u, l, l, u),
+//                listOf(l, u, u, l),
+//                listOf(l, u, l, u),
 //                listOf(l, l, u, u), -> is verboten
             )
         }
@@ -100,13 +100,12 @@ class Day21KtTest {
         @Test
         fun `1`() {
             val buttonPresses = listOf('0', '2', '9', 'A')
-            val initial = Vector(2, 3)
 
-            val actual = buttonsToDirections(buttonPresses, numberPad, initial)
+            val actual = buttonsToDirections(buttonPresses, numberPad)
 
             assertThat(actual).containsExactlyInAnyOrder(
                 listOf('<', 'A', '^', 'A', '>', '^', '^', 'A', 'v', 'v', 'v', 'A'),
-                listOf('<', 'A', '^', 'A', '^', '>', '^', 'A', 'v', 'v', 'v', 'A'),
+//                listOf('<', 'A', '^', 'A', '^', '>', '^', 'A', 'v', 'v', 'v', 'A'),
                 listOf('<', 'A', '^', 'A', '^', '^', '>', 'A', 'v', 'v', 'v', 'A')
             )
         }
@@ -114,9 +113,8 @@ class Day21KtTest {
         @Test
         fun `2`() {
             val buttonPresses = listOf('<', 'A', '^', 'A', '>', '^', '^', 'A', 'v', 'v', 'v', 'A')
-            val initial = Vector(2, 0)
 
-            val actual = buttonsToDirections(buttonPresses, directionPad, initial)
+            val actual = buttonsToDirections(buttonPresses, directionPad)
 
             assertThat(actual).contains(
                 listOf(

@@ -12,6 +12,10 @@ fun main() {
     val input = Reader("/day21/input.txt").grid()
     val exampleInput = Reader("/day21/example-1.txt").grid()
 
+//    part2(exampleInput)
+//
+//    exitProcess(0)
+
     time(message = "Part 1", warmUp = 0, iterations = 1) {
         part1(input)
     }.checkAnswer(188398)
@@ -23,38 +27,43 @@ fun main() {
     }.checkAnswer(0)
 }
 
-fun part1(input: Grid<Char>): Int {
-    input.sumOf { evaluate(it).also(::println) }.also(::println)
-    return -1
-}
+fun part1(input: Grid<Char>) =
+    input.sumOf { evaluate(it, 3) }
 
 fun part2(input: Grid<Char>): Int {
+    getUltimatePresses(input[0], 3)
+
     return -1
 }
 
-fun evaluate(input: List<Char>): Int {
-    val presses = getUltimatePresses(input)
+fun evaluate(input: List<Char>, dpads: Int): Int {
+    val presses = getUltimatePresses(input, dpads)
     return presses.size * input.dropLast(1).joinToString("").toInt()
 }
 
-fun getUltimatePresses(input: List<Char>): List<Char> {
-    val dpad1Presses = buttonsToDirections(input, numberPad, Vector(2, 3))
-    val dpad2Presses = dpad1Presses.flatMap {
-        buttonsToDirections(it, directionPad, Vector(2, 0))
+fun getUltimatePresses(input: List<Char>, dpads: Int): List<Char> {
+    val dpad1Presses = buttonsToDirections(input, numberPad)
 
+    tailrec fun go(presses: List<List<Char>>, n: Int): List<List<Char>> {
+        return if (n == 0) presses
+        else {
+            val foo = presses.flatMap {
+                buttonsToDirections(it, directionPad)
+            }
+            go(foo, n - 1)
+        }
     }
-    val dpad3Presses = dpad2Presses.flatMap {
-        buttonsToDirections(it, directionPad, Vector(2, 0))
-    }
-    return dpad3Presses.minBy { it.size }
+
+    val final = go(dpad1Presses, dpads - 1)
+
+    return final.minBy { it.size }
 }
 
 fun buttonsToDirections(
     buttons: List<Char>,
     pad: Pad,
-    initial: Vector
 ): List<List<Char>> {
-    val positions = listOf(initial) + buttons.map { pad.buttons[it]!! }
+    val positions = listOf(pad.initial) + buttons.map { pad.buttons[it]!! }
     return positions.windowed(2).fold(listOf(emptyList())) { acc, (a, b) ->
         val paths = getPaths(a, b, pad.verboten)
         acc.flatMap { previous ->
@@ -99,13 +108,20 @@ fun getPaths(
         v.x > 0 -> Vector(1, 0)
         else -> Vector(-1, 0)
     }
-    val horizontalSteps = abs(v.x)
+    val horizontalSteps = List(abs(v.x)) { horizontalDirection }
     val verticalDirection = when {
         v.y > 0 -> Vector(0, 1)
         else -> Vector(0, -1)
     }
-    val verticalSteps = abs(v.y)
-    return (List(horizontalSteps) { horizontalDirection } + List(verticalSteps) { verticalDirection }).permutations()
+    val verticalSteps = List(abs(v.y)) { verticalDirection }
+
+    return setOf(
+        horizontalSteps + verticalSteps,
+        verticalSteps + horizontalSteps
+    )
+
+//    return (List(horizontalSteps) { horizontalDirection } + List(verticalSteps) { verticalDirection })
+//        .permutations()
 }
 
 fun <T> List<T>.permutations(): Set<List<T>> =
@@ -129,7 +145,8 @@ val numberPad = Pad(
         '0' to Vector(1, 3),
         'A' to Vector(2, 3)
     ),
-    verboten = Vector(0, 3)
+    verboten = Vector(0, 3),
+    initial = Vector(2, 3)
 )
 
 val directionPad = Pad(
@@ -140,7 +157,8 @@ val directionPad = Pad(
         'v' to Vector(1, 1),
         '>' to Vector(2, 1),
     ),
-    verboten = Vector(0, 0)
+    verboten = Vector(0, 0),
+    initial = Vector(2, 0)
 )
 
-data class Pad(val buttons: Map<Char, Vector>, val verboten: Vector)
+data class Pad(val buttons: Map<Char, Vector>, val verboten: Vector, val initial: Vector)
