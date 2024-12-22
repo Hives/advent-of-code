@@ -16,7 +16,8 @@ class Reader(private val file: String) {
 
     fun digits(): List<Int> = strings().first().split("").filter { it.isNotEmpty() }.map(String::toInt)
 
-    fun numbers(): List<Long> = strings().map { it.toLong() }
+    fun longs(): List<Long> = strings().map { it.toLong() }
+    fun ints(): List<Int> = strings().map { it.toInt() }
     fun commaSeparated() = string().split(",")
     fun vectors() = strings().map { it.split(",").let { (x, y) -> Vector(x.toInt(), y.toInt()) } }
 }
