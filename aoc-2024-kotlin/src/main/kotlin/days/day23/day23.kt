@@ -13,11 +13,9 @@ fun main() {
         part1(input)
     }.checkAnswer(1200)
 
-    exitProcess(0)
-
     time(message = "Part 2") {
         part2(input)
-    }.checkAnswer(0)
+    }.checkAnswer("ag,gh,hh,iv,jx,nq,oc,qm,rb,sm,vm,wu,zr")
 }
 
 fun part1(input: List<String>): Int {
@@ -30,8 +28,44 @@ fun part1(input: List<String>): Int {
         .count()
 }
 
-fun part2(input: List<String>): Int {
-    return -1
+fun part2(input: List<String>): String {
+    val connectionMap = parseInput(input)
+    val networks = getNetworks(connectionMap)
+    val largest = networks.maxBy { it.size }
+    return largest.sorted().joinToString(separator = ",")
+}
+
+fun getNetworks(connectionMap: Map<String, List<String>>): List<List<String>> {
+    val allComputers = connectionMap.keys.toList()
+
+    fun go(
+        networks: List<List<String>>,
+        newComputer: String,
+        remainingComputers: List<String>,
+    ): Pair<List<List<String>>, List<String>> {
+        if (remainingComputers.isEmpty()) {
+           return Pair(networks, emptyList())
+        }
+
+        val newNetworks = networks.map { network ->
+            if (network.all { it in connectionMap[newComputer]!! }) {
+                (network + newComputer)
+            } else {
+                network
+            }
+        }
+
+        val nextNewComputer = remainingComputers.last()
+        val nextRemainingComputers = remainingComputers.subList(0, remainingComputers.size - 1)
+
+        return go(newNetworks + listOf(emptyList()), nextNewComputer, nextRemainingComputers)
+    }
+
+    return go(
+        networks = listOf(emptyList()),
+        newComputer = allComputers.last(),
+        remainingComputers = allComputers.subList(0, connectionMap.keys.size - 1),
+    ).first
 }
 
 fun Map<String, List<String>>.findNetworksOfThree(computer: String): List<List<String>> {
