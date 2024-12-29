@@ -1,8 +1,6 @@
 package days.day13
 
-import kotlin.system.exitProcess
 import lib.Reader
-import lib.Vector
 import lib.checkAnswer
 import lib.time
 
@@ -10,55 +8,37 @@ fun main() {
     val input = Reader("/day13/input.txt").string()
     val exampleInput = Reader("/day13/example-1.txt").string()
 
-    part1(input).checkAnswer(37297)
-//    part2(input)
-
-    exitProcess(0)
-
-    time(message = "Part 1") {
+    time(message = "Part 1", warmUp = 500, iterations = 100) {
         part1(input)
     }.checkAnswer(37297)
 
-    exitProcess(0)
-
-    time(message = "Part 2") {
+    time(message = "Part 2", warmUp = 500, iterations = 100) {
         part2(input)
-    }.checkAnswer(0)
+    }.checkAnswer(83197086729371)
 }
 
 fun part1(input: String) =
-    parseInput(input).map { assessMachine(it, 100) }.sumOf { it ?: 0 }
+    parseInput(input).mapNotNull { assessMachine(it) }.sum()
 
-fun part2(input: String): Int {
-    parseInput(input).map { assessMachine2(it) }
-    return -1
+fun part2(input: String) =
+    parseInput2(input).mapNotNull { assessMachine(it) }.sum()
+
+fun assessMachine(config: Config): Long? {
+    val denominator = (config.buttonA.first * config.buttonB.second) - (config.buttonA.second * config.buttonB.first)
+    val numerator = (config.buttonB.second * config.prize.first) - (config.buttonB.first * config.prize.second)
+    if (numerator % denominator != 0L) return null
+    val a = numerator / denominator
+    val bNumerator = config.prize.first - (a * config.buttonA.first)
+    val bDenominator = config.buttonB.first
+    if (bNumerator % bDenominator != 0L) return null
+    val b = bNumerator / bDenominator
+    return 3 * a + b
 }
 
-fun assessMachine2(config: Config) {
-}
-
-fun assessMachine(config: Config, max: Int): Int? {
-    return (1..max).flatMap { aPresses ->
-        (1..max).mapNotNull { bPresses ->
-            val final = (config.buttonA * aPresses) + (config.buttonB * bPresses)
-            if (final == config.prize) Pair(aPresses, bPresses)
-            else null
-        }
-    }.minOfOrNull { it.price() }
-}
-
-fun getMin(config: Config, max: Int): Pair<Int, Int>? {
-    return (1..max).flatMap { aPresses ->
-        (1..max).mapNotNull { bPresses ->
-            val final = (config.buttonA * aPresses) + (config.buttonB * bPresses)
-            if (final == config.prize) Pair(aPresses, bPresses)
-            else null
-        }
-    }.minByOrNull { it.price() }
-}
-
-fun Pair<Int, Int>?.price() =
-    if (this == null) 0 else 3 * first + second
+fun parseInput2(input: String) =
+    parseInput(input).map {
+        it.copy(prize = Pair(it.prize.first + 10000000000000L, it.prize.second + 10000000000000L))
+    }
 
 fun parseInput(input: String): List<Config> {
     val r = """Button A: X\+(\d+), Y\+(\d+)\nButton B: X\+(\d+), Y\+(\d+)\nPrize: X=(\d+), Y=(\d+)""".toRegex()
@@ -66,12 +46,12 @@ fun parseInput(input: String): List<Config> {
         r.find(it)?.groupValues.let { values ->
             require(values != null)
             Config(
-                Vector(values[1].toInt(), values[2].toInt()),
-                Vector(values[3].toInt(), values[4].toInt()),
-                Vector(values[5].toInt(), values[6].toInt()),
+                Pair(values[1].toLong(), values[2].toLong()),
+                Pair(values[3].toLong(), values[4].toLong()),
+                Pair(values[5].toLong(), values[6].toLong()),
             )
         }
     }
 }
 
-data class Config(val buttonA: Vector, val buttonB: Vector, val prize: Vector)
+data class Config(val buttonA: Pair<Long, Long>, val buttonB: Pair<Long, Long>, val prize: Pair<Long, Long>)
