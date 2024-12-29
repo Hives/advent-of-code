@@ -4,6 +4,7 @@ class Reader(private val file: String) {
     fun string(): String = javaClass.getResource("$file")!!.readText().trimEnd()
     fun strings(): List<String> = string().lines()
     fun listOfLongs() = string().split(" ").map(String::toLong)
+    fun listOfInts() = string().split(" ").map(String::toInt)
     fun listOfListOfLongs() = strings().map { it.split(" ").map(String::toLong) }
     fun listOfListOfInts() = strings().map { it.split(" ").map(String::toInt) }
     fun chars(): List<Char> = string().toList()

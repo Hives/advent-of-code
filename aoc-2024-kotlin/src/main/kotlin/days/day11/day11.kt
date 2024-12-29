@@ -1,6 +1,5 @@
 package days.day11
 
-import kotlin.system.exitProcess
 import lib.Reader
 import lib.checkAnswer
 import lib.time
@@ -9,22 +8,13 @@ fun main() {
     val input = Reader("/day11/input.txt").listOfLongs()
     val exampleInput = Reader("/day11/example-1.txt").listOfLongs()
 
-//    (5..25).forEach {
-//        (solve2(exampleInput, it)).checkAnswer(solve(exampleInput, it))
-//    }
-
-//    solve(exampleInput, 6).checkAnswer(22)
-    solve2(exampleInput, 75).checkAnswer(55312)
-
-    exitProcess(0)
-
     time(message = "Part 1") {
         part1(input)
     }.checkAnswer(185205)
 
     time(message = "Part 2") {
         part2(input)
-    }.checkAnswer(0)
+    }.checkAnswer(221280540398419)
 }
 
 fun part1(input: List<Long>) =
@@ -33,147 +23,33 @@ fun part1(input: List<Long>) =
 fun part2(input: List<Long>) =
     solve(input, 75)
 
-fun solve(input: List<Long>, blinks: Int): Long {
-    val zeroCounts = calcZeros(blinks)
-    println(zeroCounts)
+fun solve(stones: List<Long>, blinks: Int) =
+    stones.sumOf { solveSingle(it, blinks) }
 
-    val numbers = MyLinkedList<Long>()
-    input.reversed().forEach { numbers.pushStart(it) }
-    numbers.printy()
+val solveSingleCache = mutableMapOf<Pair<Long, Int>, Long?>().withDefault { null }
 
-    var total = 0L
+fun solveSingle(stone: Long, blinks: Int): Long {
+    val cacheKey = Pair(stone, blinks)
+    solveSingleCache.getValue(cacheKey)?.let { return it }
 
-    var count = 0;
-    repeat(blinks) {
-//        println("---")
-        count += 1
-        println(count)
+    val result =
+        if (blinks == 0) 1L
+        else expandStone(stone).sumOf { solveSingle(it, blinks - 1) }
 
-        var node = numbers.head
-        while (node != null) {
-            val n = node.value
-            when {
-                n == 0L -> {
-                    node.value = 1L
-                    node = node.next
-//                    node = numbers.delete(node)
-//                    println("blinks left: ${blinks - count}")
-//                    total += zeroCounts[blinks - count]!!
-                }
-
-                n.countDigits().isEven() -> {
-                    val (n1, n2) = n.split()
-                    node.value = n1
-                    numbers.insertAfter(node, n2)
-                    node = node.next?.next
-                }
-
-                else -> {
-                    node.value = n * 2024
-                    node = node.next
-                }
-            }
-        }
-
-        numbers.printy()
-    }
-
-    return total + numbers.size
+    return result.also { solveSingleCache[cacheKey] = it }
 }
 
-fun solve2(input: List<Long>, blinks: Int): Long {
-    println("solve 2")
-
-    val zeroCounts = calcZeros(blinks)
-    println(zeroCounts)
-
-    val numbers = MyLinkedList<Long>()
-    input.reversed().forEach { numbers.pushStart(it) }
-//    numbers.printy()
-
-    var total = 0L
-
-    var count = 0;
-
-    repeat(blinks) {
-//        println("---")
-        count += 1
-        println("count: $count")
-
-        var node = numbers.head
-        while (node != null) {
-            val n = node.value
-            when {
-                n == 0L -> {
-//                    node.value = 1L
-//                    node = node.next
-                    node = numbers.delete(node)
-                    total += zeroCounts[blinks - count + 1]!!
-                }
-
-                n.countDigits().isEven() -> {
-                    val (n1, n2) = n.split()
-                    node.value = n1
-                    numbers.insertAfter(node, n2)
-                    node = node.next?.next
-                }
-
-                else -> {
-                    node.value = n * 2024
-                    node = node.next
-                }
-            }
-        }
-
-//        println("total: $total")
-//        numbers.printy()
+fun expandStone(stone: Long): List<Long> =
+    when {
+        stone == 0L -> listOf(1)
+        stone.countDigits().isEven() -> stone.split()
+        else -> listOf(stone * 2024)
     }
 
-//    println("total: $total")
-//    println("numbers.size: ${numbers.size}")
-
-    return total + numbers.size
-}
-
-fun calcZeros(blinks: Int): MutableMap<Int, Long> {
-    val numbers = MyLinkedList<Long>()
-    numbers.pushStart(0)
-    val counts = mutableMapOf(0 to 1L)
-    var n = 0
-    while (n <= blinks) {
-        n += 1
-        var node = numbers.head
-        while (node != null) {
-            val n = node.value
-            when {
-                n == 0L -> {
-                    node.value = 1L
-                    node = node.next
-                }
-
-                n.countDigits().isEven() -> {
-                    val (n1, n2) = n.split()
-                    node.value = n1
-                    numbers.insertAfter(node, n2)
-                    node = node.next?.next
-                }
-
-                else -> {
-                    node.value = n * 2024
-                    node = node.next
-                }
-            }
-        }
-        counts[n] = numbers.size.toLong()
-    }
-
-    return counts
-}
-
-fun Long.split(): Pair<Long, Long> {
+fun Long.split(): List<Long> {
     val s = this.toString()
     val half = s.length / 2
-    return Pair(s.substring(0, half).toLong(), s.substring(half, s.length).toLong())
+    return listOf(s.substring(0, half).toLong(), s.substring(half, s.length).toLong())
 }
 
 fun Long.countDigits() =
@@ -181,50 +57,3 @@ fun Long.countDigits() =
 
 fun Int.isEven() =
     this % 2 == 0
-
-data class MyLinkedListNode<T : Any>(
-    var value: T,
-    var next: MyLinkedListNode<T>? = null,
-    var prev: MyLinkedListNode<T>? = null
-)
-
-class MyLinkedList<T : Any> {
-    private var _head: MyLinkedListNode<T>? = null
-    val head
-        get() = _head
-
-    private var _size = 0L
-    val size
-        get() = _size
-
-    fun pushStart(value: T): MyLinkedList<T> {
-        _head = MyLinkedListNode(value, _head, null)
-        _size += 1
-        return this
-    }
-
-    fun insertAfter(node: MyLinkedListNode<T>, value: T): MyLinkedListNode<T> {
-        val newNode = MyLinkedListNode(value, node.next, node)
-        node.next = newNode
-        newNode.next?.prev = newNode
-        _size += 1
-        return newNode
-    }
-
-    fun delete(node: MyLinkedListNode<T>): MyLinkedListNode<T>? {
-        node.prev?.next = node.next
-        node.next?.prev = node.prev
-        _size -= 1
-        return node.next
-    }
-
-    fun printy() {
-        var node = _head
-        var output = ""
-        while (node != null) {
-            output += "${node.value} "
-            node = node.next
-        }
-        println(output)
-    }
-}
