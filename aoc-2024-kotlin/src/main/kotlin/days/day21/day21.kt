@@ -12,9 +12,9 @@ fun main() {
     val input = Reader("/day21/input.txt").grid()
     val exampleInput = Reader("/day21/example-1.txt").grid()
 
-//    part2(exampleInput)
-//
-//    exitProcess(0)
+    part2(exampleInput)
+
+    exitProcess(0)
 
     time(message = "Part 1", warmUp = 0, iterations = 1) {
         part1(input)
@@ -31,9 +31,32 @@ fun part1(input: Grid<Char>) =
     input.sumOf { evaluate(it, 3) }
 
 fun part2(input: Grid<Char>): Int {
-    getUltimatePresses(input[0], 3)
+    getPressCount(input[0], 2)
 
     return -1
+}
+
+fun getPressCount(input: List<Char>, depth: Int): Long {
+    println(input)
+    val numPadPresses = buttonsToDirections(input, numberPad)[0]
+
+    getDPadPressCount(numPadPresses, 1)
+
+    return -1
+}
+
+fun getDPadPressCount(input: List<Char>, depth: Int): Long {
+    println(input)
+
+    val journeyPoints = listOf(directionPad.initial) + input.map { directionPad.buttons[it]!! }
+
+    val c = journeyPoints.windowed(2).fold(0L) { acc, (start, end) ->
+        acc + getPressCount(start, end, 2)
+    }
+
+    println(c)
+
+    TODO()
 }
 
 fun evaluate(input: List<Char>, dpads: Int): Int {
@@ -64,7 +87,7 @@ fun buttonsToDirections(
     pad: Pad,
 ): List<List<Char>> {
     val positions = listOf(pad.initial) + buttons.map { pad.buttons[it]!! }
-    return positions.windowed(2).fold(listOf(emptyList())) { acc, (a, b) ->
+    return positions.windowed(2).fold(listOf(listOf())) { acc, (a, b) ->
         val paths = getPaths(a, b, pad.verboten)
         acc.flatMap { previous ->
             paths.map { path ->
@@ -82,6 +105,40 @@ fun directionToChar(d: Vector) =
         Vector(0, -1) -> '^'
         else -> throw Exception("Invalid direction")
     }
+
+val getPathCountCache = mutableMapOf<Triple<Vector, Vector, Int>, Long>()
+
+fun getPressCount(
+    initial: Vector,
+    final: Vector,
+    depth: Int
+): Long {
+    val verboten = Vector(0, 0)
+    val diff = final - initial
+
+    val path = getPaths(diff).filter { path ->
+        var current = initial
+        path.forEach { d ->
+            current += d
+            if (current == verboten) return@filter false
+        }
+        true
+    }
+
+    println(path)
+
+    val result =
+        if (depth == 1) {
+            path.minOfOrNull { it.size + 1 }!!.toLong()
+        }
+        else {
+            path.minOfOrNull {
+                getPressCount(initial, final, depth - 1) + 1
+            }!!
+        }
+
+    return result
+}
 
 fun getPaths(
     initial: Vector,
