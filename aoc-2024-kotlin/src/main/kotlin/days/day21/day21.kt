@@ -1,8 +1,5 @@
 package days.day21
 
-import days.day21_2.getTotalKeyPresses
-import kotlin.math.abs
-import kotlin.system.exitProcess
 import lib.Grid
 import lib.Reader
 import lib.Vector
@@ -13,184 +10,72 @@ fun main() {
     val input = Reader("/day21/input.txt").grid()
     val exampleInput = Reader("/day21/example-1.txt").grid()
 
-    val bad = listOf('9', '3', '5', 'A')
-
-    val o1 = evaluate(bad, 3).toLong()
-    val o2 = getTotalKeyPresses(bad, 2)
-
-    exitProcess(0)
-
-    time(message = "Part 1", warmUp = 0, iterations = 1) {
+    time(message = "Part 1", warmUp = 10000, iterations = 100) {
         part1(input)
     }.checkAnswer(188398)
 
-    exitProcess(0)
-
-    time(message = "Part 2") {
+    time(message = "Part 2", warmUp = 10000, iterations = 100) {
         part2(input)
-    }.checkAnswer(0)
+    }.checkAnswer(230049027535970)
 }
 
 fun part1(input: Grid<Char>) =
-    input.sumOf { evaluate(it, 3) }
+    input.sumOf { getComplexity(it, 2) }
 
-fun part2(input: Grid<Char>): Int {
-    getPressCount(input[0], 2)
+fun part2(input: Grid<Char>) =
+    input.sumOf { getComplexity(it, 25) }
 
-    return -1
-}
+fun getComplexity(code: List<Char>, numPadDepth: Int): Long =
+    getNumericPart(code) * getTotalKeyPresses(code, numPadDepth)
 
-fun getPressCount(input: List<Char>, depth: Int): Long {
-    println(input)
-    val numPadPresses = buttonsToDirections(input, numberPad)[0]
-
-    getDPadPressCount(numPadPresses, 1)
-
-    return -1
-}
-
-fun getDPadPressCount(input: List<Char>, depth: Int): Long {
-    println(input)
-
-    val journeyPoints = listOf(directionPad.initial) + input.map { directionPad.buttons[it]!! }
-
-    val c = journeyPoints.windowed(2).fold(0L) { acc, (start, end) ->
-        acc + getPressCount(start, end, 2)
+fun getTotalKeyPresses(code: List<Char>, numPadDepth: Int) =
+    getNumPadKeyPresses(code).minOf {
+        getDPadKeyPressCount(it, numPadDepth)
     }
 
-    println(c)
-
-    TODO()
-}
-
-fun evaluate(input: List<Char>, dpads: Int): Int {
-    val presses = getUltimatePresses(input, dpads)
-    return presses.size * input.dropLast(1).joinToString("").toInt()
-}
-
-fun getUltimatePresses(input: List<Char>, dpads: Int): List<Char> {
-    val dpad1Presses = buttonsToDirections(input, numberPad)
-
-    tailrec fun go(presses: List<List<Char>>, n: Int): List<List<Char>> {
-        println(presses)
-        return if (n == 0) presses
-        else {
-            val foo = presses.flatMap {
-                buttonsToDirections(it, directionPad)
-            }
-            go(foo, n - 1)
+fun getNumPadKeyPresses(code: List<Char>): List<List<Char>> {
+    return (listOf('A') + code)
+        .windowed(2)
+        .fold(listOf(emptyList())) { acc, (start, target) ->
+            numberPad.getKeysForPress(start, target).flatMap { newPress ->
+                acc.map { it + newPress }
+            }.distinct()
         }
-    }
-
-    val final = go(dpad1Presses, dpads - 1)
-
-    return final.minBy { it.size }
 }
 
-fun buttonsToDirections(
-    buttons: List<Char>,
-    pad: Pad,
-): List<List<Char>> {
-    val positions = listOf(pad.initial) + buttons.map { pad.buttons[it]!! }
-    return positions.windowed(2).fold(listOf(listOf())) { acc, (a, b) ->
-        val paths = getPaths(a, b, pad.verboten)
-        acc.flatMap { previous ->
-            paths.map { path ->
-                previous + path.map(::directionToChar) + 'A'
-            }
+fun getDPadKeyPressCount(code: List<Char>, numPadDepth: Int) =
+    (listOf('A') + code)
+        .windowed(2)
+        .fold(0L) { acc, (start, target) ->
+            acc + getDPadFragmentKeyPressCount(start, target, numPadDepth)
         }
-    }
-}
 
-fun directionToChar(d: Vector) =
-    when (d) {
-        Vector(1, 0) -> '>'
-        Vector(-1, 0) -> '<'
-        Vector(0, 1) -> 'v'
-        Vector(0, -1) -> '^'
-        else -> throw Exception("Invalid direction")
-    }
+val dPadFragmentKeyPressCountCache = mutableMapOf<Triple<Char, Char, Int>, Long>()
 
-val getPathCountCache = mutableMapOf<Triple<Vector, Vector, Int>, Long>()
+fun getDPadFragmentKeyPressCount(start: Char, target: Char, depth: Int): Long {
+    val cacheKey = Triple(start, target, depth)
+    if (cacheKey in dPadFragmentKeyPressCountCache) return dPadFragmentKeyPressCountCache[cacheKey]!!
 
-fun getPressCount(
-    initial: Vector,
-    final: Vector,
-    depth: Int
-): Long {
-    val verboten = Vector(0, 0)
-    val diff = final - initial
-
-    val path = getPaths(diff).filter { path ->
-        var current = initial
-        path.forEach { d ->
-            current += d
-            if (current == verboten) return@filter false
-        }
-        true
-    }
-
-    println(path)
-
+    val keysOptions = directionPad.getKeysForPress(start, target)
     val result =
-        if (depth == 1) {
-            path.minOfOrNull { it.size + 1 }!!.toLong()
-        } else {
-            path.minOfOrNull {
-                getPressCount(initial, final, depth - 1) + 1
-            }!!
+        if (depth == 1) keysOptions.first().size.toLong()
+        else {
+            keysOptions.minOf { keys ->
+                (listOf('A') + keys)
+                    .windowed(2)
+                    .fold(0L) { acc, (start, target) ->
+                        acc + getDPadFragmentKeyPressCount(start, target, depth - 1)
+                    }
+            }
         }
+
+    dPadFragmentKeyPressCountCache[cacheKey] = result
 
     return result
 }
 
-fun getPaths(
-    initial: Vector,
-    final: Vector,
-    verboten: Vector
-): List<List<Vector>> {
-    val diff = final - initial
-    return getPaths(diff).filter { path ->
-        var current = initial
-        path.forEach { d ->
-            current += d
-            if (current == verboten) return@filter false
-        }
-        true
-    }
-}
-
-fun getPaths(
-    v: Vector
-): Set<List<Vector>> {
-    if (v == Vector(0, 0)) return setOf(emptyList())
-
-    val horizontalDirection = when {
-        v.x > 0 -> Vector(1, 0)
-        else -> Vector(-1, 0)
-    }
-    val horizontalSteps = List(abs(v.x)) { horizontalDirection }
-    val verticalDirection = when {
-        v.y > 0 -> Vector(0, 1)
-        else -> Vector(0, -1)
-    }
-    val verticalSteps = List(abs(v.y)) { verticalDirection }
-
-    return setOf(
-        horizontalSteps + verticalSteps,
-        verticalSteps + horizontalSteps
-    )
-
-//    return (List(horizontalSteps) { horizontalDirection } + List(verticalSteps) { verticalDirection })
-//        .permutations()
-}
-
-fun <T> List<T>.permutations(): Set<List<T>> =
-    if (this.size == 1) setOf(this)
-    else flatMapIndexed { index, x ->
-        val xs = this.subList(0, index) + this.subList(index + 1, this.size)
-        xs.permutations().map { listOf(x) + it }
-    }.toSet()
+fun getNumericPart(code: List<Char>) =
+    code.subList(0, 3).joinToString("").toInt()
 
 val numberPad = Pad(
     buttons = mapOf(
@@ -207,7 +92,6 @@ val numberPad = Pad(
         'A' to Vector(2, 3)
     ),
     verboten = Vector(0, 3),
-    initial = Vector(2, 3)
 )
 
 val directionPad = Pad(
@@ -219,7 +103,38 @@ val directionPad = Pad(
         '>' to Vector(2, 1),
     ),
     verboten = Vector(0, 0),
-    initial = Vector(2, 0)
 )
 
-data class Pad(val buttons: Map<Char, Vector>, val verboten: Vector, val initial: Vector)
+data class Pad(val buttons: Map<Char, Vector>, val verboten: Vector) {
+    private val keysCache = mutableMapOf<Pair<Char, Char>, List<List<Char>>>()
+
+    fun getKeysForPress(start: Char, target: Char): List<List<Char>> {
+        val cacheKey = Pair(start, target)
+        if (cacheKey in keysCache) return keysCache[cacheKey]!!
+
+        val startV = buttons[start]
+        require(startV != null)
+        val targetV = buttons[target]
+        require(targetV != null)
+
+        val xs = startV.pathTo(targetV.copy(y = startV.y)).drop(1).map {
+            if (targetV.x < startV.x) '<' else '>'
+        }
+        val ys = startV.pathTo(targetV.copy(x = startV.x)).drop(1).map {
+            if (targetV.y < startV.y) '^' else 'v'
+        }
+
+        val cornerXsFirst = Vector(targetV.x, startV.y)
+        val cornerYsFirst = Vector(startV.x, targetV.y)
+
+        val presses = when {
+            cornerXsFirst == verboten -> listOf(ys + xs)
+            cornerYsFirst == verboten -> listOf(xs + ys)
+            else -> listOf(xs + ys, ys + xs)
+        }.map { it + 'A' }
+
+        keysCache[cacheKey] = presses
+
+        return presses
+    }
+}
