@@ -1,5 +1,6 @@
 package days.day21
 
+import days.day21_2.getTotalKeyPresses
 import kotlin.math.abs
 import kotlin.system.exitProcess
 import lib.Grid
@@ -12,7 +13,10 @@ fun main() {
     val input = Reader("/day21/input.txt").grid()
     val exampleInput = Reader("/day21/example-1.txt").grid()
 
-    part2(exampleInput)
+    val bad = listOf('9', '3', '5', 'A')
+
+    val o1 = evaluate(bad, 3).toLong()
+    val o2 = getTotalKeyPresses(bad, 2)
 
     exitProcess(0)
 
@@ -68,6 +72,7 @@ fun getUltimatePresses(input: List<Char>, dpads: Int): List<Char> {
     val dpad1Presses = buttonsToDirections(input, numberPad)
 
     tailrec fun go(presses: List<List<Char>>, n: Int): List<List<Char>> {
+        println(presses)
         return if (n == 0) presses
         else {
             val foo = presses.flatMap {
@@ -130,8 +135,7 @@ fun getPressCount(
     val result =
         if (depth == 1) {
             path.minOfOrNull { it.size + 1 }!!.toLong()
-        }
-        else {
+        } else {
             path.minOfOrNull {
                 getPressCount(initial, final, depth - 1) + 1
             }!!
