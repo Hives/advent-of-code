@@ -11,7 +11,7 @@ else
   day=$2
 fi
 
-echo "Setting up day ${day}"
+echo "Setting up day ${day}, from year ${year}"
 
 day_no_leading_zeroes=$(echo $day | sed 's/^0*//')
 
