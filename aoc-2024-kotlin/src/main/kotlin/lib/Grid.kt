@@ -12,6 +12,13 @@ fun <T> Grid<T>.atOrNull(v: Vector): T? =
 fun <T> Grid<T>.at(v: Vector, default: T): T =
     atOrNull(v) ?: default
 
+fun <T> Grid<T>.flip(): Grid<T> =
+    this[0].indices.map { x ->
+        this.indices.map { y ->
+           this[y][x]
+        }
+    }
+
 /*
  Returns a sequence of Pair(Vector(x, y), cellValue)
  */
