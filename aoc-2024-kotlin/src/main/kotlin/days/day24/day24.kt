@@ -13,7 +13,8 @@ fun main() {
     val exampleInput2 = Reader("/day24/example-2.txt").string()
 
 //    part1(input).checkAnswer(49520947122770)
-    part2(input)
+//    part2(input)
+    trial(input)
 //    part1(exampleInput2).checkAnswer(2024)
 
     exitProcess(0)
@@ -22,11 +23,6 @@ fun main() {
         part1(input)
     }.checkAnswer(49520947122770)
 
-    exitProcess(0)
-
-    time(message = "Part 2") {
-        part2(input)
-    }.checkAnswer(0)
 }
 
 fun part1(input: String): Long {
@@ -34,24 +30,115 @@ fun part1(input: String): Long {
     return run(initialInputs, gates).toLong(2)
 }
 
+/*
+ This function prints out the code to generate a flowchart representing the
+ logic-gate network represented by the input. My solution was to inspect it and
+ work out which bits were wrong 😵
+ */
 fun part2(input: String): String {
-    trial(input)
+    val (initialInputs, originalGates) = parseInput(input)
+
+    val gates = applySwaps(originalGates)
+
+    val gateNodes = gates.map { gate ->
+        Node(
+            id = gate.id,
+            label = gate.javaClass.simpleName,
+            output =
+            if (gate.output.startsWith('z')) listOf("OUTPUT_${gate.output}")
+            else gates.filter { gate.output in it.inputs }.map(Gate::id),
+            outputWireName = gate.output
+        )
+    }
+
+    val inputNodes = initialInputs.keys.sortedBy { "${it.substring(1)}${it.substring(0..1)}" }.map { wire ->
+        Node(
+            id = "INPUT_$wire",
+            label = "INPUT_$wire",
+            output = gates.filter { wire in it.inputs }.map(Gate::id),
+            outputWireName = wire
+        )
+    }
+
+    val outputNodes = gates.filter { gate ->
+        gate.output.startsWith('z')
+    }.map { gate ->
+        Node(
+            id = "OUTPUT_${gate.output}",
+            label = "OUTPUT_${gate.output}",
+            output = emptyList(),
+            outputWireName = ""
+        )
+    }
+
+    println("flowchart TD")
+    val nodes = (inputNodes + gateNodes)
+    nodes.forEach { node ->
+        println("  ${node.id}[${node.label}\n${node.id}]")
+    }
+    nodes.forEach { node ->
+        node.output.forEach { output ->
+            println("  ${node.id}-->|${node.outputWireName}|$output")
+        }
+    }
 
     return ":("
 }
 
+fun applySwaps(gates: List<Gate>): List<Gate> {
+    val swaps = listOf(
+        Pair(201, 52),
+        Pair(39, 49),
+        Pair(48, 124),
+        Pair(179, 206)
+    )
+
+    swaps.flatMap { swap ->
+        listOf(
+            gates.find { gate -> gate.rank == swap.first }!!.output,
+            gates.find { gate -> gate.rank == swap.second }!!.output,
+        )
+    }.sorted().joinToString(",").also(::println)
+
+    val swappedGates = gates.toMutableList()
+    swaps.forEach { swap ->
+        val gate1 = swappedGates.find { it.rank == swap.first }!!
+        val gate2 = swappedGates.find { it.rank == swap.second }!!
+        val gate1OriginalOutput = gate1.output
+        gate1.output = gate2.output
+        gate2.output = gate1OriginalOutput
+    }
+
+    return swappedGates
+}
+
+data class Node(
+    val id: String,
+    val label: String,
+    val output: List<String>,
+    val outputWireName: String
+)
+
+/*
+ This function adds two binary numbers together using the logic-gate network.
+ By turning individual bits in the numbers on and off you can investigate which
+ bits don't add up correctly, which gives a clue as to where in the network
+ the problems are
+ */
 fun trial(input: String): Int {
-    val (_, gates) = parseInput(input)
+    val (_, originalGates) = parseInput(input)
     val initialInputs = (0..44).flatMap { n ->
         val nString = pad2(n)
         listOf("x$nString" to ZERO, "y$nString" to ZERO)
     }.toMap().toMutableMap()
 
+    val gates = applySwaps(originalGates)
+
     //       444443333333333222222222211111111110000000000
     //       432109876543210987654321098765432109876543210
-    // bad:  _____X_____________________X_________________
-    val x = "100000000000000000000000000000000000000000000"
-    val y = "100000000000000000000000000000000000000000000"
+    // bad:  _____XX____________________X_________________
+    val x = "100001000000000000000001111100000100000000111"
+    val y = "100001000000000000100001111100000000000000101"
 
     x.toList().reversed().forEachIndexed { index, c ->
         initialInputs["x${pad2(index)}"] = if (c == '1') ONE else ZERO
@@ -122,17 +209,18 @@ fun parseInput(input: String): Pair<Map<String, BinaryValue>, List<Gate>> {
         }
     }
 
-//    gates.sortedBy { it.toString() }.forEachIndexed { index, gate -> println("$index: $gate") }
-
     return Pair(initialInputs, gates)
 }
 
 sealed class Gate(
     open val inputs: List<String>,
-    open val output: String,
-    open val id: Int
+    open var output: String,
+    open val rank: Int
 ) {
     abstract fun process(in1: BinaryValue, in2: BinaryValue): BinaryValue
+
+    val id: String
+        get() = "GATE_$rank"
 
     override fun toString(): String {
         return "${inputs[0]} ${javaClass.simpleName} ${inputs[1]} -> $output"
@@ -140,9 +228,9 @@ sealed class Gate(
 
     data class AND(
         override val inputs: List<String>,
-        override val output: String,
-        override val id: Int
-    ) : Gate(inputs, output, id) {
+        override var output: String,
+        override val rank: Int
+    ) : Gate(inputs, output, rank) {
         override fun process(in1: BinaryValue, in2: BinaryValue) =
             if (in1 == ONE && in2 == ONE) ONE
             else ZERO
@@ -152,9 +240,9 @@ sealed class Gate(
 
     data class OR(
         override val inputs: List<String>,
-        override val output: String,
-        override val id: Int
-    ) : Gate(inputs, output, id) {
+        override var output: String,
+        override val rank: Int
+    ) : Gate(inputs, output, rank) {
         override fun process(in1: BinaryValue, in2: BinaryValue) =
             if (in1 == ZERO && in2 == ZERO) ZERO
             else ONE
@@ -164,9 +252,9 @@ sealed class Gate(
 
     data class XOR(
         override val inputs: List<String>,
-        override val output: String,
-        override val id: Int
-    ) : Gate(inputs, output, id) {
+        override var output: String,
+        override val rank: Int
+    ) : Gate(inputs, output, rank) {
         override fun process(in1: BinaryValue, in2: BinaryValue) =
             if (in1 != in2) ONE
             else ZERO
