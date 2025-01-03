@@ -47,14 +47,17 @@ fun trial(input: String): Int {
         listOf("x$nString" to ZERO, "y$nString" to ZERO)
     }.toMap().toMutableMap()
 
+    //       444443333333333222222222211111111110000000000
+    //       432109876543210987654321098765432109876543210
     // bad:  _____X_____________________X_________________
     val x = "100000000000000000000000000000000000000000000"
+    val y = "100000000000000000000000000000000000000000000"
+
     x.toList().reversed().forEachIndexed { index, c ->
         initialInputs["x${pad2(index)}"] = if (c == '1') ONE else ZERO
     }
     val xBase10 = x.toLong(2)
 
-    val y = "100000000000000000000000000000000000000000000"
     y.toList().reversed().forEachIndexed { index, c ->
         initialInputs["y${pad2(index)}"] = if (c == '1') ONE else ZERO
     }
