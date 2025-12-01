@@ -1,0 +1,4 @@
+package days.day${DAY}
+
+const val part1 = 0
+const val part2 = 0
