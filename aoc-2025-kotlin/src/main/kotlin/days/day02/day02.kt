@@ -10,12 +10,11 @@ fun main() {
     val (part1, part2) = Reader("/day02/answers.txt").longs()
     val exampleInput = Reader("/day02/example-1.txt").string()
 
-    time(warmUp = 5, iterations = 5, message = "Part 1") {
+    time(warmUp = 10, iterations = 10, message = "Part 1") {
         part1(input)
     }.checkAnswer(part1)
 
-    // slow - ~1.5s
-    time(warmUp = 5, iterations = 5, message = "Part 2") {
+    time(warmUp = 10, iterations = 10, message = "Part 2") {
         part2(input)
     }.checkAnswer(part2)
 }
