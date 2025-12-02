@@ -28,7 +28,7 @@ fun part2(input: String): Long =
     parseInput(input).flatten().filter {
         val s = it.toString()
         for (n in 1..(s.length / 2)) {
-            if (s.windowed(n, n, true).toSet().size == 1) return@filter true
+            if (s.chunked(n).toSet().size == 1) return@filter true
         }
         false
     }.sum()
