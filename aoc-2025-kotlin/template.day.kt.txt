@@ -9,7 +9,7 @@ fun main() {
     val input = Reader("/day${DAY}/input.txt").strings()
     val exampleInput = Reader("/day${DAY}/example-1.txt").strings()
 
-    part1(exampleInput)
+    part1(input).checkAnswer(part1)
 
     exitProcess(0)
 
