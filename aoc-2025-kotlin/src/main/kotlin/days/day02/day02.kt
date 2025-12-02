@@ -6,6 +6,7 @@ import lib.time
 
 fun main() {
     val input = Reader("/day02/input.txt").string()
+    val (part1, part2) = Reader("/day02/answers.txt").longs()
     val exampleInput = Reader("/day02/example-1.txt").string()
 
     time(warmUp = 5, iterations = 5, message = "Part 1") {

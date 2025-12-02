@@ -1,4 +1,0 @@
-package days.day${DAY}
-
-val part1 = null
-val part2 = null

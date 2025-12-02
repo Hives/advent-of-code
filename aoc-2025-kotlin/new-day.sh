@@ -59,6 +59,14 @@ else
     touch $input_gitkeep
 fi;
 
+answers_file="${input_path}/answers.txt"
+if [ -f $answers_file ]; then
+    echo "File ${answers_file} already exists"
+else
+    echo "Creating file ${answers_file}"
+    cp template.answers.txt $answers_file
+fi;
+
 solution_file="${path}/day${day}.kt"
 if [ -f $solution_file ]; then
     echo "File ${solution_file} already exists"
@@ -68,11 +76,3 @@ else
     envsubst < template.day.kt.txt > $solution_file
 fi;
 
-answers_file="${path}/answers.kt"
-if [ -f $answers_file ]; then
-    echo "File ${answers_file} already exists"
-else
-    echo "Creating file ${answers_file}"
-    export DAY=$day
-    envsubst < template.answers.kt.txt > $answers_file
-fi;

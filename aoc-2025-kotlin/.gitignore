@@ -45,5 +45,4 @@ bin/
 .DS_Store
 
 .env
-src/main/kotlin/days/**/answers.kt
 src/main/resources/**/*.txt
