@@ -1,5 +1,6 @@
 package days.day02
 
+import kotlin.system.exitProcess
 import lib.Reader
 import lib.checkAnswer
 import lib.time
@@ -14,7 +15,7 @@ fun main() {
     }.checkAnswer(part1)
 
     // slow - ~1.5s
-    time(warmUp = 2, iterations = 2, message = "Part 2") {
+    time(warmUp = 5, iterations = 5, message = "Part 2") {
         part2(input)
     }.checkAnswer(part2)
 }
@@ -28,10 +29,8 @@ fun part1(input: String): Long =
 fun part2(input: String): Long =
     parseInput(input).flatten().filter {
         val s = it.toString()
-        for (n in 1..(s.length / 2)) {
-            if (s.chunked(n).toSet().size == 1) return@filter true
-        }
-        false
+        val doubled = s + s
+        doubled.substring(1, doubled.length - 1).contains(s)
     }.sum()
 
 fun parseInput(input: String): List<LongRange> =
