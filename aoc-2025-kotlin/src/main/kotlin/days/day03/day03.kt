@@ -22,15 +22,12 @@ fun part1(input: List<String>) = input.sumOf { getMax(parseBank(it), 2) }
 
 fun part2(input: List<String>) = input.sumOf { getMax(parseBank(it), 12) }
 
-fun getMax(bank: List<Int>, batteries: Int): Long {
-    tailrec fun go(remainingBank: List<Int>, remainingBatteries: Int, acc: Long): Long {
-        return if (remainingBatteries == 0) acc
-        else {
-            val b = remainingBank.dropLast(remainingBatteries - 1).max()
-            go(remainingBank.drop(remainingBank.indexOf(b) + 1), remainingBatteries - 1, (10 * acc) + b)
-        }
+tailrec fun getMax(bank: List<Int>, batteries: Int, acc: Long = 0): Long {
+    return if (batteries == 0) acc
+    else {
+        val b = bank.dropLast(batteries - 1).max()
+        getMax(bank.drop(bank.indexOf(b) + 1), batteries - 1, (10 * acc) + b)
     }
-    return go(bank, batteries, 0)
 }
 
 fun parseBank(input: String) = input.map { it.digitToInt() }
