@@ -7,7 +7,7 @@ import kotlin.system.exitProcess
 
 fun main() {
     val input = Reader("/day${DAY}/input.txt").strings()
-    val (part1, part2) = Reader("/day${DAY}/answers.txt").ints()
+    val (part1, part2) = Reader("/day${DAY}/answers.txt").longs()
     val exampleInput = Reader("/day${DAY}/example-1.txt").strings()
 
     println(part1(input))
@@ -23,10 +23,10 @@ fun main() {
     }.checkAnswer(part2)
 }
 
-fun part1(input: List<String>): Int {
+fun part1(input: List<String>): Long {
     return 0
 }
 
-fun part2(input: List<String>): Int {
+fun part2(input: List<String>): Long {
     return 0
 }
