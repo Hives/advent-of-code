@@ -12,3 +12,4 @@ https://adventofcode.com/
 - [2022 - Kotlin](/aoc-2022-kotlin/src/main/kotlin/days)
 - [2023 - Kotlin](/aoc-2023-kotlin/src/main/kotlin/days)
 - [2024 - Kotlin](/aoc-2024-kotlin/src/main/kotlin/days)
+- [2025 - Kotlin](/aoc-2025-kotlin/src/main/kotlin/days)
