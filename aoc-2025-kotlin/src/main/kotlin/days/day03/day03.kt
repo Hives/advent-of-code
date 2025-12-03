@@ -9,11 +9,11 @@ fun main() {
     val (part1, part2) = Reader("/day03/answers.txt").longs()
     val exampleInput = Reader("/day03/example-1.txt").strings()
 
-    time(message = "Part 1") {
+    time(warmUp = 1000, iterations = 1000, message = "Part 1") {
         part1(input)
     }.checkAnswer(part1)
 
-    time(message = "Part 2") {
+    time(warmUp = 1000, iterations = 1000, message = "Part 2") {
         part2(input)
     }.checkAnswer(part2)
 }
