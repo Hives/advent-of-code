@@ -24,9 +24,9 @@ fun main() {
 }
 
 fun part1(input: List<String>): Long {
-    return 0
+    TODO()
 }
 
 fun part2(input: List<String>): Long {
-    return 0
+    TODO()
 }

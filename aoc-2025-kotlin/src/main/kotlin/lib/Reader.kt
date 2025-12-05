@@ -14,6 +14,11 @@ class Reader(private val file: String) {
             if (c == "") null else c.toInt()
         }
     }
+    fun <T, R> mapAnswers(
+        m1: (String) -> T,
+        m2: (String) -> R
+    ): Pair<T, R> =
+        strings().let { Pair(m1(it[0]), m2(it[1])) }
 
     fun digits(): List<Int> = strings().first().split("").filter { it.isNotEmpty() }.map(String::toInt)
 
