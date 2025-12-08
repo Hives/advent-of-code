@@ -1,8 +1,8 @@
 package lib
 
 class Reader(private val file: String) {
-    fun string(): String = javaClass.getResource("$file")!!.readText().trimEnd()
-    fun strings(): List<String> = string().lines()
+    fun strings(): List<String> = javaClass.getResource("$file")!!.readText().lines().dropLastWhile { it.isEmpty() }
+    fun string(): String = strings().joinToString("\n")
     fun listOfLongs() = string().split(" ").map(String::toLong)
     fun listOfInts() = string().split(" ").map(String::toInt)
     fun listOfListOfLongs() = strings().map { it.split(" ").map(String::toLong) }

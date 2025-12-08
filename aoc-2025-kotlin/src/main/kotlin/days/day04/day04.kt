@@ -1,6 +1,5 @@
 package days.day04
 
-import kotlin.system.exitProcess
 import lib.Grid
 import lib.Reader
 import lib.Vector
@@ -38,7 +37,7 @@ fun part2(grid: Grid<Char>): Int {
             mutableGrid[point.y][point.x] = '.'
         }
     }
-    
+
     return removed
 }
 

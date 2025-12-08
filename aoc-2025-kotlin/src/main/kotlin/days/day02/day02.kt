@@ -1,6 +1,5 @@
 package days.day02
 
-import kotlin.system.exitProcess
 import lib.Reader
 import lib.checkAnswer
 import lib.time
