@@ -11,11 +11,11 @@ fun main() {
     val (part1, part2) = Reader("/day08/answers.txt").longs()
     val exampleInput = Reader("/day08/example-1.txt").strings()
 
-    time(warmUp = 5, iterations = 5, message = "Part 1") {
+    time(warmUp = 10, iterations = 10, message = "Part 1") {
         part1(input)
     }.checkAnswer(part1)
 
-    time(warmUp = 5, iterations = 5, message = "Part 2") {
+    time(warmUp = 10, iterations = 10, message = "Part 2") {
         part2(input)
     }.checkAnswer(part2)
 }
@@ -27,23 +27,14 @@ fun part1(input: List<String>): Long {
             .map { Pair(it, (it.second - it.first).straightLineDistance) }
             .sortedBy { it.second }
     val closest = pairsSortedByDistances.take(1_000)
-    val circuits = mutableListOf<MutableSet<Vector3>>()
+    val circuits = junctionBoxes.map { mutableSetOf(it) }.toMutableSet()
     closest.forEach { (pair, _) ->
         val (a, b) = pair
-        val circuitContainingA = circuits.find { it.contains(a) }
-        val circuitContainingB = circuits.find { it.contains(b) }
-        when {
-            circuitContainingA == null && circuitContainingB == null -> circuits.add(mutableSetOf(a, b))
-            circuitContainingA == null -> circuitContainingB?.add(a)
-            circuitContainingB == null -> circuitContainingA?.add(b)
-            else -> {
-                circuits.remove(circuitContainingA)
-                circuits.remove(circuitContainingB)
-                val newCircuit = mutableSetOf<Vector3>()
-                newCircuit.addAll(circuitContainingA)
-                newCircuit.addAll(circuitContainingB)
-                circuits.add(newCircuit)
-            }
+        val circuitContainingA = circuits.single { it.contains(a) }
+        if (!circuitContainingA.contains(b)) {
+            val circuitContainingB = circuits.single { it.contains(b) }
+            circuits.removeIf { it.contains(b) }
+            circuitContainingA.addAll(circuitContainingB)
         }
     }
     return circuits.map { it.size.toLong() }.sortedDescending().take(3).let { it[0] * it[1] * it[2] }
@@ -55,7 +46,7 @@ fun part2(input: List<String>): Long {
         junctionBoxes.getPairs()
             .map { Pair(it, (it.second - it.first).straightLineDistance) }
             .sortedBy { it.second }
-    val circuits = mutableListOf<MutableSet<Vector3>>()
+    val circuits = junctionBoxes.map { mutableSetOf(it) }.toMutableSet()
     lateinit var final: Pair<Vector3, Vector3>
     pairsSortedByDistances.forEach { (pair, _) ->
         if (circuits.size == 1 && circuits.single().size == junctionBoxes.size) {
@@ -63,20 +54,11 @@ fun part2(input: List<String>): Long {
         } else {
             final = pair
             val (a, b) = pair
-            val circuitContainingA = circuits.find { it.contains(a) }
-            val circuitContainingB = circuits.find { it.contains(b) }
-            when {
-                circuitContainingA == null && circuitContainingB == null -> circuits.add(mutableSetOf(a, b))
-                circuitContainingA == null -> circuitContainingB?.add(a)
-                circuitContainingB == null -> circuitContainingA.add(b)
-                else -> {
-                    circuits.remove(circuitContainingA)
-                    circuits.remove(circuitContainingB)
-                    val newCircuit = mutableSetOf<Vector3>()
-                    newCircuit.addAll(circuitContainingA)
-                    newCircuit.addAll(circuitContainingB)
-                    circuits.add(newCircuit)
-                }
+            val circuitContainingA = circuits.single { it.contains(a) }
+            if (!circuitContainingA.contains(b)) {
+                val circuitContainingB = circuits.single { it.contains(b) }
+                circuits.removeIf { it.contains(b) }
+                circuitContainingA.addAll(circuitContainingB)
             }
         }
     }
