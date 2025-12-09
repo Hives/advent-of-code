@@ -28,7 +28,7 @@ fun part1(input: Grid<Char>): Long {
         else {
             var additionalSplits = 0
             val newFront = front.toList().mapNotNull { v ->
-                if (v.y == input.size - 1) null
+                if (v.y.toInt() == input.size - 1) null
                 else {
                     val v2 = v + Vector(0, 1)
                     val c = input.at(v2, '.')

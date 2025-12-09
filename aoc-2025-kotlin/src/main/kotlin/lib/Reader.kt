@@ -25,5 +25,5 @@ class Reader(private val file: String) {
     fun longs(): List<Long> = strings().map { it.toLong() }
     fun ints(): List<Int> = strings().map { it.toInt() }
     fun commaSeparated() = string().split(",")
-    fun vectors() = strings().map { it.split(",").let { (x, y) -> Vector(x.toInt(), y.toInt()) } }
+    fun vectors() = strings().map { it.split(",").let { (x, y) -> Vector(x.toLong(), y.toLong()) } }
 }

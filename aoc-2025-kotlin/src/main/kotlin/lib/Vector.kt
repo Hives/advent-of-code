@@ -3,8 +3,8 @@ package lib
 import kotlin.math.abs
 import kotlin.math.sign
 
-data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
-    val manhattanDistance: Int
+data class Vector(val x: Long, val y: Long) : Comparable<Vector> {
+    val manhattanDistance: Long
         get() = abs(x) + abs(y)
 
     operator fun times(n: Int) = Vector(
@@ -43,7 +43,7 @@ data class Vector(val x: Int, val y: Int) : Comparable<Vector> {
     fun pathTo(other: Vector): List<Vector> {
         if (this == other) return listOf(this)
 
-        val direction = (other - this).let { Vector(it.x.sign, it.y.sign) }
+        val direction = (other - this).let { Vector(it.x.sign.toLong(), it.y.sign.toLong()) }
         require(direction in CompassDirection.values().map { it.vector }) { "Vectors must be in a horizontal or vertical line" }
 
         val path = mutableListOf(this)

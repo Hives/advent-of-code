@@ -34,7 +34,7 @@ fun part2(grid: Grid<Char>): Int {
         if (accessible.count() == 0) break
         accessible.forEach { (point, _) ->
             removed += 1
-            mutableGrid[point.y][point.x] = '.'
+            mutableGrid[point.y.toInt()][point.x.toInt()] = '.'
         }
     }
 
