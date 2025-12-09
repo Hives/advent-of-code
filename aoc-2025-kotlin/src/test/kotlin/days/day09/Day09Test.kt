@@ -47,15 +47,6 @@ class Day09Test {
         }
 
         @Test
-        fun `horizontal and inside`() {
-            assertThat(Pair(Vector(3, 3), Vector(4, 3)).disqualifies(rect)).isTrue()
-        }
-        @Test
-        fun `vertical and inside`() {
-            assertThat(Pair(Vector(3, 3), Vector(3, 4)).disqualifies(rect)).isTrue()
-        }
-
-        @Test
         fun `top edge pointing out`() {
             assertThat(Pair(Vector(3, 2), Vector(3, 0)).disqualifies(rect)).isFalse()
         }

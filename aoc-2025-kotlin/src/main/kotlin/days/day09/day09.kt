@@ -1,7 +1,6 @@
 package days.day09
 
 import kotlin.math.abs
-import kotlin.system.exitProcess
 import lib.Reader
 import lib.Vector
 import lib.checkAnswer
@@ -16,27 +15,25 @@ fun main() {
         part1(input)
     }.checkAnswer(part1)
 
-    time(warmUp = 2, iterations = 5, message = "Part 2") {
+    time(warmUp = 5, iterations = 5, message = "Part 2") {
         part2(input)
     }.checkAnswer(part2)
 }
 
 fun part1(input: List<Vector>) =
-    input.getPairs().maxOf { it.size() }
+    input.getPairs().maxOf { it.rectangleArea() }
 
 fun part2(input: List<Vector>): Long {
     val edges = (input + input.first()).windowed(2).map { Pair(it[0], it[1]) }
     return input.getPairs().filter { cornerPair ->
         edges.none { edge -> edge.disqualifies(cornerPair) }
-    }.maxOf { it.size() }
+    }.maxOf { it.rectangleArea() }
 }
 
-fun Pair<Vector, Vector>.size(): Long {
+fun Pair<Vector, Vector>.rectangleArea(): Long {
     val diagonal = second - first
     return (abs(diagonal.x) + 1) * (abs(diagonal.y) + 1)
 }
-
-fun <T> Pair<T, T>.contains(x: T) = first == x || second == x
 
 fun Pair<Vector, Vector>.disqualifies(rect: Pair<Vector, Vector>): Boolean {
     val (minX, maxX) = listOf(rect.first.x, rect.second.x).sorted()
@@ -49,8 +46,7 @@ fun Pair<Vector, Vector>.disqualifies(rect: Pair<Vector, Vector>): Boolean {
             val alignedX = first.x > minX && first.x < maxX
             val overlappingTop = top <= minY && bottom > minY
             val overlappingBottom = top < maxY && bottom >= maxY
-            val inside = Pair(minY, maxY).contains(first.y, second.y)
-            alignedX && (overlappingTop || overlappingBottom || inside)
+            alignedX && (overlappingTop || overlappingBottom)
         }
 
         first.y == second.y -> {
@@ -59,17 +55,11 @@ fun Pair<Vector, Vector>.disqualifies(rect: Pair<Vector, Vector>): Boolean {
             val alignedY = first.y > minY && first.y < maxY
             val overlapsLeft = left <= minX && right > minX
             val overlapsRight = left < maxX && right >= maxX
-            val inside = Pair(minX, maxX).contains(first.x, second.x)
-            alignedY && (overlapsLeft || overlapsRight || inside)
+            alignedY && (overlapsLeft || overlapsRight)
         }
 
         else -> throw Error("Didn't expect this?!")
     }
-}
-
-fun Pair<Long, Long>.contains(vararg ns: Long): Boolean {
-    val range = listOf(first, second).sorted().let { it[0]..it[1] }
-    return ns.all { range.contains(it) }
 }
 
 fun List<Vector>.getPairs(): List<Pair<Vector, Vector>> {
