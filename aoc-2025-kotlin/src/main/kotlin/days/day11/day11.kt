@@ -1,6 +1,5 @@
 package days.day11
 
-import kotlin.system.exitProcess
 import lib.Reader
 import lib.checkAnswer
 import lib.time
@@ -32,10 +31,10 @@ fun part2(input: List<String>): Long {
     return listOf(
         listOf("svr", "fft", "dac", "out"),
         listOf("svr", "dac", "fft", "out"),
-    ).sumOf { connectionMap.findPaths(it) }
+    ).sumOf { points -> connectionMap.findMultiPointPaths(points) }
 }
 
-fun Map<String, Set<String>>.findPaths(points: List<String>) =
+fun Map<String, Set<String>>.findMultiPointPaths(points: List<String>) =
     points.windowed(2)
         .fold(1L) { acc, (start, end) ->
             acc * findPaths(start, end)
