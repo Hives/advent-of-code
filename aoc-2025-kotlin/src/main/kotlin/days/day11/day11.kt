@@ -3,7 +3,6 @@ package days.day11
 import lib.Reader
 import lib.checkAnswer
 import lib.time
-import kotlin.system.exitProcess
 
 fun main() {
     val input = Reader("/day11/input.txt").strings()
@@ -22,7 +21,7 @@ fun main() {
 
 fun part1(input: List<String>): Long {
     val connectionMap = parseInput(input)
-    return connectionMap.findPaths("you", "out")
+    return connectionMap.findPaths(start = "you", end = "out")
 }
 
 
@@ -30,38 +29,45 @@ fun part2(input: List<String>): Long {
     val connectionMap = parseInput(input)
 
     val fftThenDac = connectionMap.run {
-        val svrToFft = findPaths(start = "svr", end = "fft", without = listOf("dac", "out"))
-        val fftToDac = findPaths(start = "fft", end = "dac", without = listOf("svr", "out"))
-        val dacToOut = findPaths(start = "dac", end = "out", without = listOf("svr", "fft"))
+        val svrToFft = findPaths(start = "svr", end = "fft")
+        val fftToDac = findPaths(start = "fft", end = "dac")
+        val dacToOut = findPaths(start = "dac", end = "out")
         svrToFft * fftToDac * dacToOut
     }
     val dacThenFft = connectionMap.run {
-        val svrToDac = findPaths(start = "svr", end = "dac", without = listOf("ffc", "out"))
-        val dacToFft = findPaths(start = "dac", end = "fft", without = listOf("svr", "out"))
-        val fftToOut = findPaths(start = "fft", end = "out", without = listOf("svr", "dac"))
+        val svrToDac = findPaths(start = "svr", end = "dac")
+        val dacToFft = findPaths(start = "dac", end = "fft")
+        val fftToOut = findPaths(start = "fft", end = "out")
         svrToDac * dacToFft * fftToOut
     }
 
     return fftThenDac + dacThenFft
 }
 
-fun Map<String, Set<String>>.findPaths(start: String, end: String, without: List<String> = emptyList()): Long {
-    val key = Triple(start, end, without)
-    if (end == start) return 1
-    if (pathCountMap.containsKey(key)) {
-        return pathCountMap[key]!!
-    } else {
-        val predecessors = this.filter { it.value.contains(end) }.map { it.key }.filterNot { without.contains(it) }
-        if (predecessors.isEmpty()) {
-            pathCountMap[key] = 0
-        } else {
-            pathCountMap[key] = predecessors.sumOf { this.findPaths(start, it) }
+fun Map<String, Set<String>>.findPaths(start: String, end: String): Long {
+    val key = Pair(start, end)
+
+    return when {
+        end == start -> 1
+        else -> {
+            if (!pathCountMap.containsKey(key)) {
+                val predecessors = this.filter { (_, to) -> to.contains(end) }.map { (from, _) -> from }
+
+                if (predecessors.isEmpty()) {
+                    pathCountMap[key] = 0
+                } else {
+                    pathCountMap[key] = predecessors.sumOf { predecessor ->
+                        this.findPaths(start, predecessor)
+                    }
+                }
+            }
+
+            pathCountMap[key]!!
         }
-        return pathCountMap[key]!!
     }
 }
 
-val pathCountMap = mutableMapOf<Triple<String, String, List<String>>, Long>()
+val pathCountMap = mutableMapOf<Pair<String, String>, Long>()
 
 fun parseInput(input: List<String>): Map<String, Set<String>> =
     input.associate { line -> line.split(": ").let { Pair(it[0], it[1].split(" ").toSet()) } }
