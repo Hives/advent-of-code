@@ -21,18 +21,14 @@ fun main() {
     }.checkAnswer(part2)
 }
 
-fun part1(input: List<String>): Int {
-    return input.map(::parse)
-        .map {
-            val smallest = findSmallestNumberOfPresses(it)
-            if (smallest == null) {
-                println("oh no $it")
-            }
-            smallest
+fun part1(input: List<String>): Int =
+    input.map(::parse).mapNotNull {
+        val smallest = findSmallestNumberOfPresses(it)
+        if (smallest == null) {
+            println("oh no $it")
         }
-        .filterNotNull()
-        .sum()
-}
+        smallest
+    }.sum()
 
 fun part2(input: List<String>): Long {
     TODO()
@@ -41,13 +37,15 @@ fun part2(input: List<String>): Long {
 fun findSmallestNumberOfPresses(config: ButtonConfig): Int? {
     val (_, buttons) = config
     (1..10).forEach { n ->
-        val combos = getPressCombinations(buttons.size, n)
-        if (combos.any { testCombo(it, config) }) return n
+        val permutationsOfNPresses = getPressPermutations(buttons.size, n)
+        if (
+            permutationsOfNPresses.any { testPressPermutation(it, config) }
+        ) return n
     }
     return null
 }
 
-fun testCombo(combo: List<Int>, config: ButtonConfig): Boolean {
+fun testPressPermutation(combo: List<Int>, config: ButtonConfig): Boolean {
     val (indicators, buttons) = config
     val finalState = combo.zip(buttons).fold(List(indicators.size) { 0 }) { acc, (c, indicators) ->
         acc.mapIndexed { index, n ->
@@ -58,13 +56,13 @@ fun testCombo(combo: List<Int>, config: ButtonConfig): Boolean {
     return isGood
 }
 
-fun getPressCombinations(buttons: Int, totalPresses: Int): Set<List<Int>> {
+fun getPressPermutations(buttons: Int, totalPresses: Int): Set<List<Int>> {
     val key = Pair(buttons, totalPresses)
     return if (pressCombinations.containsKey(key)) pressCombinations[key]!!
     else {
         val answer =
             if (totalPresses == 0) setOf(List(buttons) { 0 })
-            else getPressCombinations(buttons, totalPresses - 1).flatMap { combo ->
+            else getPressPermutations(buttons, totalPresses - 1).flatMap { combo ->
                 combo.indices.map { i ->
                     combo.mapIndexed { j, c ->
                         if (i == j) c + 1 else c
