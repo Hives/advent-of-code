@@ -21,7 +21,7 @@ fun main() {
 
 fun part1(input: List<String>): Long {
     val connectionMap = parseInput(input)
-    return connectionMap.findPaths(start = "you", end = "out")
+    return connectionMap.countPaths(start = "you", end = "out")
 }
 
 
@@ -31,16 +31,16 @@ fun part2(input: List<String>): Long {
     return listOf(
         listOf("svr", "fft", "dac", "out"),
         listOf("svr", "dac", "fft", "out"),
-    ).sumOf { points -> connectionMap.findMultiPointPaths(points) }
+    ).sumOf { points -> connectionMap.countMultiPointPaths(points) }
 }
 
-fun Map<String, Set<String>>.findMultiPointPaths(points: List<String>) =
+fun Map<String, Set<String>>.countMultiPointPaths(points: List<String>) =
     points.windowed(2)
         .fold(1L) { acc, (start, end) ->
-            acc * findPaths(start, end)
+            acc * countPaths(start, end)
         }
 
-fun Map<String, Set<String>>.findPaths(start: String, end: String): Long {
+fun Map<String, Set<String>>.countPaths(start: String, end: String): Long {
     val key = Pair(start, end)
 
     return when {
@@ -49,12 +49,8 @@ fun Map<String, Set<String>>.findPaths(start: String, end: String): Long {
             if (!pathCountMap.containsKey(key)) {
                 val predecessors = this.filter { (_, to) -> to.contains(end) }.map { (from, _) -> from }
 
-                if (predecessors.isEmpty()) {
-                    pathCountMap[key] = 0
-                } else {
-                    pathCountMap[key] = predecessors.sumOf { predecessor ->
-                        this.findPaths(start, predecessor)
-                    }
+                pathCountMap[key] = predecessors.sumOf { predecessor ->
+                    this.countPaths(start, predecessor)
                 }
             }
 
