@@ -1,5 +1,6 @@
 package days.day11
 
+import kotlin.system.exitProcess
 import lib.Reader
 import lib.checkAnswer
 import lib.time
@@ -28,21 +29,17 @@ fun part1(input: List<String>): Long {
 fun part2(input: List<String>): Long {
     val connectionMap = parseInput(input)
 
-    val fftThenDac = connectionMap.run {
-        val svrToFft = findPaths(start = "svr", end = "fft")
-        val fftToDac = findPaths(start = "fft", end = "dac")
-        val dacToOut = findPaths(start = "dac", end = "out")
-        svrToFft * fftToDac * dacToOut
-    }
-    val dacThenFft = connectionMap.run {
-        val svrToDac = findPaths(start = "svr", end = "dac")
-        val dacToFft = findPaths(start = "dac", end = "fft")
-        val fftToOut = findPaths(start = "fft", end = "out")
-        svrToDac * dacToFft * fftToOut
-    }
-
-    return fftThenDac + dacThenFft
+    return listOf(
+        listOf("svr", "fft", "dac", "out"),
+        listOf("svr", "dac", "fft", "out"),
+    ).sumOf { connectionMap.findPaths(it) }
 }
+
+fun Map<String, Set<String>>.findPaths(points: List<String>) =
+    points.windowed(2)
+        .fold(1L) { acc, (start, end) ->
+            acc * findPaths(start, end)
+        }
 
 fun Map<String, Set<String>>.findPaths(start: String, end: String): Long {
     val key = Pair(start, end)
