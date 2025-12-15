@@ -3,7 +3,6 @@ package days.day12
 import lib.Reader
 import lib.checkAnswer
 import lib.time
-import kotlin.system.exitProcess
 
 fun main() {
     val input = Reader("/day12/input.txt").string()
@@ -19,7 +18,7 @@ fun part1(input: String): Int {
     val (presents, regions) = parseInput(input)
     val presentSize = presents.map { it.sumOf { it.count { it == '#' } } }
     return regions.count {
-        val presentSize = it.second.zip(presentSize).fold(0) { acc, (size, count) -> acc + (size * count) }
+        val presentSize = it.second.zip(presentSize).sumOf { (size, number) -> size * number }
         val size = it.first.first * it.first.second
         presentSize <= size
     }
