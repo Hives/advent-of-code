@@ -10,11 +10,18 @@ fun main() {
     val (part1, part2) = Reader("/day10/answers.txt").ints()
     val exampleInput = Reader("/day10/example-1.txt").strings()
 
+//    part2(listOf("[##.#.#####] (2,3,7,8,9) (0,8) (0) (1,3,5,6,7,8) (0,2,3,4,8) (2,3,6,9) (0,3,4) (6,8) (5) (0,2,5,7,9) (0,1,3,4,5,6,7,9) (1,2,3,6,7,8,9) {45,36,41,62,20,34,51,51,33,55}"))
+
+//    part2(listOf("[..##.....] (0,1,4,5,7) (0,1,3,4,5,6,7) (3,4,5,6,8) (0,1,2,3,7,8) (0,1,2,3,4,5,7) (2,5,7,8) (2,5,6,7,8) (0,1,2,3,6,7,8) (0,1,2,4,5,6) (0,1,4,8) {79,79,77,44,65,79,40,80,66}"))
+
+
+    part2(input)
+    exitProcess(0)
+
+
     time(warmUp = 10, iterations = 10, message = "Part 1") {
         part1(input)
     }.checkAnswer(part1)
-
-    exitProcess(0)
 
     time(message = "Part 2") {
         part2(input)
@@ -31,7 +38,96 @@ fun part1(input: List<String>): Int =
     }.sum()
 
 fun part2(input: List<String>): Long {
-    TODO()
+    val emptyPossibility = List<Int?>(13) { null }
+
+    val requirementsMaps = input.asSequence().map {
+        println(it)
+        parse(it)
+    }.map { requirement ->
+        val (_, wirings, joltageTargets) = requirement
+        joltageTargets.mapIndexed { targetIndex, targetJoltage ->
+            val buttons = wirings.mapIndexedNotNull { wiringIndex, wiring ->
+                if (wiring.contains(targetIndex)) wiringIndex else null
+            }
+            targetJoltage to buttons
+        }
+            .sortedBy { it.second.size }
+            .sortedBy { it.first }
+    }.sumOf { reqs ->
+        var possibilities = listOf(emptyPossibility)
+
+        reqs.indices.forEach { i ->
+//            println("--")
+            val newPossibilities = possibilities.mapNotNull { expandPossibility(it, reqs[i]) }.flatten()
+//            println(newPossibilities.size)
+            val filteredPossibilities = filterPossibilities(newPossibilities, reqs.drop(i + 1))
+//            println(filteredPossibilities.size)
+            possibilities = filteredPossibilities
+        }
+
+        possibilities.minOf { it.filterNotNull().sum() }.also(::println)
+    }.also(::println)
+
+    return -1
+}
+
+fun filterPossibilities(possibilities: List<List<Int?>>, requirements: List<Pair<Int, List<Int>>>): List<List<Int?>> {
+    return possibilities.filter { possibility -> requirements.all { req -> test(possibility, req) } }
+}
+
+fun test(possibility: List<Int?>, requirement: Pair<Int, List<Int>>): Boolean {
+    val (target, buttons) = requirement
+    val joltageAchieved = possibility.filterIndexed { index, _ -> buttons.contains(index) }.filterNotNull().sum()
+    return joltageAchieved <= target
+}
+
+fun expandPossibility(possibility: List<Int?>, requirement: Pair<Int, List<Int>>): List<List<Int?>>? {
+    val (target, buttons) = requirement
+    val joltageAchievedAlready = possibility.filterIndexed { index, _ -> buttons.contains(index) }.filterNotNull().sum()
+    val remainingTarget = target - joltageAchievedAlready
+    if (remainingTarget < 0) return null
+    val remainingButtons = buttons.filter { possibility[it] == null }
+
+    val newPossibilities = getPossibilities(remainingTarget, remainingButtons)
+    return newPossibilities.map {
+        List(13) { button -> if (button in it) it[button] else possibility[button] }
+    }
+}
+
+fun getPossibilities(target: Int, buttons: List<Int>): List<Map<Int, Int>> {
+    return CombsWithReps(target, buttons.size, buttons).combinations.map { combination ->
+        buttons.map { button -> button to combination.count { it == button } }.toMap()
+    }
+}
+
+// copied this part off the internet
+class CombsWithReps<T>(val m: Int, val n: Int, val items: List<T>) {
+    private val combination = IntArray(m)
+    private val combinationsInternal = mutableSetOf<List<T>>()
+    val combinations: Set<List<T>> = combinationsInternal
+    private var count = 0
+
+    init {
+        generate(0)
+    }
+
+    private fun generate(k: Int) {
+        if (k >= m) {
+            val list = mutableListOf<T>()
+            for (i in 0 until m) {
+                val t = items[combination[i]]
+                list.add(t)
+            }
+            combinationsInternal.add(list)
+            count++
+        } else {
+            for (j in 0 until n)
+                if (k == 0 || j >= combination[k - 1]) {
+                    combination[k] = j
+                    generate(k + 1)
+                }
+        }
+    }
 }
 
 fun findSmallestNumberOfPresses(config: ButtonConfig): Int? {
